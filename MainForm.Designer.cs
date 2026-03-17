@@ -338,9 +338,9 @@ namespace Scanner_SDK_Sample_Application
             // 
             // tabCtrl
             // 
-            this.tabCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+    | System.Windows.Forms.AnchorStyles.Left)
+    | System.Windows.Forms.AnchorStyles.Right)));
             this.tabCtrl.Controls.Add(this.tabBarcode);
             this.tabCtrl.Controls.Add(this.tabImgVdo);
             this.tabCtrl.Controls.Add(this.tabISO15434);
@@ -2796,6 +2796,10 @@ namespace Scanner_SDK_Sample_Application
             this.tabConectar.TabIndex = 13;
             this.tabConectar.Text = "Conexión";
             this.tabConectar.UseVisualStyleBackColor = true;
+            this.tabConectar.Controls.Add(this.btnGetScanners);
+            this.tabConectar.Controls.Add(this.grpScanners);
+            this.tabConectar.Controls.Add(this.lblSlctScnnr);
+            this.tabConectar.Controls.Add(this.cmbSlcrScnr);
             this.tabConectar.Click += new System.EventHandler(this.tabConectar_Click);
             // 
             // grpTrigger
@@ -2866,7 +2870,7 @@ namespace Scanner_SDK_Sample_Application
             this.lblSlctScnnr.AutoSize = true;
             this.lblSlctScnnr.Location = new System.Drawing.Point(20, 610);
             this.lblSlctScnnr.Name = "lblSlctScnnr";
-            this.lblSlctScnnr.Size = new System.Drawing.Size(82, 13);
+            this.lblSlctScnnr.Size = new System.Drawing.Size(87, 13);
             this.lblSlctScnnr.TabIndex = 66;
             this.lblSlctScnnr.Text = "Scanner activo:";
             this.lblSlctScnnr.Click += new System.EventHandler(this.lblSlctScnnr_Click);
@@ -2884,9 +2888,9 @@ namespace Scanner_SDK_Sample_Application
             // 
             // grpScanners
             // 
-            this.grpScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+    | System.Windows.Forms.AnchorStyles.Left)
+    | System.Windows.Forms.AnchorStyles.Right)));
             this.grpScanners.Controls.Add(this.lstvScanners);
             this.grpScanners.Location = new System.Drawing.Point(20, 70);
             this.grpScanners.Name = "grpScanners";
@@ -2898,9 +2902,9 @@ namespace Scanner_SDK_Sample_Application
             // 
             // lstvScanners
             // 
-            this.lstvScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstvScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+    | System.Windows.Forms.AnchorStyles.Left)
+    | System.Windows.Forms.AnchorStyles.Right)));
             this.lstvScanners.BackColor = System.Drawing.Color.White;
             this.lstvScanners.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.clmId,
@@ -2974,6 +2978,7 @@ namespace Scanner_SDK_Sample_Application
             this.btnGetScanners.TabIndex = 0;
             this.btnGetScanners.Text = "Descubrir Scanners";
             this.btnGetScanners.UseVisualStyleBackColor = false;
+            this.btnGetScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
             this.btnGetScanners.Click += new System.EventHandler(this.btnGetScanners_Click);
             // 
             // openFileDialogFW
