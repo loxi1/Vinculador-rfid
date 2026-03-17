@@ -76,7 +76,7 @@ namespace Scanner_SDK_Sample_Application
                     }));
                 }
 
-                if(GetSelectedTabName().Equals(SSW_TAB_NAME))
+                if (string.Equals(GetSelectedTabName(), SSW_TAB_NAME, StringComparison.Ordinal))
                 {
                     if (scannerBarcode.GetScanDataType(tmpScanData) == ScannerBarcode.ST_UPCA)
                     {
@@ -109,19 +109,22 @@ namespace Scanner_SDK_Sample_Application
         /// <returns>Name of the selected tab</returns>
         private string GetSelectedTabName()
         {
-            string selectedTabName = String.Empty;
+            if (tabCtrl == null || tabCtrl.TabPages == null || tabCtrl.TabPages.Count == 0)
+                return string.Empty;
+
             if (tabCtrl.InvokeRequired)
             {
+                string selectedTabName = string.Empty;
+
                 tabCtrl.Invoke(new MethodInvoker(delegate
                 {
-                    selectedTabName = tabCtrl.SelectedTab.Name;
+                    selectedTabName = tabCtrl.SelectedTab?.Name ?? string.Empty;
                 }));
+
+                return selectedTabName;
             }
-            else
-            {
-                selectedTabName = tabCtrl.SelectedTab.Name;
-            }
-            return selectedTabName;
+
+            return tabCtrl.SelectedTab?.Name ?? string.Empty;
         }
 
         

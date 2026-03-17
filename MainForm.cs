@@ -122,10 +122,22 @@ namespace Scanner_SDK_Sample_Application
 
         private void frmScannerApp_Load(object sender, EventArgs e)
         {
+            tabCtrl.SelectedIndexChanged -= tabCtrl_SelectedIndexChanged;
+
             GetLanguageConfigInfo();
+
             tabCtrl.TabPages.Clear();
             tabCtrl.TabPages.Add(tabConectar);
             tabCtrl.TabPages.Add(tabBarcode);
+
+            // si luego quieres mostrar otras
+            // tabCtrl.TabPages.Add(tabSSW);
+            // tabCtrl.TabPages.Add(tabXml);
+
+            if (tabCtrl.TabPages.Count > 0)
+                tabCtrl.SelectedIndex = 0;
+
+            tabCtrl.SelectedIndexChanged += tabCtrl_SelectedIndexChanged;
         }
         private void frmCoreScannerApp_FormClosing(object sender, FormClosingEventArgs e)
         {

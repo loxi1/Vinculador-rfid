@@ -756,7 +756,10 @@ namespace Scanner_SDK_Sample_Application
 
         private void tabCtrl_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (GetSelectedTabName().Equals(SSW_TAB_NAME))
+            if (tabCtrl == null || tabCtrl.SelectedTab == null)
+                return;
+
+            if (string.Equals(GetSelectedTabName(), SSW_TAB_NAME, StringComparison.Ordinal))
             {
                 ResetFields();
                 if (initSSW)
