@@ -147,6 +147,7 @@ namespace Scanner_SDK_Sample_Application
         #region "DiscoverScanner"
         private void btnGetScanners_Click(object sender, EventArgs e)
         {
+            MessageBox.Show("Click OK");
             performGetScanner();
         }
 

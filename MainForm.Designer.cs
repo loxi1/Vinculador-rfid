@@ -2809,7 +2809,7 @@ namespace Scanner_SDK_Sample_Application
             this.btnGetScanners.Name = "btnGetScanners";
             this.btnGetScanners.Size = new System.Drawing.Size(170, 32);
             this.btnGetScanners.TabIndex = 0;
-            this.btnGetScanners.Text = "Descubrir Scanners";
+            this.btnGetScanners.Text = "Discover Scanners";
             this.btnGetScanners.UseVisualStyleBackColor = false;
             this.btnGetScanners.Click += new System.EventHandler(this.btnGetScanners_Click);
             // 
