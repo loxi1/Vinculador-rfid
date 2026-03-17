@@ -1,0 +1,16 @@
+# Código C# con CRLF
+*.cs text eol=crlf
+*.csproj text eol=crlf
+*.sln text eol=crlf
+
+# Configuración y scripts con LF
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binarios sin cambios
+*.png binary
+*.jpg binary
+*.ico binary
+*.dll binary
+*.exe binary
