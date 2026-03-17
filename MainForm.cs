@@ -122,9 +122,9 @@ namespace Scanner_SDK_Sample_Application
 
         private void frmScannerApp_Load(object sender, EventArgs e)
         {
-            tabCtrl.SelectedIndexChanged -= tabCtrl_SelectedIndexChanged;
-
             GetLanguageConfigInfo();
+
+            tabCtrl.SelectedIndexChanged -= tabCtrl_SelectedIndexChanged;
 
             tabCtrl.TabPages.Clear();
             tabCtrl.TabPages.Add(tabConectar);

@@ -240,13 +240,7 @@ namespace Scanner_SDK_Sample_Application
             this.grpOutXml = new System.Windows.Forms.GroupBox();
             this.txtOutXml = new System.Windows.Forms.TextBox();
             this.tabConectar = new System.Windows.Forms.TabPage();
-            this.grpTrigger = new System.Windows.Forms.GroupBox();
-            this.btnReleaseTrigger = new System.Windows.Forms.Button();
-            this.btnPullTrigger = new System.Windows.Forms.Button();
-            this.gbAdvanced = new System.Windows.Forms.GroupBox();
-            this.grpGeneral = new System.Windows.Forms.GroupBox();
-            this.lblSlctScnnr = new System.Windows.Forms.Label();
-            this.cmbSlcrScnr = new System.Windows.Forms.ComboBox();
+            this.btnGetScanners = new System.Windows.Forms.Button();
             this.grpScanners = new System.Windows.Forms.GroupBox();
             this.lstvScanners = new System.Windows.Forms.ListView();
             this.clmId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -257,7 +251,13 @@ namespace Scanner_SDK_Sample_Application
             this.clmMnftrd = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmSerial = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.clmGuid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.btnGetScanners = new System.Windows.Forms.Button();
+            this.lblSlctScnnr = new System.Windows.Forms.Label();
+            this.cmbSlcrScnr = new System.Windows.Forms.ComboBox();
+            this.grpTrigger = new System.Windows.Forms.GroupBox();
+            this.btnReleaseTrigger = new System.Windows.Forms.Button();
+            this.btnPullTrigger = new System.Windows.Forms.Button();
+            this.gbAdvanced = new System.Windows.Forms.GroupBox();
+            this.grpGeneral = new System.Windows.Forms.GroupBox();
             this.openFileDialogFW = new System.Windows.Forms.OpenFileDialog();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.openFileDialogAttr = new System.Windows.Forms.OpenFileDialog();
@@ -330,17 +330,18 @@ namespace Scanner_SDK_Sample_Application
             this.tabXml.SuspendLayout();
             this.grpResult.SuspendLayout();
             this.grpOutXml.SuspendLayout();
-            this.grpTrigger.SuspendLayout();
-            this.grpGeneral.SuspendLayout();
+            this.tabConectar.SuspendLayout();
             this.grpScanners.SuspendLayout();
+            this.grpTrigger.SuspendLayout();
             this.stStripResult.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabCtrl
             // 
-            this.tabCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-    | System.Windows.Forms.AnchorStyles.Left)
-    | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabCtrl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabCtrl.Controls.Add(this.tabConectar);
             this.tabCtrl.Controls.Add(this.tabBarcode);
             this.tabCtrl.Controls.Add(this.tabImgVdo);
             this.tabCtrl.Controls.Add(this.tabISO15434);
@@ -353,7 +354,6 @@ namespace Scanner_SDK_Sample_Application
             this.tabCtrl.Controls.Add(this.tabScale);
             this.tabCtrl.Controls.Add(this.tabSSW);
             this.tabCtrl.Controls.Add(this.tabXml);
-            this.tabCtrl.Controls.Add(this.tabConectar);
             this.tabCtrl.Location = new System.Drawing.Point(12, 12);
             this.tabCtrl.Name = "tabCtrl";
             this.tabCtrl.SelectedIndex = 0;
@@ -2789,6 +2789,10 @@ namespace Scanner_SDK_Sample_Application
             // 
             this.tabConectar.AutoScroll = true;
             this.tabConectar.BackColor = System.Drawing.Color.AliceBlue;
+            this.tabConectar.Controls.Add(this.btnGetScanners);
+            this.tabConectar.Controls.Add(this.grpScanners);
+            this.tabConectar.Controls.Add(this.lblSlctScnnr);
+            this.tabConectar.Controls.Add(this.cmbSlcrScnr);
             this.tabConectar.Location = new System.Drawing.Point(4, 22);
             this.tabConectar.Name = "tabConectar";
             this.tabConectar.Padding = new System.Windows.Forms.Padding(12);
@@ -2796,101 +2800,24 @@ namespace Scanner_SDK_Sample_Application
             this.tabConectar.TabIndex = 13;
             this.tabConectar.Text = "Conexión";
             this.tabConectar.UseVisualStyleBackColor = true;
-            this.tabConectar.Controls.Add(this.btnGetScanners);
-            this.tabConectar.Controls.Add(this.grpScanners);
-            this.tabConectar.Controls.Add(this.lblSlctScnnr);
-            this.tabConectar.Controls.Add(this.cmbSlcrScnr);
             this.tabConectar.Click += new System.EventHandler(this.tabConectar_Click);
             // 
-            // grpTrigger
+            // btnGetScanners
             // 
-            this.grpTrigger.Controls.Add(this.btnReleaseTrigger);
-            this.grpTrigger.Controls.Add(this.btnPullTrigger);
-            this.grpTrigger.Location = new System.Drawing.Point(8, 435);
-            this.grpTrigger.Name = "grpTrigger";
-            this.grpTrigger.Size = new System.Drawing.Size(446, 53);
-            this.grpTrigger.TabIndex = 3;
-            this.grpTrigger.TabStop = false;
-            this.grpTrigger.Text = "Soft Trigger";
-            this.grpTrigger.Visible = false;
-            this.grpTrigger.Enter += new System.EventHandler(this.grpTrigger_Enter);
-            // 
-            // btnReleaseTrigger
-            // 
-            this.btnReleaseTrigger.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.btnReleaseTrigger.Location = new System.Drawing.Point(290, 19);
-            this.btnReleaseTrigger.Name = "btnReleaseTrigger";
-            this.btnReleaseTrigger.Size = new System.Drawing.Size(110, 23);
-            this.btnReleaseTrigger.TabIndex = 1;
-            this.btnReleaseTrigger.Text = "Release Trigger";
-            this.btnReleaseTrigger.UseVisualStyleBackColor = false;
-            this.btnReleaseTrigger.Click += new System.EventHandler(this.btnReleaseTrigger_Click);
-            // 
-            // btnPullTrigger
-            // 
-            this.btnPullTrigger.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.btnPullTrigger.Location = new System.Drawing.Point(32, 19);
-            this.btnPullTrigger.Name = "btnPullTrigger";
-            this.btnPullTrigger.Size = new System.Drawing.Size(110, 23);
-            this.btnPullTrigger.TabIndex = 0;
-            this.btnPullTrigger.Text = "Pull Trigger";
-            this.btnPullTrigger.UseVisualStyleBackColor = false;
-            this.btnPullTrigger.Click += new System.EventHandler(this.btnPullTrigger_Click);
-            // 
-            // gbAdvanced
-            // 
-            this.gbAdvanced.Location = new System.Drawing.Point(0, 0);
-            this.gbAdvanced.Name = "gbAdvanced";
-            this.gbAdvanced.Size = new System.Drawing.Size(200, 100);
-            this.gbAdvanced.TabIndex = 0;
-            this.gbAdvanced.TabStop = false;
-            this.gbAdvanced.Enter += new System.EventHandler(this.gbAdvanced_Enter);
-            // 
-            // grpGeneral
-            // 
-            this.grpGeneral.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.grpGeneral.Controls.Add(this.lblSlctScnnr);
-            this.grpGeneral.Controls.Add(this.grpTrigger);
-            this.grpGeneral.Controls.Add(this.cmbSlcrScnr);
-            this.grpGeneral.Controls.Add(this.grpScanners);
-            this.grpGeneral.Controls.Add(this.btnGetScanners);
-            this.grpGeneral.Location = new System.Drawing.Point(12, 12);
-            this.grpGeneral.Name = "grpGeneral";
-            this.grpGeneral.Size = new System.Drawing.Size(320, 700);
-            this.grpGeneral.TabIndex = 0;
-            this.grpGeneral.TabStop = false;
-            this.grpGeneral.Text = "Selected Scanners";
-            this.grpGeneral.Visible = false;
-            this.grpGeneral.Enter += new System.EventHandler(this.grpGeneral_Enter);
-            // 
-            // lblSlctScnnr
-            // 
-            this.lblSlctScnnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblSlctScnnr.AutoSize = true;
-            this.lblSlctScnnr.Location = new System.Drawing.Point(20, 610);
-            this.lblSlctScnnr.Name = "lblSlctScnnr";
-            this.lblSlctScnnr.Size = new System.Drawing.Size(87, 13);
-            this.lblSlctScnnr.TabIndex = 66;
-            this.lblSlctScnnr.Text = "Scanner activo:";
-            this.lblSlctScnnr.Click += new System.EventHandler(this.lblSlctScnnr_Click);
-            // 
-            // cmbSlcrScnr
-            // 
-            this.cmbSlcrScnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.cmbSlcrScnr.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSlcrScnr.FormattingEnabled = true;
-            this.cmbSlcrScnr.Location = new System.Drawing.Point(120, 607);
-            this.cmbSlcrScnr.Name = "cmbSlcrScnr";
-            this.cmbSlcrScnr.Size = new System.Drawing.Size(420, 21);
-            this.cmbSlcrScnr.TabIndex = 1;
-            this.cmbSlcrScnr.SelectedIndexChanged += new System.EventHandler(this.cmbSlcrScnr_SelectedIndexChanged);
+            this.btnGetScanners.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnGetScanners.Location = new System.Drawing.Point(20, 20);
+            this.btnGetScanners.Name = "btnGetScanners";
+            this.btnGetScanners.Size = new System.Drawing.Size(170, 32);
+            this.btnGetScanners.TabIndex = 0;
+            this.btnGetScanners.Text = "Descubrir Scanners";
+            this.btnGetScanners.UseVisualStyleBackColor = false;
+            this.btnGetScanners.Click += new System.EventHandler(this.btnGetScanners_Click);
             // 
             // grpScanners
             // 
-            this.grpScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-    | System.Windows.Forms.AnchorStyles.Left)
-    | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.grpScanners.Controls.Add(this.lstvScanners);
             this.grpScanners.Location = new System.Drawing.Point(20, 70);
             this.grpScanners.Name = "grpScanners";
@@ -2902,9 +2829,9 @@ namespace Scanner_SDK_Sample_Application
             // 
             // lstvScanners
             // 
-            this.lstvScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-    | System.Windows.Forms.AnchorStyles.Left)
-    | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstvScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.lstvScanners.BackColor = System.Drawing.Color.White;
             this.lstvScanners.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.clmId,
@@ -2969,17 +2896,84 @@ namespace Scanner_SDK_Sample_Application
             this.clmGuid.Text = "GUID";
             this.clmGuid.Width = 110;
             // 
-            // btnGetScanners
+            // lblSlctScnnr
             // 
-            this.btnGetScanners.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.btnGetScanners.Location = new System.Drawing.Point(20, 20);
-            this.btnGetScanners.Name = "btnGetScanners";
-            this.btnGetScanners.Size = new System.Drawing.Size(160, 32);
-            this.btnGetScanners.TabIndex = 0;
-            this.btnGetScanners.Text = "Descubrir Scanners";
-            this.btnGetScanners.UseVisualStyleBackColor = false;
-            this.btnGetScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnGetScanners.Click += new System.EventHandler(this.btnGetScanners_Click);
+            this.lblSlctScnnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblSlctScnnr.AutoSize = true;
+            this.lblSlctScnnr.Location = new System.Drawing.Point(20, 610);
+            this.lblSlctScnnr.Name = "lblSlctScnnr";
+            this.lblSlctScnnr.Size = new System.Drawing.Size(82, 13);
+            this.lblSlctScnnr.TabIndex = 66;
+            this.lblSlctScnnr.Text = "Scanner activo:";
+            this.lblSlctScnnr.Click += new System.EventHandler(this.lblSlctScnnr_Click);
+            // 
+            // cmbSlcrScnr
+            // 
+            this.cmbSlcrScnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbSlcrScnr.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSlcrScnr.FormattingEnabled = true;
+            this.cmbSlcrScnr.Location = new System.Drawing.Point(120, 607);
+            this.cmbSlcrScnr.Name = "cmbSlcrScnr";
+            this.cmbSlcrScnr.Size = new System.Drawing.Size(420, 21);
+            this.cmbSlcrScnr.TabIndex = 1;
+            this.cmbSlcrScnr.SelectedIndexChanged += new System.EventHandler(this.cmbSlcrScnr_SelectedIndexChanged);
+            // 
+            // grpTrigger
+            // 
+            this.grpTrigger.Controls.Add(this.btnReleaseTrigger);
+            this.grpTrigger.Controls.Add(this.btnPullTrigger);
+            this.grpTrigger.Location = new System.Drawing.Point(8, 435);
+            this.grpTrigger.Name = "grpTrigger";
+            this.grpTrigger.Size = new System.Drawing.Size(446, 53);
+            this.grpTrigger.TabIndex = 3;
+            this.grpTrigger.TabStop = false;
+            this.grpTrigger.Text = "Soft Trigger";
+            this.grpTrigger.Visible = false;
+            this.grpTrigger.Enter += new System.EventHandler(this.grpTrigger_Enter);
+            // 
+            // btnReleaseTrigger
+            // 
+            this.btnReleaseTrigger.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnReleaseTrigger.Location = new System.Drawing.Point(290, 19);
+            this.btnReleaseTrigger.Name = "btnReleaseTrigger";
+            this.btnReleaseTrigger.Size = new System.Drawing.Size(110, 23);
+            this.btnReleaseTrigger.TabIndex = 1;
+            this.btnReleaseTrigger.Text = "Release Trigger";
+            this.btnReleaseTrigger.UseVisualStyleBackColor = false;
+            this.btnReleaseTrigger.Click += new System.EventHandler(this.btnReleaseTrigger_Click);
+            // 
+            // btnPullTrigger
+            // 
+            this.btnPullTrigger.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnPullTrigger.Location = new System.Drawing.Point(32, 19);
+            this.btnPullTrigger.Name = "btnPullTrigger";
+            this.btnPullTrigger.Size = new System.Drawing.Size(110, 23);
+            this.btnPullTrigger.TabIndex = 0;
+            this.btnPullTrigger.Text = "Pull Trigger";
+            this.btnPullTrigger.UseVisualStyleBackColor = false;
+            this.btnPullTrigger.Click += new System.EventHandler(this.btnPullTrigger_Click);
+            // 
+            // gbAdvanced
+            // 
+            this.gbAdvanced.Location = new System.Drawing.Point(0, 0);
+            this.gbAdvanced.Name = "gbAdvanced";
+            this.gbAdvanced.Size = new System.Drawing.Size(200, 100);
+            this.gbAdvanced.TabIndex = 0;
+            this.gbAdvanced.TabStop = false;
+            this.gbAdvanced.Enter += new System.EventHandler(this.gbAdvanced_Enter);
+            // 
+            // grpGeneral
+            // 
+            this.grpGeneral.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.grpGeneral.Location = new System.Drawing.Point(12, 12);
+            this.grpGeneral.Name = "grpGeneral";
+            this.grpGeneral.Size = new System.Drawing.Size(320, 700);
+            this.grpGeneral.TabIndex = 0;
+            this.grpGeneral.TabStop = false;
+            this.grpGeneral.Text = "Selected Scanners";
+            this.grpGeneral.Visible = false;
+            this.grpGeneral.Enter += new System.EventHandler(this.grpGeneral_Enter);
             // 
             // openFileDialogFW
             // 
@@ -3198,10 +3192,10 @@ namespace Scanner_SDK_Sample_Application
             this.grpResult.PerformLayout();
             this.grpOutXml.ResumeLayout(false);
             this.grpOutXml.PerformLayout();
-            this.grpTrigger.ResumeLayout(false);
-            this.grpGeneral.ResumeLayout(false);
-            this.grpGeneral.PerformLayout();
+            this.tabConectar.ResumeLayout(false);
+            this.tabConectar.PerformLayout();
             this.grpScanners.ResumeLayout(false);
+            this.grpTrigger.ResumeLayout(false);
             this.stStripResult.ResumeLayout(false);
             this.stStripResult.PerformLayout();
             this.ResumeLayout(false);
