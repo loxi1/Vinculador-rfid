@@ -29,15 +29,37 @@ namespace Scanner_SDK_Sample_Application
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle12 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmScannerApp));
             this.tabCtrl = new System.Windows.Forms.TabControl();
+            this.tabConectar = new System.Windows.Forms.TabPage();
+            this.btnGetScanners = new System.Windows.Forms.Button();
+            this.grpScanners = new System.Windows.Forms.GroupBox();
+            this.lstvScanners = new System.Windows.Forms.ListView();
+            this.clmId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmModel = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmFrmwr = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmCnfig = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmMnftrd = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmSerial = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.clmGuid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.lblSlctScnnr = new System.Windows.Forms.Label();
+            this.cmbSlcrScnr = new System.Windows.Forms.ComboBox();
             this.tabBarcode = new System.Windows.Forms.TabPage();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btnScriptEditor = new System.Windows.Forms.Button();
@@ -239,20 +261,6 @@ namespace Scanner_SDK_Sample_Application
             this.txtResults = new System.Windows.Forms.TextBox();
             this.grpOutXml = new System.Windows.Forms.GroupBox();
             this.txtOutXml = new System.Windows.Forms.TextBox();
-            this.tabConectar = new System.Windows.Forms.TabPage();
-            this.btnGetScanners = new System.Windows.Forms.Button();
-            this.grpScanners = new System.Windows.Forms.GroupBox();
-            this.lstvScanners = new System.Windows.Forms.ListView();
-            this.clmId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmModel = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmFrmwr = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmCnfig = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmMnftrd = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmSerial = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.clmGuid = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.lblSlctScnnr = new System.Windows.Forms.Label();
-            this.cmbSlcrScnr = new System.Windows.Forms.ComboBox();
             this.grpTrigger = new System.Windows.Forms.GroupBox();
             this.btnReleaseTrigger = new System.Windows.Forms.Button();
             this.btnPullTrigger = new System.Windows.Forms.Button();
@@ -274,7 +282,53 @@ namespace Scanner_SDK_Sample_Application
             this.openFileDialogWavFile = new System.Windows.Forms.OpenFileDialog();
             this.openFileDialogDADF = new System.Windows.Forms.OpenFileDialog();
             this.folderBrowserDialogBarcodePath = new System.Windows.Forms.FolderBrowserDialog();
+            this.tabVinculador = new System.Windows.Forms.TabPage();
+            this.gbxInventoryEx = new System.Windows.Forms.GroupBox();
+            this.tablaContenedorTimbrado = new System.Windows.Forms.TableLayoutPanel();
+            this.tabaLadoTimbrado = new System.Windows.Forms.TableLayoutPanel();
+            this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnLimpiarRFID = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
+            this.cantidadRFID = new System.Windows.Forms.Label();
+            this.MsnVincular = new System.Windows.Forms.Label();
+            this.CodBarras = new System.Windows.Forms.TextBox();
+            this.TableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
+            this.dgvTagList = new System.Windows.Forms.DataGridView();
+            this.clnEPC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clnTID = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.clnCount = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.nroOP = new System.Windows.Forms.TextBox();
+            this.nroHM = new System.Windows.Forms.TextBox();
+            this.btnLimpiarOPHM = new System.Windows.Forms.Button();
+            this.TableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnVerConsolidado = new System.Windows.Forms.Button();
+            this.lblTotalCount = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.tbContEspacioVertical = new System.Windows.Forms.TableLayoutPanel();
+            this.btnStopInventoryEx = new System.Windows.Forms.Button();
+            this.cbxInventory = new System.Windows.Forms.ComboBox();
+            this.btnStartInventoryEx = new System.Windows.Forms.Button();
+            this.TableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.DataGridView1 = new System.Windows.Forms.DataGridView();
+            this.linea = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.op = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.hoja_marcacion = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.corte = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.subcorte = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.color = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.talla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cod_talla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.id_talla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fecha = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.id_rfid = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.TableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
+            this.tbConsolidado = new System.Windows.Forms.TableLayoutPanel();
+            this.lblTotalDetalle = new System.Windows.Forms.Label();
+            this.panelScroll = new System.Windows.Forms.Panel();
+            this.tbDetalleTimbrado = new System.Windows.Forms.TableLayoutPanel();
             this.tabCtrl.SuspendLayout();
+            this.tabConectar.SuspendLayout();
+            this.grpScanners.SuspendLayout();
             this.tabBarcode.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.grpBoxLanguage.SuspendLayout();
@@ -330,10 +384,22 @@ namespace Scanner_SDK_Sample_Application
             this.tabXml.SuspendLayout();
             this.grpResult.SuspendLayout();
             this.grpOutXml.SuspendLayout();
-            this.tabConectar.SuspendLayout();
-            this.grpScanners.SuspendLayout();
             this.grpTrigger.SuspendLayout();
             this.stStripResult.SuspendLayout();
+            this.tabVinculador.SuspendLayout();
+            this.gbxInventoryEx.SuspendLayout();
+            this.tablaContenedorTimbrado.SuspendLayout();
+            this.tabaLadoTimbrado.SuspendLayout();
+            this.TableLayoutPanel1.SuspendLayout();
+            this.TableLayoutPanel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTagList)).BeginInit();
+            this.TableLayoutPanel2.SuspendLayout();
+            this.tbContEspacioVertical.SuspendLayout();
+            this.TableLayoutPanel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView1)).BeginInit();
+            this.TableLayoutPanel7.SuspendLayout();
+            this.tbConsolidado.SuspendLayout();
+            this.panelScroll.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabCtrl
@@ -342,6 +408,7 @@ namespace Scanner_SDK_Sample_Application
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tabCtrl.Controls.Add(this.tabConectar);
+            this.tabCtrl.Controls.Add(this.tabVinculador);
             this.tabCtrl.Controls.Add(this.tabBarcode);
             this.tabCtrl.Controls.Add(this.tabImgVdo);
             this.tabCtrl.Controls.Add(this.tabISO15434);
@@ -360,6 +427,139 @@ namespace Scanner_SDK_Sample_Application
             this.tabCtrl.Size = new System.Drawing.Size(1179, 712);
             this.tabCtrl.TabIndex = 1;
             this.tabCtrl.SelectedIndexChanged += new System.EventHandler(this.tabCtrl_SelectedIndexChanged);
+            // 
+            // tabConectar
+            // 
+            this.tabConectar.AutoScroll = true;
+            this.tabConectar.BackColor = System.Drawing.Color.AliceBlue;
+            this.tabConectar.Controls.Add(this.btnGetScanners);
+            this.tabConectar.Controls.Add(this.grpScanners);
+            this.tabConectar.Controls.Add(this.lblSlctScnnr);
+            this.tabConectar.Controls.Add(this.cmbSlcrScnr);
+            this.tabConectar.Location = new System.Drawing.Point(4, 22);
+            this.tabConectar.Name = "tabConectar";
+            this.tabConectar.Padding = new System.Windows.Forms.Padding(12);
+            this.tabConectar.Size = new System.Drawing.Size(1171, 686);
+            this.tabConectar.TabIndex = 13;
+            this.tabConectar.Text = "Conexión";
+            this.tabConectar.UseVisualStyleBackColor = true;
+            this.tabConectar.Click += new System.EventHandler(this.tabConectar_Click);
+            // 
+            // btnGetScanners
+            // 
+            this.btnGetScanners.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnGetScanners.Location = new System.Drawing.Point(20, 20);
+            this.btnGetScanners.Name = "btnGetScanners";
+            this.btnGetScanners.Size = new System.Drawing.Size(170, 32);
+            this.btnGetScanners.TabIndex = 0;
+            this.btnGetScanners.Text = "Discover Scanners";
+            this.btnGetScanners.UseVisualStyleBackColor = false;
+            this.btnGetScanners.Click += new System.EventHandler(this.btnGetScanners_Click);
+            // 
+            // grpScanners
+            // 
+            this.grpScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.grpScanners.Controls.Add(this.lstvScanners);
+            this.grpScanners.Location = new System.Drawing.Point(20, 70);
+            this.grpScanners.Name = "grpScanners";
+            this.grpScanners.Size = new System.Drawing.Size(1115, 520);
+            this.grpScanners.TabIndex = 2;
+            this.grpScanners.TabStop = false;
+            this.grpScanners.Text = "Scanners conectados";
+            this.grpScanners.Enter += new System.EventHandler(this.grpScanners_Enter);
+            // 
+            // lstvScanners
+            // 
+            this.lstvScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lstvScanners.BackColor = System.Drawing.Color.White;
+            this.lstvScanners.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.clmId,
+            this.clmType,
+            this.clmModel,
+            this.clmFrmwr,
+            this.clmCnfig,
+            this.clmMnftrd,
+            this.clmSerial,
+            this.clmGuid});
+            this.lstvScanners.FullRowSelect = true;
+            this.lstvScanners.GridLines = true;
+            this.lstvScanners.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.lstvScanners.HideSelection = false;
+            this.lstvScanners.Location = new System.Drawing.Point(10, 22);
+            this.lstvScanners.MultiSelect = false;
+            this.lstvScanners.Name = "lstvScanners";
+            this.lstvScanners.ShowItemToolTips = true;
+            this.lstvScanners.Size = new System.Drawing.Size(1095, 485);
+            this.lstvScanners.TabIndex = 0;
+            this.lstvScanners.UseCompatibleStateImageBehavior = false;
+            this.lstvScanners.View = System.Windows.Forms.View.Details;
+            this.lstvScanners.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.lstvScanners_ItemSelectionChanged);
+            this.lstvScanners.SelectedIndexChanged += new System.EventHandler(this.lstvScanners_SelectedIndexChanged);
+            // 
+            // clmId
+            // 
+            this.clmId.Text = "#";
+            this.clmId.Width = 30;
+            // 
+            // clmType
+            // 
+            this.clmType.Text = "Com Interface";
+            this.clmType.Width = 94;
+            // 
+            // clmModel
+            // 
+            this.clmModel.Text = "Model #";
+            this.clmModel.Width = 132;
+            // 
+            // clmFrmwr
+            // 
+            this.clmFrmwr.Text = "Firmware";
+            this.clmFrmwr.Width = 119;
+            // 
+            // clmCnfig
+            // 
+            this.clmCnfig.Text = "Config Name";
+            this.clmCnfig.Width = 119;
+            // 
+            // clmMnftrd
+            // 
+            this.clmMnftrd.Text = "Built";
+            // 
+            // clmSerial
+            // 
+            this.clmSerial.Text = "Serial # or Port #";
+            this.clmSerial.Width = 120;
+            // 
+            // clmGuid
+            // 
+            this.clmGuid.Text = "GUID";
+            this.clmGuid.Width = 110;
+            // 
+            // lblSlctScnnr
+            // 
+            this.lblSlctScnnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.lblSlctScnnr.AutoSize = true;
+            this.lblSlctScnnr.Location = new System.Drawing.Point(20, 610);
+            this.lblSlctScnnr.Name = "lblSlctScnnr";
+            this.lblSlctScnnr.Size = new System.Drawing.Size(82, 13);
+            this.lblSlctScnnr.TabIndex = 66;
+            this.lblSlctScnnr.Text = "Scanner activo:";
+            this.lblSlctScnnr.Click += new System.EventHandler(this.lblSlctScnnr_Click);
+            // 
+            // cmbSlcrScnr
+            // 
+            this.cmbSlcrScnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.cmbSlcrScnr.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSlcrScnr.FormattingEnabled = true;
+            this.cmbSlcrScnr.Location = new System.Drawing.Point(120, 607);
+            this.cmbSlcrScnr.Name = "cmbSlcrScnr";
+            this.cmbSlcrScnr.Size = new System.Drawing.Size(420, 21);
+            this.cmbSlcrScnr.TabIndex = 1;
+            this.cmbSlcrScnr.SelectedIndexChanged += new System.EventHandler(this.cmbSlcrScnr_SelectedIndexChanged);
             // 
             // tabBarcode
             // 
@@ -1438,14 +1638,14 @@ namespace Scanner_SDK_Sample_Application
             this.dgvAttributes.AllowUserToResizeColumns = false;
             this.dgvAttributes.AllowUserToResizeRows = false;
             this.dgvAttributes.BackgroundColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvAttributes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvAttributes.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
             this.dgvAttributes.ColumnHeadersHeight = 29;
             this.dgvAttributes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dgvAttributes.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
@@ -1453,25 +1653,25 @@ namespace Scanner_SDK_Sample_Application
             this.attrType,
             this.property,
             this.value});
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dgvAttributes.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle14.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle14.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F);
+            dataGridViewCellStyle14.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle14.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle14.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle14.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvAttributes.DefaultCellStyle = dataGridViewCellStyle14;
             this.dgvAttributes.GridColor = System.Drawing.SystemColors.Control;
             this.dgvAttributes.Location = new System.Drawing.Point(6, 19);
             this.dgvAttributes.Name = "dgvAttributes";
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvAttributes.RowHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle15.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle15.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle15.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvAttributes.RowHeadersDefaultCellStyle = dataGridViewCellStyle15;
             this.dgvAttributes.RowHeadersWidth = 51;
             this.dgvAttributes.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvAttributes.Size = new System.Drawing.Size(474, 340);
@@ -1480,8 +1680,8 @@ namespace Scanner_SDK_Sample_Application
             // 
             // attrNum
             // 
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            this.attrNum.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+            this.attrNum.DefaultCellStyle = dataGridViewCellStyle10;
             this.attrNum.HeaderText = "ID";
             this.attrNum.MinimumWidth = 6;
             this.attrNum.Name = "attrNum";
@@ -1490,8 +1690,8 @@ namespace Scanner_SDK_Sample_Application
             // 
             // attrType
             // 
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
-            this.attrType.DefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Window;
+            this.attrType.DefaultCellStyle = dataGridViewCellStyle11;
             this.attrType.HeaderText = "Type";
             this.attrType.MinimumWidth = 6;
             this.attrType.Name = "attrType";
@@ -1500,8 +1700,8 @@ namespace Scanner_SDK_Sample_Application
             // 
             // property
             // 
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            this.property.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle12.BackColor = System.Drawing.SystemColors.Window;
+            this.property.DefaultCellStyle = dataGridViewCellStyle12;
             this.property.HeaderText = "Property";
             this.property.MinimumWidth = 6;
             this.property.Name = "property";
@@ -1510,8 +1710,8 @@ namespace Scanner_SDK_Sample_Application
             // 
             // value
             // 
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Window;
-            this.value.DefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle13.BackColor = System.Drawing.SystemColors.Window;
+            this.value.DefaultCellStyle = dataGridViewCellStyle13;
             this.value.HeaderText = "Value";
             this.value.MinimumWidth = 6;
             this.value.Name = "value";
@@ -2785,139 +2985,6 @@ namespace Scanner_SDK_Sample_Application
             this.txtOutXml.TabIndex = 0;
             this.txtOutXml.TextChanged += new System.EventHandler(this.txtOutXml_TextChanged);
             // 
-            // tabConectar
-            // 
-            this.tabConectar.AutoScroll = true;
-            this.tabConectar.BackColor = System.Drawing.Color.AliceBlue;
-            this.tabConectar.Controls.Add(this.btnGetScanners);
-            this.tabConectar.Controls.Add(this.grpScanners);
-            this.tabConectar.Controls.Add(this.lblSlctScnnr);
-            this.tabConectar.Controls.Add(this.cmbSlcrScnr);
-            this.tabConectar.Location = new System.Drawing.Point(4, 22);
-            this.tabConectar.Name = "tabConectar";
-            this.tabConectar.Padding = new System.Windows.Forms.Padding(12);
-            this.tabConectar.Size = new System.Drawing.Size(1171, 686);
-            this.tabConectar.TabIndex = 13;
-            this.tabConectar.Text = "Conexión";
-            this.tabConectar.UseVisualStyleBackColor = true;
-            this.tabConectar.Click += new System.EventHandler(this.tabConectar_Click);
-            // 
-            // btnGetScanners
-            // 
-            this.btnGetScanners.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.btnGetScanners.Location = new System.Drawing.Point(20, 20);
-            this.btnGetScanners.Name = "btnGetScanners";
-            this.btnGetScanners.Size = new System.Drawing.Size(170, 32);
-            this.btnGetScanners.TabIndex = 0;
-            this.btnGetScanners.Text = "Discover Scanners";
-            this.btnGetScanners.UseVisualStyleBackColor = false;
-            this.btnGetScanners.Click += new System.EventHandler(this.btnGetScanners_Click);
-            // 
-            // grpScanners
-            // 
-            this.grpScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.grpScanners.Controls.Add(this.lstvScanners);
-            this.grpScanners.Location = new System.Drawing.Point(20, 70);
-            this.grpScanners.Name = "grpScanners";
-            this.grpScanners.Size = new System.Drawing.Size(1115, 520);
-            this.grpScanners.TabIndex = 2;
-            this.grpScanners.TabStop = false;
-            this.grpScanners.Text = "Scanners conectados";
-            this.grpScanners.Enter += new System.EventHandler(this.grpScanners_Enter);
-            // 
-            // lstvScanners
-            // 
-            this.lstvScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.lstvScanners.BackColor = System.Drawing.Color.White;
-            this.lstvScanners.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.clmId,
-            this.clmType,
-            this.clmModel,
-            this.clmFrmwr,
-            this.clmCnfig,
-            this.clmMnftrd,
-            this.clmSerial,
-            this.clmGuid});
-            this.lstvScanners.FullRowSelect = true;
-            this.lstvScanners.GridLines = true;
-            this.lstvScanners.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
-            this.lstvScanners.HideSelection = false;
-            this.lstvScanners.Location = new System.Drawing.Point(10, 22);
-            this.lstvScanners.MultiSelect = false;
-            this.lstvScanners.Name = "lstvScanners";
-            this.lstvScanners.ShowItemToolTips = true;
-            this.lstvScanners.Size = new System.Drawing.Size(1095, 485);
-            this.lstvScanners.TabIndex = 0;
-            this.lstvScanners.UseCompatibleStateImageBehavior = false;
-            this.lstvScanners.View = System.Windows.Forms.View.Details;
-            this.lstvScanners.ItemSelectionChanged += new System.Windows.Forms.ListViewItemSelectionChangedEventHandler(this.lstvScanners_ItemSelectionChanged);
-            this.lstvScanners.SelectedIndexChanged += new System.EventHandler(this.lstvScanners_SelectedIndexChanged);
-            // 
-            // clmId
-            // 
-            this.clmId.Text = "#";
-            this.clmId.Width = 30;
-            // 
-            // clmType
-            // 
-            this.clmType.Text = "Com Interface";
-            this.clmType.Width = 94;
-            // 
-            // clmModel
-            // 
-            this.clmModel.Text = "Model #";
-            this.clmModel.Width = 132;
-            // 
-            // clmFrmwr
-            // 
-            this.clmFrmwr.Text = "Firmware";
-            this.clmFrmwr.Width = 119;
-            // 
-            // clmCnfig
-            // 
-            this.clmCnfig.Text = "Config Name";
-            this.clmCnfig.Width = 119;
-            // 
-            // clmMnftrd
-            // 
-            this.clmMnftrd.Text = "Built";
-            // 
-            // clmSerial
-            // 
-            this.clmSerial.Text = "Serial # or Port #";
-            this.clmSerial.Width = 120;
-            // 
-            // clmGuid
-            // 
-            this.clmGuid.Text = "GUID";
-            this.clmGuid.Width = 110;
-            // 
-            // lblSlctScnnr
-            // 
-            this.lblSlctScnnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.lblSlctScnnr.AutoSize = true;
-            this.lblSlctScnnr.Location = new System.Drawing.Point(20, 610);
-            this.lblSlctScnnr.Name = "lblSlctScnnr";
-            this.lblSlctScnnr.Size = new System.Drawing.Size(82, 13);
-            this.lblSlctScnnr.TabIndex = 66;
-            this.lblSlctScnnr.Text = "Scanner activo:";
-            this.lblSlctScnnr.Click += new System.EventHandler(this.lblSlctScnnr_Click);
-            // 
-            // cmbSlcrScnr
-            // 
-            this.cmbSlcrScnr.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.cmbSlcrScnr.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSlcrScnr.FormattingEnabled = true;
-            this.cmbSlcrScnr.Location = new System.Drawing.Point(120, 607);
-            this.cmbSlcrScnr.Name = "cmbSlcrScnr";
-            this.cmbSlcrScnr.Size = new System.Drawing.Size(420, 21);
-            this.cmbSlcrScnr.TabIndex = 1;
-            this.cmbSlcrScnr.SelectedIndexChanged += new System.EventHandler(this.cmbSlcrScnr_SelectedIndexChanged);
-            // 
             // grpTrigger
             // 
             this.grpTrigger.Controls.Add(this.btnReleaseTrigger);
@@ -3097,6 +3164,627 @@ namespace Scanner_SDK_Sample_Application
             // 
             this.folderBrowserDialogBarcodePath.HelpRequest += new System.EventHandler(this.folderBrowserDialogBarcodePath_HelpRequest);
             // 
+            // tabVinculador
+            // 
+            this.tabVinculador.Controls.Add(this.gbxInventoryEx);
+            this.tabVinculador.Location = new System.Drawing.Point(4, 22);
+            this.tabVinculador.Name = "tabVinculador";
+            this.tabVinculador.Size = new System.Drawing.Size(1171, 686);
+            this.tabVinculador.TabIndex = 14;
+            this.tabVinculador.Text = "Vinculador";
+            this.tabVinculador.UseVisualStyleBackColor = true;
+            // 
+            // gbxInventoryEx
+            // 
+            this.gbxInventoryEx.Controls.Add(this.tablaContenedorTimbrado);
+            this.gbxInventoryEx.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gbxInventoryEx.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.gbxInventoryEx.Location = new System.Drawing.Point(0, 0);
+            this.gbxInventoryEx.Margin = new System.Windows.Forms.Padding(0);
+            this.gbxInventoryEx.Name = "gbxInventoryEx";
+            this.gbxInventoryEx.Size = new System.Drawing.Size(1171, 686);
+            this.gbxInventoryEx.TabIndex = 9;
+            this.gbxInventoryEx.TabStop = false;
+            // 
+            // tablaContenedorTimbrado
+            // 
+            this.tablaContenedorTimbrado.ColumnCount = 1;
+            this.tablaContenedorTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaContenedorTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tablaContenedorTimbrado.Controls.Add(this.tabaLadoTimbrado, 0, 0);
+            this.tablaContenedorTimbrado.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tablaContenedorTimbrado.Location = new System.Drawing.Point(3, 16);
+            this.tablaContenedorTimbrado.Margin = new System.Windows.Forms.Padding(0);
+            this.tablaContenedorTimbrado.Name = "tablaContenedorTimbrado";
+            this.tablaContenedorTimbrado.RowCount = 1;
+            this.tablaContenedorTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaContenedorTimbrado.Size = new System.Drawing.Size(1165, 667);
+            this.tablaContenedorTimbrado.TabIndex = 30;
+            // 
+            // tabaLadoTimbrado
+            // 
+            this.tabaLadoTimbrado.ColumnCount = 1;
+            this.tabaLadoTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tabaLadoTimbrado.Controls.Add(this.TableLayoutPanel1, 0, 0);
+            this.tabaLadoTimbrado.Controls.Add(this.TableLayoutPanel2, 0, 1);
+            this.tabaLadoTimbrado.Controls.Add(this.tbContEspacioVertical, 0, 2);
+            this.tabaLadoTimbrado.Controls.Add(this.TableLayoutPanel3, 0, 3);
+            this.tabaLadoTimbrado.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabaLadoTimbrado.Location = new System.Drawing.Point(0, 0);
+            this.tabaLadoTimbrado.Margin = new System.Windows.Forms.Padding(0);
+            this.tabaLadoTimbrado.Name = "tabaLadoTimbrado";
+            this.tabaLadoTimbrado.RowCount = 4;
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 21F));
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6F));
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 1F));
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 72F));
+            this.tabaLadoTimbrado.Size = new System.Drawing.Size(1165, 667);
+            this.tabaLadoTimbrado.TabIndex = 0;
+            // 
+            // TableLayoutPanel1
+            // 
+            this.TableLayoutPanel1.ColumnCount = 4;
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35F));
+            this.TableLayoutPanel1.Controls.Add(this.btnLimpiarRFID, 1, 1);
+            this.TableLayoutPanel1.Controls.Add(this.button1, 1, 0);
+            this.TableLayoutPanel1.Controls.Add(this.cantidadRFID, 2, 0);
+            this.TableLayoutPanel1.Controls.Add(this.MsnVincular, 0, 2);
+            this.TableLayoutPanel1.Controls.Add(this.CodBarras, 0, 0);
+            this.TableLayoutPanel1.Controls.Add(this.TableLayoutPanel6, 3, 0);
+            this.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.TableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel1.Name = "TableLayoutPanel1";
+            this.TableLayoutPanel1.RowCount = 3;
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38F));
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38F));
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 24F));
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.TableLayoutPanel1.Size = new System.Drawing.Size(1165, 140);
+            this.TableLayoutPanel1.TabIndex = 44;
+            // 
+            // btnLimpiarRFID
+            // 
+            this.btnLimpiarRFID.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnLimpiarRFID.Location = new System.Drawing.Point(469, 56);
+            this.btnLimpiarRFID.Name = "btnLimpiarRFID";
+            this.btnLimpiarRFID.Size = new System.Drawing.Size(168, 47);
+            this.btnLimpiarRFID.TabIndex = 51;
+            this.btnLimpiarRFID.Text = "Limpiar";
+            this.btnLimpiarRFID.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(59)))), ((int)(((byte)(168)))), ((int)(((byte)(115)))));
+            this.button1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.button1.ForeColor = System.Drawing.Color.White;
+            this.button1.Location = new System.Drawing.Point(469, 3);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(168, 47);
+            this.button1.TabIndex = 50;
+            this.button1.Text = "Nuevo Timbrado";
+            this.button1.UseVisualStyleBackColor = false;
+            // 
+            // cantidadRFID
+            // 
+            this.cantidadRFID.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cantidadRFID.AutoSize = true;
+            this.cantidadRFID.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.cantidadRFID.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cantidadRFID.ForeColor = System.Drawing.Color.Red;
+            this.cantidadRFID.Location = new System.Drawing.Point(643, 3);
+            this.cantidadRFID.Margin = new System.Windows.Forms.Padding(3);
+            this.cantidadRFID.Name = "cantidadRFID";
+            this.TableLayoutPanel1.SetRowSpan(this.cantidadRFID, 2);
+            this.cantidadRFID.Size = new System.Drawing.Size(110, 100);
+            this.cantidadRFID.TabIndex = 48;
+            this.cantidadRFID.Text = "0";
+            this.cantidadRFID.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // MsnVincular
+            // 
+            this.MsnVincular.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MsnVincular.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(238)))), ((int)(((byte)(238)))), ((int)(((byte)(238)))));
+            this.MsnVincular.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TableLayoutPanel1.SetColumnSpan(this.MsnVincular, 3);
+            this.MsnVincular.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MsnVincular.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
+            this.MsnVincular.Location = new System.Drawing.Point(3, 109);
+            this.MsnVincular.Margin = new System.Windows.Forms.Padding(3);
+            this.MsnVincular.Name = "MsnVincular";
+            this.MsnVincular.Size = new System.Drawing.Size(750, 28);
+            this.MsnVincular.TabIndex = 28;
+            this.MsnVincular.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // CodBarras
+            // 
+            this.CodBarras.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.CodBarras.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CodBarras.ForeColor = System.Drawing.Color.Gray;
+            this.CodBarras.Location = new System.Drawing.Point(3, 38);
+            this.CodBarras.Name = "CodBarras";
+            this.TableLayoutPanel1.SetRowSpan(this.CodBarras, 2);
+            this.CodBarras.Size = new System.Drawing.Size(460, 30);
+            this.CodBarras.TabIndex = 25;
+            this.CodBarras.Text = "Codigo de Barras...";
+            this.CodBarras.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // TableLayoutPanel6
+            // 
+            this.TableLayoutPanel6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanel6.ColumnCount = 3;
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 66.66666F));
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.22222F));
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 11.11111F));
+            this.TableLayoutPanel6.Controls.Add(this.dgvTagList, 0, 0);
+            this.TableLayoutPanel6.Controls.Add(this.nroOP, 0, 1);
+            this.TableLayoutPanel6.Controls.Add(this.nroHM, 1, 1);
+            this.TableLayoutPanel6.Controls.Add(this.btnLimpiarOPHM, 2, 1);
+            this.TableLayoutPanel6.Location = new System.Drawing.Point(756, 0);
+            this.TableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel6.Name = "TableLayoutPanel6";
+            this.TableLayoutPanel6.RowCount = 2;
+            this.TableLayoutPanel1.SetRowSpan(this.TableLayoutPanel6, 3);
+            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.TableLayoutPanel6.Size = new System.Drawing.Size(409, 140);
+            this.TableLayoutPanel6.TabIndex = 52;
+            // 
+            // dgvTagList
+            // 
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.dgvTagList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvTagList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvTagList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvTagList.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.dgvTagList.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTagList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvTagList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvTagList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.clnEPC,
+            this.clnTID,
+            this.clnCount});
+            this.TableLayoutPanel6.SetColumnSpan(this.dgvTagList, 3);
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Arial", 9F);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(5);
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.LightBlue;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvTagList.DefaultCellStyle = dataGridViewCellStyle3;
+            this.dgvTagList.EnableHeadersVisualStyles = false;
+            this.dgvTagList.GridColor = System.Drawing.Color.LightGray;
+            this.dgvTagList.Location = new System.Drawing.Point(3, 3);
+            this.dgvTagList.Name = "dgvTagList";
+            this.dgvTagList.ReadOnly = true;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTagList.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            this.dgvTagList.RowHeadersVisible = false;
+            this.dgvTagList.RowTemplate.Height = 24;
+            this.dgvTagList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvTagList.Size = new System.Drawing.Size(403, 78);
+            this.dgvTagList.TabIndex = 47;
+            // 
+            // clnEPC
+            // 
+            this.clnEPC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.clnEPC.FillWeight = 40F;
+            this.clnEPC.HeaderText = "RFID";
+            this.clnEPC.Name = "clnEPC";
+            this.clnEPC.ReadOnly = true;
+            // 
+            // clnTID
+            // 
+            this.clnTID.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.clnTID.FillWeight = 40F;
+            this.clnTID.HeaderText = "TID";
+            this.clnTID.Name = "clnTID";
+            this.clnTID.ReadOnly = true;
+            // 
+            // clnCount
+            // 
+            this.clnCount.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.clnCount.FillWeight = 20F;
+            this.clnCount.HeaderText = "CANTIDAD";
+            this.clnCount.Name = "clnCount";
+            this.clnCount.ReadOnly = true;
+            // 
+            // nroOP
+            // 
+            this.nroOP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.nroOP.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nroOP.ForeColor = System.Drawing.Color.Gray;
+            this.nroOP.Location = new System.Drawing.Point(3, 100);
+            this.nroOP.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
+            this.nroOP.Name = "nroOP";
+            this.nroOP.Size = new System.Drawing.Size(266, 20);
+            this.nroOP.TabIndex = 48;
+            this.nroOP.Text = "Nro OP...";
+            // 
+            // nroHM
+            // 
+            this.nroHM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.nroHM.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nroHM.ForeColor = System.Drawing.Color.Gray;
+            this.nroHM.Location = new System.Drawing.Point(275, 102);
+            this.nroHM.Name = "nroHM";
+            this.nroHM.Size = new System.Drawing.Size(84, 20);
+            this.nroHM.TabIndex = 49;
+            this.nroHM.Text = "H. M....";
+            // 
+            // btnLimpiarOPHM
+            // 
+            this.btnLimpiarOPHM.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLimpiarOPHM.BackColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.FlatAppearance.BorderSize = 0;
+            this.btnLimpiarOPHM.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLimpiarOPHM.ForeColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.Location = new System.Drawing.Point(365, 87);
+            this.btnLimpiarOPHM.Name = "btnLimpiarOPHM";
+            this.btnLimpiarOPHM.Size = new System.Drawing.Size(41, 50);
+            this.btnLimpiarOPHM.TabIndex = 50;
+            this.btnLimpiarOPHM.UseVisualStyleBackColor = false;
+            // 
+            // TableLayoutPanel2
+            // 
+            this.TableLayoutPanel2.ColumnCount = 6;
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.TableLayoutPanel2.Controls.Add(this.btnVerConsolidado, 4, 0);
+            this.TableLayoutPanel2.Controls.Add(this.lblTotalCount, 0, 0);
+            this.TableLayoutPanel2.Controls.Add(this.label16, 0, 0);
+            this.TableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TableLayoutPanel2.Location = new System.Drawing.Point(0, 140);
+            this.TableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel2.Name = "TableLayoutPanel2";
+            this.TableLayoutPanel2.RowCount = 1;
+            this.TableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel2.Size = new System.Drawing.Size(1165, 40);
+            this.TableLayoutPanel2.TabIndex = 46;
+            // 
+            // btnVerConsolidado
+            // 
+            this.btnVerConsolidado.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btnVerConsolidado.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnVerConsolidado.Location = new System.Drawing.Point(910, 14);
+            this.btnVerConsolidado.Name = "btnVerConsolidado";
+            this.btnVerConsolidado.Size = new System.Drawing.Size(99, 23);
+            this.btnVerConsolidado.TabIndex = 0;
+            this.btnVerConsolidado.Text = "Detalle Timbrado";
+            this.btnVerConsolidado.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnVerConsolidado.UseVisualStyleBackColor = true;
+            // 
+            // lblTotalCount
+            // 
+            this.lblTotalCount.AutoSize = true;
+            this.lblTotalCount.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.lblTotalCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTotalCount.ForeColor = System.Drawing.Color.Red;
+            this.lblTotalCount.Location = new System.Drawing.Point(352, 20);
+            this.lblTotalCount.Name = "lblTotalCount";
+            this.lblTotalCount.Size = new System.Drawing.Size(52, 20);
+            this.lblTotalCount.TabIndex = 48;
+            this.lblTotalCount.Text = "0";
+            this.lblTotalCount.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label16.ForeColor = System.Drawing.Color.Red;
+            this.label16.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.label16.Location = new System.Drawing.Point(3, 20);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(343, 20);
+            this.label16.TabIndex = 47;
+            this.label16.Text = "La Cantidad De Prendas Timbradas Es:";
+            this.label16.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+            // 
+            // tbContEspacioVertical
+            // 
+            this.tbContEspacioVertical.ColumnCount = 3;
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tbContEspacioVertical.Controls.Add(this.btnStopInventoryEx, 0, 0);
+            this.tbContEspacioVertical.Controls.Add(this.cbxInventory, 2, 0);
+            this.tbContEspacioVertical.Controls.Add(this.btnStartInventoryEx, 1, 0);
+            this.tbContEspacioVertical.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbContEspacioVertical.Location = new System.Drawing.Point(0, 180);
+            this.tbContEspacioVertical.Margin = new System.Windows.Forms.Padding(0);
+            this.tbContEspacioVertical.Name = "tbContEspacioVertical";
+            this.tbContEspacioVertical.RowCount = 1;
+            this.tbContEspacioVertical.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbContEspacioVertical.Size = new System.Drawing.Size(1165, 6);
+            this.tbContEspacioVertical.TabIndex = 47;
+            // 
+            // btnStopInventoryEx
+            // 
+            this.btnStopInventoryEx.Location = new System.Drawing.Point(3, 3);
+            this.btnStopInventoryEx.Name = "btnStopInventoryEx";
+            this.btnStopInventoryEx.Size = new System.Drawing.Size(65, 1);
+            this.btnStopInventoryEx.TabIndex = 30;
+            this.btnStopInventoryEx.TabStop = false;
+            this.btnStopInventoryEx.Text = "Stop";
+            this.btnStopInventoryEx.UseVisualStyleBackColor = true;
+            this.btnStopInventoryEx.Visible = false;
+            // 
+            // cbxInventory
+            // 
+            this.cbxInventory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxInventory.FormattingEnabled = true;
+            this.cbxInventory.Location = new System.Drawing.Point(770, 2);
+            this.cbxInventory.Margin = new System.Windows.Forms.Padding(2);
+            this.cbxInventory.Name = "cbxInventory";
+            this.cbxInventory.Size = new System.Drawing.Size(93, 21);
+            this.cbxInventory.TabIndex = 34;
+            this.cbxInventory.Visible = false;
+            // 
+            // btnStartInventoryEx
+            // 
+            this.btnStartInventoryEx.Location = new System.Drawing.Point(387, 3);
+            this.btnStartInventoryEx.Name = "btnStartInventoryEx";
+            this.btnStartInventoryEx.Size = new System.Drawing.Size(65, 1);
+            this.btnStartInventoryEx.TabIndex = 29;
+            this.btnStartInventoryEx.TabStop = false;
+            this.btnStartInventoryEx.Text = "Start";
+            this.btnStartInventoryEx.UseVisualStyleBackColor = true;
+            this.btnStartInventoryEx.Visible = false;
+            // 
+            // TableLayoutPanel3
+            // 
+            this.TableLayoutPanel3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanel3.ColumnCount = 2;
+            this.TableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            this.TableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.TableLayoutPanel3.Controls.Add(this.DataGridView1, 0, 0);
+            this.TableLayoutPanel3.Controls.Add(this.TableLayoutPanel7, 1, 0);
+            this.TableLayoutPanel3.Location = new System.Drawing.Point(3, 189);
+            this.TableLayoutPanel3.Name = "TableLayoutPanel3";
+            this.TableLayoutPanel3.RowCount = 1;
+            this.TableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel3.Size = new System.Drawing.Size(1159, 475);
+            this.TableLayoutPanel3.TabIndex = 48;
+            // 
+            // DataGridView1
+            // 
+            this.DataGridView1.AllowUserToAddRows = false;
+            this.DataGridView1.AllowUserToDeleteRows = false;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.DataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle5;
+            this.DataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle6;
+            this.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.linea,
+            this.op,
+            this.hoja_marcacion,
+            this.corte,
+            this.subcorte,
+            this.color,
+            this.talla,
+            this.cod_talla,
+            this.id_talla,
+            this.fecha,
+            this.id_rfid});
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.DataGridView1.DefaultCellStyle = dataGridViewCellStyle7;
+            this.DataGridView1.Location = new System.Drawing.Point(3, 3);
+            this.DataGridView1.Name = "DataGridView1";
+            this.DataGridView1.ReadOnly = true;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            this.DataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DataGridView1.Size = new System.Drawing.Size(805, 469);
+            this.DataGridView1.TabIndex = 54;
+            // 
+            // linea
+            // 
+            this.linea.HeaderText = "Linea";
+            this.linea.Name = "linea";
+            this.linea.ReadOnly = true;
+            // 
+            // op
+            // 
+            this.op.HeaderText = "OP";
+            this.op.Name = "op";
+            this.op.ReadOnly = true;
+            // 
+            // hoja_marcacion
+            // 
+            this.hoja_marcacion.HeaderText = "HM";
+            this.hoja_marcacion.Name = "hoja_marcacion";
+            this.hoja_marcacion.ReadOnly = true;
+            // 
+            // corte
+            // 
+            this.corte.HeaderText = "corte";
+            this.corte.Name = "corte";
+            this.corte.ReadOnly = true;
+            this.corte.Visible = false;
+            // 
+            // subcorte
+            // 
+            this.subcorte.HeaderText = "subcorte";
+            this.subcorte.Name = "subcorte";
+            this.subcorte.ReadOnly = true;
+            this.subcorte.Visible = false;
+            // 
+            // color
+            // 
+            this.color.HeaderText = "Color";
+            this.color.Name = "color";
+            this.color.ReadOnly = true;
+            // 
+            // talla
+            // 
+            this.talla.HeaderText = "Talla";
+            this.talla.Name = "talla";
+            this.talla.ReadOnly = true;
+            // 
+            // cod_talla
+            // 
+            this.cod_talla.HeaderText = "cod_talla";
+            this.cod_talla.Name = "cod_talla";
+            this.cod_talla.ReadOnly = true;
+            this.cod_talla.Visible = false;
+            // 
+            // id_talla
+            // 
+            this.id_talla.HeaderText = "id_talla";
+            this.id_talla.Name = "id_talla";
+            this.id_talla.ReadOnly = true;
+            this.id_talla.Visible = false;
+            // 
+            // fecha
+            // 
+            this.fecha.HeaderText = "fecha";
+            this.fecha.Name = "fecha";
+            this.fecha.ReadOnly = true;
+            // 
+            // id_rfid
+            // 
+            this.id_rfid.HeaderText = "RFID";
+            this.id_rfid.Name = "id_rfid";
+            this.id_rfid.ReadOnly = true;
+            // 
+            // TableLayoutPanel7
+            // 
+            this.TableLayoutPanel7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanel7.ColumnCount = 1;
+            this.TableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel7.Controls.Add(this.tbConsolidado, 0, 0);
+            this.TableLayoutPanel7.Location = new System.Drawing.Point(811, 0);
+            this.TableLayoutPanel7.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel7.Name = "TableLayoutPanel7";
+            this.TableLayoutPanel7.RowCount = 1;
+            this.TableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 426F));
+            this.TableLayoutPanel7.Size = new System.Drawing.Size(348, 475);
+            this.TableLayoutPanel7.TabIndex = 55;
+            // 
+            // tbConsolidado
+            // 
+            this.tbConsolidado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbConsolidado.AutoSize = true;
+            this.tbConsolidado.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tbConsolidado.ColumnCount = 1;
+            this.tbConsolidado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbConsolidado.Controls.Add(this.lblTotalDetalle, 0, 1);
+            this.tbConsolidado.Controls.Add(this.panelScroll, 0, 0);
+            this.tbConsolidado.Location = new System.Drawing.Point(0, 0);
+            this.tbConsolidado.Margin = new System.Windows.Forms.Padding(0);
+            this.tbConsolidado.Name = "tbConsolidado";
+            this.tbConsolidado.RowCount = 2;
+            this.tbConsolidado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 90F));
+            this.tbConsolidado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tbConsolidado.Size = new System.Drawing.Size(348, 475);
+            this.tbConsolidado.TabIndex = 2;
+            // 
+            // lblTotalDetalle
+            // 
+            this.lblTotalDetalle.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTotalDetalle.AutoSize = true;
+            this.lblTotalDetalle.BackColor = System.Drawing.Color.LightGray;
+            this.lblTotalDetalle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTotalDetalle.ForeColor = System.Drawing.Color.Black;
+            this.lblTotalDetalle.Location = new System.Drawing.Point(3, 430);
+            this.lblTotalDetalle.Margin = new System.Windows.Forms.Padding(3);
+            this.lblTotalDetalle.Name = "lblTotalDetalle";
+            this.lblTotalDetalle.Size = new System.Drawing.Size(342, 42);
+            this.lblTotalDetalle.TabIndex = 1;
+            this.lblTotalDetalle.Text = "TOTAL TIMBRADO";
+            this.lblTotalDetalle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panelScroll
+            // 
+            this.panelScroll.AutoScroll = true;
+            this.panelScroll.Controls.Add(this.tbDetalleTimbrado);
+            this.panelScroll.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelScroll.Location = new System.Drawing.Point(3, 3);
+            this.panelScroll.Name = "panelScroll";
+            this.panelScroll.Size = new System.Drawing.Size(342, 421);
+            this.panelScroll.TabIndex = 2;
+            // 
+            // tbDetalleTimbrado
+            // 
+            this.tbDetalleTimbrado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDetalleTimbrado.ColumnCount = 1;
+            this.tbDetalleTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbDetalleTimbrado.Location = new System.Drawing.Point(8, 8);
+            this.tbDetalleTimbrado.Name = "tbDetalleTimbrado";
+            this.tbDetalleTimbrado.RowCount = 1;
+            this.tbDetalleTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbDetalleTimbrado.Size = new System.Drawing.Size(342, 421);
+            this.tbDetalleTimbrado.TabIndex = 1;
+            // 
             // frmScannerApp
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -3112,6 +3800,9 @@ namespace Scanner_SDK_Sample_Application
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.Load += new System.EventHandler(this.frmScannerApp_Load);
             this.tabCtrl.ResumeLayout(false);
+            this.tabConectar.ResumeLayout(false);
+            this.tabConectar.PerformLayout();
+            this.grpScanners.ResumeLayout(false);
             this.tabBarcode.ResumeLayout(false);
             this.tabBarcode.PerformLayout();
             this.groupBox1.ResumeLayout(false);
@@ -3192,12 +3883,28 @@ namespace Scanner_SDK_Sample_Application
             this.grpResult.PerformLayout();
             this.grpOutXml.ResumeLayout(false);
             this.grpOutXml.PerformLayout();
-            this.tabConectar.ResumeLayout(false);
-            this.tabConectar.PerformLayout();
-            this.grpScanners.ResumeLayout(false);
             this.grpTrigger.ResumeLayout(false);
             this.stStripResult.ResumeLayout(false);
             this.stStripResult.PerformLayout();
+            this.tabVinculador.ResumeLayout(false);
+            this.gbxInventoryEx.ResumeLayout(false);
+            this.tablaContenedorTimbrado.ResumeLayout(false);
+            this.tabaLadoTimbrado.ResumeLayout(false);
+            this.TableLayoutPanel1.ResumeLayout(false);
+            this.TableLayoutPanel1.PerformLayout();
+            this.TableLayoutPanel6.ResumeLayout(false);
+            this.TableLayoutPanel6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTagList)).EndInit();
+            this.TableLayoutPanel2.ResumeLayout(false);
+            this.TableLayoutPanel2.PerformLayout();
+            this.tbContEspacioVertical.ResumeLayout(false);
+            this.TableLayoutPanel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView1)).EndInit();
+            this.TableLayoutPanel7.ResumeLayout(false);
+            this.TableLayoutPanel7.PerformLayout();
+            this.tbConsolidado.ResumeLayout(false);
+            this.tbConsolidado.PerformLayout();
+            this.panelScroll.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -3442,6 +4149,50 @@ namespace Scanner_SDK_Sample_Application
         private System.Windows.Forms.Label lblRTAState;
         private System.Windows.Forms.Button btnGetRTAState;
         private System.Windows.Forms.TabPage tabConectar;
+        private System.Windows.Forms.TabPage tabVinculador;
+        internal System.Windows.Forms.GroupBox gbxInventoryEx;
+        internal System.Windows.Forms.TableLayoutPanel tablaContenedorTimbrado;
+        internal System.Windows.Forms.TableLayoutPanel tabaLadoTimbrado;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel1;
+        internal System.Windows.Forms.Button btnLimpiarRFID;
+        internal System.Windows.Forms.Button button1;
+        internal System.Windows.Forms.Label cantidadRFID;
+        internal System.Windows.Forms.Label MsnVincular;
+        internal System.Windows.Forms.TextBox CodBarras;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel6;
+        internal System.Windows.Forms.DataGridView dgvTagList;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn clnEPC;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn clnTID;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn clnCount;
+        internal System.Windows.Forms.TextBox nroOP;
+        internal System.Windows.Forms.TextBox nroHM;
+        internal System.Windows.Forms.Button btnLimpiarOPHM;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel2;
+        internal System.Windows.Forms.Button btnVerConsolidado;
+        internal System.Windows.Forms.Label lblTotalCount;
+        internal System.Windows.Forms.Label label16;
+        internal System.Windows.Forms.TableLayoutPanel tbContEspacioVertical;
+        internal System.Windows.Forms.Button btnStopInventoryEx;
+        internal System.Windows.Forms.ComboBox cbxInventory;
+        internal System.Windows.Forms.Button btnStartInventoryEx;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel3;
+        internal System.Windows.Forms.DataGridView DataGridView1;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn linea;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn op;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn hoja_marcacion;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn corte;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn subcorte;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn color;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn talla;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn cod_talla;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn id_talla;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn fecha;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn id_rfid;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel7;
+        internal System.Windows.Forms.TableLayoutPanel tbConsolidado;
+        internal System.Windows.Forms.Label lblTotalDetalle;
+        internal System.Windows.Forms.Panel panelScroll;
+        internal System.Windows.Forms.TableLayoutPanel tbDetalleTimbrado;
     }
 }
 

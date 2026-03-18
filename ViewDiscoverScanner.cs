@@ -26,7 +26,12 @@ namespace Scanner_SDK_Sample_Application
             MakeConnectCtrl();
             registerForEvents();
             ShowScanners();
-            GetPairingBarcode();
+
+            if (tabCtrl != null && tabCtrl.SelectedTab == tabScan2Connect)
+            {
+                GetPairingBarcode();
+            }
+
             GetRtaPublicEvents();
         }
         private void SetControlsForScannerSelection(bool bEnable)

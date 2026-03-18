@@ -129,6 +129,7 @@ namespace Scanner_SDK_Sample_Application
             tabCtrl.TabPages.Clear();
             tabCtrl.TabPages.Add(tabConectar);
             tabCtrl.TabPages.Add(tabBarcode);
+            tabCtrl.TabPages.Add(tabVinculador);
 
             // si luego quieres mostrar otras
             // tabCtrl.TabPages.Add(tabSSW);
@@ -147,7 +148,6 @@ namespace Scanner_SDK_Sample_Application
         #region "DiscoverScanner"
         private void btnGetScanners_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Click OK");
             performGetScanner();
         }
 
