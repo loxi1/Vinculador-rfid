@@ -1,0 +1,14 @@
+{
+  "DB_SERVER_MY": "192.168.150.35",
+  "DB_PORT_MY": "3306",
+  "DB_NAME_MY": "bd_ci_scm",
+  "DB_USER_MY": "fjurado",
+  "DB_PASSWORD_MY": "987960662",
+  "Connection Lifetime": "300",
+  "SERVER_NAME_SY": "dbsybase10.cofaco.com",
+  "PORT_SY": "6100",
+  "DATA_BASE_SY": "nexus",
+  "METHOD": "AES-256-CBC",
+  "SECRET_IV": "101712",
+  "SECRET_KEY": "$BP@2017"
+}
