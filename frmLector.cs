@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using CoreScanner;
 
 namespace DS9908R_App
 {
@@ -20,11 +21,25 @@ namespace DS9908R_App
         private string mUsuTrabajador;
         private string mTurnoTrabajador;
 
-        private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        private CCoreScannerClass m_pCoreScanner;
+        private bool m_bSuccessOpen = false;
+
+        private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
 
         public frmLector()
         {
             InitializeComponent();
+        }
+
+        private class ScannerInfoItem
+        {
+            public string ScannerId { get; set; }
+            public string DisplayText { get; set; }
+
+            public override string ToString()
+            {
+                return DisplayText;
+            }
         }
 
         // Constructor con parámetros
@@ -43,16 +58,30 @@ namespace DS9908R_App
 
         private void frmLector_Load(object sender, EventArgs e)
         {
-            dgvTagList.AutoGenerateColumns = false;
-            dgvTagList.Rows.Clear();
+            SetEstado("Listo.");
+            InicializarScannerSdk();
+        }
 
-            tabMenu.SelectedIndexChanged -= tabMenu_SelectedIndexChanged;
-            // tabMenu.TabPages.Add(tabXml);
+        private void SetEstado(string mensaje)
+        {
+            if (lblEstadoConexion != null)
+                lblEstadoConexion.Text = mensaje;
 
-            if (tabMenu.TabPages.Count > 0)
-                tabMenu.SelectedIndex = 0;
+            if (toolStripStatusLbl != null)
+                toolStripStatusLbl.Text = mensaje;
+        }
 
-            tabMenu.SelectedIndexChanged += tabMenu_SelectedIndexChanged;
+        private void InicializarScannerSdk()
+        {
+            try
+            {
+                m_pCoreScanner = new CCoreScannerClass();
+                SetEstado("SDK inicializado.");
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al inicializar SDK: " + ex.Message);
+            }
         }
 
         private void InicializarGridTags()
@@ -107,20 +136,149 @@ namespace DS9908R_App
             SetEstado("Tags limpiados.");
         }
 
-        private void btnGetScanners_Click(object sender, EventArgs e)
+        private void btnBuscarScanners_Click(object sender, EventArgs e)
         {
-            performGetScanner();
+            try
+            {
+                btnGetScanners.PerformClick(); // reutiliza lógica original
+                SetEstado("Búsqueda ejecutada.");
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error: " + ex.Message);
+            }
         }
 
-        private void cmbSlcrScnr_SelectedIndexChanged(object sender, EventArgs e)
+        private void cmbScanners_SelectedIndexChanged(object sender, EventArgs e)
         {
-            lstvScanners.Items[cmbSlcrScnr.SelectedIndex].Selected = true;
-            lstvScanners_SelectedIndexChanged(sender, e);
+            lblEstadoConexion.Items[cmbScanners.SelectedIndex].Selected = true;
+            lblEstadoConexion_SelectedIndexChanged(sender, e);
         }
 
         private void tabMenu_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private bool Connect()
+        {
+            try
+            {
+                if (m_pCoreScanner == null)
+                {
+                    SetEstado("CoreScanner no está inicializado.");
+                    return false;
+                }
+
+                short[] scannerTypes = new short[1];
+                scannerTypes[0] = 1; // all scanner types
+
+                int numberOfScannerTypes = 1;
+                int status;
+
+                string inXml = "<inArgs><cmdArgs><arg-int>1</arg-int><arg-int>1</arg-int></cmdArgs></inArgs>";
+                string outXml = "";
+
+                m_pCoreScanner.Open(0, scannerTypes, numberOfScannerTypes, out status);
+
+                if (status == 0)
+                {
+                    m_bSuccessOpen = true;
+                    SetEstado("OPEN correcto.");
+                    return true;
+                }
+
+                SetEstado("OPEN falló. Error: " + status);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error en OPEN: " + ex.Message);
+                return false;
+            }
+        }
+
+        private void Disconnect()
+        {
+            try
+            {
+                if (m_pCoreScanner != null && m_bSuccessOpen)
+                {
+                    int status;
+                    m_pCoreScanner.Close(0, out status);
+                    m_bSuccessOpen = false;
+                    SetEstado("Scanner desconectado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al cerrar conexión: " + ex.Message);
+            }
+        }
+
+        private void BuscarScanners()
+        {
+            try
+            {
+                cmbScanners.Items.Clear();
+                _scanners.Clear();
+
+                if (!m_bSuccessOpen)
+                {
+                    if (!Connect())
+                        return;
+                }
+
+                string inXml = "<inArgs><cmdArgs><arg-int>0</arg-int></cmdArgs></inArgs>";
+                string outXml;
+                int status;
+
+                m_pCoreScanner.ExecCommand(5000, ref inXml, out outXml, out status); // GET_SCANNERS
+
+                if (status != 0)
+                {
+                    SetEstado("GET_SCANNERS falló. Error: " + status);
+                    return;
+                }
+
+                txtLogConexion.Text = outXml;
+
+                var xmlDoc = new System.Xml.XmlDocument();
+                xmlDoc.LoadXml(outXml);
+
+                var scannerNodes = xmlDoc.SelectNodes("//scanner");
+
+                if (scannerNodes == null || scannerNodes.Count == 0)
+                {
+                    SetEstado("No se encontraron scanners.");
+                    return;
+                }
+
+                foreach (System.Xml.XmlNode node in scannerNodes)
+                {
+                    string scannerId = node["scannerID"]?.InnerText ?? "";
+                    string model = node["modelnumber"]?.InnerText ?? "";
+                    string type = node.Attributes?["type"]?.Value ?? "";
+
+                    var item = new ScannerInfoItem
+                    {
+                        ScannerId = scannerId,
+                        DisplayText = $"{scannerId} - {model} - {type}"
+                    };
+
+                    _scanners.Add(item);
+                    cmbScanners.Items.Add(item);
+                }
+
+                if (cmbScanners.Items.Count > 0)
+                    cmbScanners.SelectedIndex = 0;
+
+                SetEstado("Scanners encontrados correctamente.");
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al buscar scanners: " + ex.Message);
+            }
         }
     }
 }
