@@ -73,6 +73,24 @@ namespace DS9908R_App
         private void btnLimpiarRFID_Click(object sender, EventArgs e)
         {
         }
+        
+        private void ActualizarEstadoConexion(string texto, Color color)
+        {
+            lblEstadoConexion.Text = texto;
+            lblEstadoConexion.BackColor = color;
+            lblEstadoConexion.ForeColor = Color.White;
+            lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
+
+            if (toolStripStatusLbl != null)
+                toolStripStatusLbl.Text = texto;
+        }
+
+        private void HabilitarTabsTrabajo(bool habilitar)
+        {
+            if (tabVinculador != null) tabVinculador.Enabled = habilitar;
+            if (tablaBuscarPrenda != null) tablaBuscarPrenda.Enabled = habilitar;
+            if (tabHojaMarcacion != null) tabHojaMarcacion.Enabled = habilitar;
+        }
 
         private void btnBuscarScanners_Click(object sender, EventArgs e)
         {
@@ -135,72 +153,6 @@ namespace DS9908R_App
                 MessageBox.Show("Error al seleccionar scanner: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void ActualizarEstadoConexion(string texto, Color color)
-        {
-            lblEstadoConexion.Text = texto;
-            lblEstadoConexion.BackColor = color;
-            lblEstadoConexion.ForeColor = Color.White;
-            lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
-
-            if (toolStripStatusLbl != null)
-                toolStripStatusLbl.Text = texto;
-        }
-
-        private void HabilitarTabsTrabajo(bool habilitar)
-        {
-            if (tabVinculador != null) tabVinculador.Enabled = habilitar;
-            if (tablaBuscarPrenda != null) tablaBuscarPrenda.Enabled = habilitar;
-            if (tabHojaMarcacion != null) tabHojaMarcacion.Enabled = habilitar;
-        }
-
-        private void btnBuscarScanners_Click_1(object sender, EventArgs e)
-        {
-            try
-            {
-                ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
-                _scanners.Clear();
-
-                // Simulación inicial
-                var scanner = new ScannerInfoItem
-                {
-                    ScannerId = "1",
-                    DisplayText = "1 - DS9908-SRR0004ZZUS - SNAPI"
-                };
-
-                _scanners.Add(scanner);
-
-                ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-            }
-            catch (Exception ex)
-            {
-                ActualizarEstadoConexion("ERROR AL BUSCAR", Color.Firebrick);
-                MessageBox.Show("Error al buscar scanners: " + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void cmbScanners_SelectedIndexChanged_1(object sender, EventArgs e)
-        {
-            try
-            {
-
-                
-            }
-            catch (Exception ex)
-            {
-                HabilitarTabsTrabajo(false);
-                ActualizarEstadoConexion("ERROR DE SELECCIÓN", Color.Firebrick);
-
-                MessageBox.Show("Error al seleccionar scanner: " + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void tableLayoutPanel4_Paint(object sender, PaintEventArgs e)
-        {
-
         }
     }
 }
