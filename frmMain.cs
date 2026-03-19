@@ -55,9 +55,9 @@ namespace DS9908R_App
 
                 // Abrir el formulario principal si el login es válido
                 _MainForm = new frmLector(mCodTrabajador, dato_usuario, dato_turno);
+                _MainForm.FormClosed += _MainForm_Closed;
                 _MainForm.Show();
 
-                this.Size = new Size(0, 0);
                 this.Hide();
             }
             else
@@ -74,7 +74,7 @@ namespace DS9908R_App
 
         private void _MainForm_Closed(object sender, EventArgs e)
         {
-            this.Dispose();
+            this.Close();
         }
 
         private void ObtenerTipoConexionRed()

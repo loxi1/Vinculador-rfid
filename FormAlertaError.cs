@@ -15,7 +15,7 @@ namespace DS9908R_App
         public static bool alertaAbierta = false; // 🔥 Variable de control
         private Action callback;
 
-        public FormAlertaError(string Titulo, string Detalle, Color PColor, Action callback = nul)
+        public FormAlertaError(string Titulo, string Detalle, Color PColor, Action callback = null)
         {
             InitializeComponent();
             this.callback = callback; // Guardar la función de retorno
