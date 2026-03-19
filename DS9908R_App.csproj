@@ -233,35 +233,51 @@
     <Compile Include="AlertaManager.cs" />
     <Compile Include="BaseMethods.cs" />
     <Compile Include="DBConsultas.cs" />
-    <Compile Include="FormAlerta.cs" />
+    <Compile Include="FormAlerta.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormAlerta.Designer.cs">
       <DependentUpon>FormAlerta.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormAlertaError.cs" />
+    <Compile Include="FormAlertaError.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormAlertaError.Designer.cs">
       <DependentUpon>FormAlertaError.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormAlertaMsnError.cs" />
+    <Compile Include="FormAlertaMsnError.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormAlertaMsnError.Designer.cs">
       <DependentUpon>FormAlertaMsnError.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormAlertaOk.cs" />
+    <Compile Include="FormAlertaOk.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormAlertaOk.Designer.cs">
       <DependentUpon>FormAlertaOk.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormConfirmacion.cs" />
+    <Compile Include="FormConfirmacion.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormConfirmacion.Designer.cs">
       <DependentUpon>FormConfirmacion.cs</DependentUpon>
     </Compile>
-    <Compile Include="FormTrabajador.cs" />
+    <Compile Include="FormTrabajador.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="FormTrabajador.Designer.cs">
       <DependentUpon>FormTrabajador.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmLector.cs" />
+    <Compile Include="frmLector.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmLector.Designer.cs">
       <DependentUpon>frmLector.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmMain.cs" />
+    <Compile Include="frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="frmMain.Designer.cs">
       <DependentUpon>frmMain.cs</DependentUpon>
     </Compile>
@@ -276,24 +292,44 @@
     <Compile Include="ScannerAction.cs" />
     <Compile Include="ScannerAttribute.cs" />
     <Compile Include="ScanToConnect.cs" />
-    <Compile Include="CoreScannerHelper.cs" />
+    <Compile Include="CoreScannerHelper.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Sybase.cs" />
     <Compile Include="SybaseHelper.cs" />
     <Compile Include="UtilidadesSVG.cs" />
-    <Compile Include="ViewDiscoverScanner.cs" />
-    <Compile Include="ViewIDC.cs" />
-    <Compile Include="ViewLogs.cs" />
-    <Compile Include="ViewRTA.cs" />
-    <Compile Include="ViewScale.cs" />
+    <Compile Include="ViewDiscoverScanner.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewIDC.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewLogs.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewRTA.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewScale.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="ViewSSW.cs" />
-    <Compile Include="ViewScanToConnect.cs" />
-    <Compile Include="DadfScriptEditor.cs" />
+    <Compile Include="ViewScanToConnect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DadfScriptEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="DadfScriptEditor.Designer.cs">
       <DependentUpon>DadfScriptEditor.cs</DependentUpon>
     </Compile>
     <Compile Include="iso15434.cs" />
-    <Compile Include="MainForm.cs" />
-    <Compile Include="MainForm.Definitions.cs" />
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Definitions.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
@@ -360,16 +396,30 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Scanner.cs" />
-    <Compile Include="TopologyPopupForm.cs" />
+    <Compile Include="TopologyPopupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="TopologyPopupForm.Designer.cs">
       <DependentUpon>TopologyPopupForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewAdvance.cs" />
-    <Compile Include="ViewBarcode.cs" />
-    <Compile Include="ViewImageVideo.cs" />
-    <Compile Include="ViewMiscellaneous.cs" />
-    <Compile Include="ViewRSM.cs" />
-    <Compile Include="ViewScannerAcction.cs" />
+    <Compile Include="ViewAdvance.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewBarcode.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewImageVideo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewMiscellaneous.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewRSM.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ViewScannerAcction.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="XmlReader.cs" />
     <None Include="tsconfig.json" />
   </ItemGroup>
