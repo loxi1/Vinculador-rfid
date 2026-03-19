@@ -292,6 +292,7 @@
     <Compile Include="CoreScannerHelper.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="Sybase.cs" />
     <Compile Include="SybaseHelper.cs" />
     <Compile Include="UtilidadesSVG.cs" />
     <Compile Include="ViewDiscoverScanner.cs">

@@ -99,9 +99,9 @@ namespace DS9908R_App
                 DialogResult = DialogResult.OK;
                 Close();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                AlertaError("Ocurrió un error al validar el trabajador: ", Color.Red);
+                AlertaError("Ocurrió un error al validar el trabajador: " + ex.Message, Color.Red);
             }
         }
 
