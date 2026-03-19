@@ -40,5 +40,10 @@ namespace DS9908R_App
         {
 
         }
+
+        private void frmLector_KeyDown(object sender, KeyEventArgs e)
+        {
+
+        }
     }
 }
