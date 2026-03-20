@@ -1,55 +1,162 @@
-Ese error es claro:
-Problema
-DiscoverScanner.GetInstance() en tu proyecto no es sin parámetros.
-Tu clase está definida para recibir:
+Entonces el problema ya está en ShowScannersFrmLector() o antes de eso.
+Si no llega a cargar cmbScanners, hay que validar en este orden:
+1. Confirmar si Open() sí funcionó
+En ConnectFrmLector() deja esto:
 C#
-CCoreScannerClass m_pCoreScanner
-Por eso falla esto:
-C#
-discoverScanner = DiscoverScanner.GetInstance();
-y debe ser así:
-C#
-discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
-Corrección exacta
-En frmLector_Load, cambia esta línea:
-C#
-discoverScanner = DiscoverScanner.GetInstance();
-por esta:
-C#
-discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
-Orden correcto
-Como discoverScanner depende de m_pCoreScanner, inicialízalo después de crear m_pCoreScanner:
-C#
-try
+private void ConnectFrmLector()
 {
-    m_pCoreScanner = new CCoreScannerClass();
-    discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
-}
-catch (Exception ex)
-{
-    MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
-}
-Y scanToConnect lo dejas aparte:
-C#
-scanToConnect = ScanToConnect.GetInstance();
-Advertencias
-Estas no bloquean compilación:
-_hojaMarcacionActual no usado
-m_bScannerOpen no usado
-FormAlerta.conteo no usado
-Las puedes dejar por ahora.
-Resumen
-Haz este bloque en frmLector_Load:
-C#
-scanToConnect = ScanToConnect.GetInstance();
+    try
+    {
+        short[] scannerTypes = new short[1];
+        scannerTypes[0] = 1;
 
-try
-{
-    m_pCoreScanner = new CCoreScannerClass();
-    discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+        int status;
+        m_pCoreScanner.Open(0, scannerTypes, 1, out status);
+
+        MessageBox.Show("Open status = " + status);
+
+        if (status == 0)
+        {
+            m_bSuccessOpen = true;
+            toolStripStatusLbl.Text = "OPEN correcto";
+        }
+        else
+        {
+            m_bSuccessOpen = false;
+            toolStripStatusLbl.Text = "OPEN error: " + status;
+        }
+    }
+    catch (Exception ex)
+    {
+        m_bSuccessOpen = false;
+        MessageBox.Show("Excepción en Open: " + ex.Message);
+        toolStripStatusLbl.Text = "OPEN excepción: " + ex.Message;
+    }
 }
-catch (Exception ex)
+Si aquí no sale 0, el problema está antes del combo.
+2. Confirmar si entra a ShowScannersFrmLector()
+Al inicio del método agrega:
+C#
+private void ShowScannersFrmLector()
 {
-    MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
+    MessageBox.Show("Entró a ShowScannersFrmLector");
+
+    cmbScanners.Items.Clear();
+    _scanners.Clear();
+
+    if (!m_bSuccessOpen)
+    {
+        MessageBox.Show("m_bSuccessOpen = false");
+        ActualizarEstadoConexion("NO ABIERTO", Color.Firebrick);
+        return;
+    }
+
+    short numOfScanners = 0;
+    string outXML = "";
+    int status = -1;
+
+    try
+    {
+        m_arScanners = discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist);
+
+        MessageBox.Show("GET_SCANNERS status=" + status + " total=" + numOfScanners + "\nXML:\n" + outXML);
+
+        if (status == 0 && numOfScanners > 0)
+        {
+            m_nTotalScanners = numOfScanners;
+
+            for (int i = 0; i < numOfScanners; i++)
+            {
+                Scanner scn = m_arScanners[i];
+                if (scn == null) continue;
+
+                var item = new ScannerInfoItem
+                {
+                    ScannerId = scn.SCANNERID,
+                    DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
+                };
+
+                _scanners.Add(item);
+                cmbScanners.Items.Add(item);
+            }
+
+            MessageBox.Show("cmbScanners.Items.Count = " + cmbScanners.Items.Count);
+
+            if (cmbScanners.Items.Count > 0)
+            {
+                cmbScanners.SelectedIndex = 0;
+                ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
+            }
+            else
+            {
+                ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
+            }
+        }
+        else
+        {
+            ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
+        }
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show("Error en ShowScannersFrmLector: " + ex.Message);
+        ActualizarEstadoConexion("ERROR GET_SCANNERS", Color.Firebrick);
+        toolStripStatusLbl.Text = ex.Message;
+    }
 }
-Luego recompila. Si sale otro error, ya probablemente será de Scanner[], GetScanners(...) o del llenado de cmbScanners.
+3. Confirmar que el botón sí dispara todo
+En btnBuscarScanners_Click deja temporalmente así:
+C#
+private void btnBuscarScanners_Click(object sender, EventArgs e)
+{
+    MessageBox.Show("Click btnBuscarScanners");
+
+    try
+    {
+        ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
+        performGetScannerFrmLector();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show("Error btnBuscarScanners_Click: " + ex.Message);
+        ActualizarEstadoConexion("ERROR AL BUSCAR", Color.Firebrick);
+        toolStripStatusLbl.Text = ex.Message;
+    }
+}
+4. Validar performGetScannerFrmLector()
+Déjalo así:
+C#
+private void performGetScannerFrmLector()
+{
+    MessageBox.Show("Entró a performGetScannerFrmLector");
+
+    m_arSelectedTypes = scanToConnect.GetSelectedTypes();
+
+    MakeConnectCtrlFrmLector();
+    registerForEventsFrmLector();
+    ShowScannersFrmLector();
+}
+5. Qué debes observar
+Con esos mensajes sabremos exactamente dónde se corta:
+si no sale Click btnBuscarScanners → el botón no está bien conectado
+si sale eso pero no Entró a performGetScannerFrmLector → el evento está mal
+si entra ahí pero Open status != 0 → falla apertura SDK
+si Open status = 0 pero GET_SCANNERS total=0 → el scanner no está siendo recuperado
+si GET_SCANNERS total>0 pero cmbScanners.Items.Count=0 → el problema está en el for
+si sí llena items pero no se ve → problema de Designer/UI
+6. Muy probable en tu caso
+Por cómo lo describes, sospecho una de estas dos:
+A. discoverScanner.GetScanners(...) devuelve 0
+Entonces el combo nunca se llena.
+B. cmbScanners no es el control visible real
+O sea, el código sí agrega items, pero estás viendo otro ComboBox en el diseñador.
+Para validar eso, agrega después de llenar:
+C#
+MessageBox.Show("Nombre combo: " + cmbScanners.Name + " / Count: " + cmbScanners.Items.Count);
+7. Lo que necesito de ti
+Pásame exactamente qué mensajes salen, en este orden:
+Open status = ?
+GET_SCANNERS status = ?
+total = ?
+cmbScanners.Items.Count = ?
+Con esos cuatro datos ya te digo el punto exacto del fallo.
