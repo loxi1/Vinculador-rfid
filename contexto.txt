@@ -1,4 +1,4 @@
-tabVinculador -> CodBarras, dgvTagList, btnClear, btnClear, btnVerConsolidado, nroOP y nroHM
+tabVinculador -> CodBarras (aqui en este input escribira el codigo de barras), dgvTagList (Muestra el Rfid), btnClear, btnClear, btnVerConsolidado, nroOP y nroHM
 
 tabConsultar  -> BuscarCodBarras
 
