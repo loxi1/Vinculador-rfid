@@ -423,6 +423,7 @@
     <Compile Include="ViewScannerAcction.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="VinculacionRequest.cs" />
     <Compile Include="VinculadorService.cs" />
     <Compile Include="XmlReader.cs" />
     <None Include="tsconfig.json" />
