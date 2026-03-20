@@ -1,0 +1,2 @@
+Para mayor contexto se subio al repo los archvivos en .net que tienen los nombre de los archivos pero con extencion txt por ejemplo:
+DBConsultarPrenda.txt, BDPrenda.txt, m_BDPrendaScm.txt, Sybase.txt y frmLecto.txt que anteriormente se llamaba prueba espero que tengas todo el contexto para que me ayudes a resolver el problema considera que tambien el estilo se debe ver como esta en .vb
