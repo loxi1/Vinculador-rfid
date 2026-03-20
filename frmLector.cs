@@ -11,6 +11,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using CoreScanner;
+using Scanner_SDK_Sample_Application;
+using STC;
 
 namespace DS9908R_App
 {
@@ -28,6 +30,13 @@ namespace DS9908R_App
 
         private CCoreScannerClass m_pCoreScanner;
         private bool m_bScannerOpen = false;
+        private Scanner[] m_arScanners;
+        private int m_nTotalScanners = 0;
+        private DiscoverScanner discoverScanner;
+        private ScanToConnect scanToConnect;
+        private bool[] m_arSelectedTypes;
+        private List<string> claimlist = new List<string>();
+        private bool m_bSuccessOpen;
         private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
 
@@ -63,7 +72,7 @@ namespace DS9908R_App
 
         private void frmLector_Load(object sender, EventArgs e)
         {
-            ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
+            /*ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
             HabilitarTabsTrabajo(false);
 
             try
@@ -96,7 +105,179 @@ namespace DS9908R_App
             cmbScanners.DropDownStyle = ComboBoxStyle.DropDownList;
 
 
-            this.KeyPreview = true;
+            this.KeyPreview = true;*/
+            _vinculador = new VinculadorService();
+            _vinculador.OnInfo += Vinculador_OnInfo;
+            _vinculador.OnError += Vinculador_OnError;
+            _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+            scanToConnect = ScanToConnect.GetInstance();
+            discoverScanner = DiscoverScanner.GetInstance();
+
+            m_arScanners = new Scanner[255];
+            for (int i = 0; i < m_arScanners.Length; i++)
+                m_arScanners[i] = new Scanner();
+
+            try
+            {
+                m_pCoreScanner = new CCoreScannerClass();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
+            }
+
+            CodBarras.Focus();
+        }
+
+        private void performGetScannerFrmLector()
+        {
+            m_arSelectedTypes = scanToConnect.GetSelectedTypes();
+
+            MakeConnectCtrlFrmLector();
+            registerForEventsFrmLector();
+            ShowScannersFrmLector();
+        }
+
+        private void MakeConnectCtrlFrmLector()
+        {
+            if (!m_bSuccessOpen)
+            {
+                ConnectFrmLector();
+            }
+            else
+            {
+                DisconnectFrmLector();
+                ConnectFrmLector();
+            }
+        }
+
+        private void ConnectFrmLector()
+        {
+            try
+            {
+                short[] scannerTypes = new short[1];
+                scannerTypes[0] = 1;
+
+                int status;
+                m_pCoreScanner.Open(0, scannerTypes, 1, out status);
+
+                if (status == 0)
+                {
+                    m_bSuccessOpen = true;
+                    toolStripStatusLbl.Text = "OPEN correcto";
+                }
+                else
+                {
+                    m_bSuccessOpen = false;
+                    toolStripStatusLbl.Text = "OPEN error: " + status;
+                }
+            }
+            catch (Exception ex)
+            {
+                m_bSuccessOpen = false;
+                toolStripStatusLbl.Text = "OPEN excepción: " + ex.Message;
+            }
+        }
+
+        private void DisconnectFrmLector()
+        {
+            try
+            {
+                int status;
+                m_pCoreScanner.Close(0, out status);
+                m_bSuccessOpen = false;
+            }
+            catch
+            {
+                m_bSuccessOpen = false;
+            }
+        }
+
+        private void registerForEventsFrmLector()
+        {
+            if (!m_bSuccessOpen) return;
+
+            try
+            {
+                int nEvents = 0;
+                string strEvtIDs = scanToConnect.GetRegUnRegisterIDs(out nEvents);
+                string inXml = scanToConnect.GenerateInitXML(nEvents, strEvtIDs);
+
+                int opCode = 1001; // REGISTER_FOR_EVENTS
+                string outXml = "";
+                int status = -1;
+
+                m_pCoreScanner.ExecCommand(opCode, ref inXml, out outXml, out status);
+
+                toolStripStatusLbl.Text = "REGISTER_FOR_EVENTS status: " + status;
+            }
+            catch (Exception ex)
+            {
+                toolStripStatusLbl.Text = "Error register events: " + ex.Message;
+            }
+        }
+
+        private void ShowScannersFrmLector()
+        {
+            cmbScanners.Items.Clear();
+            _scanners.Clear();
+
+            if (!m_bSuccessOpen)
+            {
+                ActualizarEstadoConexion("NO ABIERTO", Color.Firebrick);
+                return;
+            }
+
+            short numOfScanners = 0;
+            string outXML = "";
+            int status = -1;
+
+            try
+            {
+                m_arScanners = discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist);
+
+                toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
+
+                if (status == 0 && numOfScanners > 0)
+                {
+                    m_nTotalScanners = numOfScanners;
+
+                    for (int i = 0; i < numOfScanners; i++)
+                    {
+                        Scanner scn = m_arScanners[i];
+                        if (scn == null) continue;
+
+                        var item = new ScannerInfoItem
+                        {
+                            ScannerId = scn.SCANNERID,
+                            DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
+                        };
+
+                        _scanners.Add(item);
+                        cmbScanners.Items.Add(item);
+                    }
+
+                    if (cmbScanners.Items.Count > 0)
+                    {
+                        cmbScanners.SelectedIndex = 0;
+                        ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
+                    }
+                    else
+                    {
+                        ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
+                    }
+                }
+                else
+                {
+                    ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
+                }
+            }
+            catch (Exception ex)
+            {
+                ActualizarEstadoConexion("ERROR GET_SCANNERS", Color.Firebrick);
+                toolStripStatusLbl.Text = ex.Message;
+            }
         }
 
         private void frmLector_KeyDown(object sender, KeyEventArgs e)
@@ -128,7 +309,7 @@ namespace DS9908R_App
 
         private void btnBuscarScanners_Click(object sender, EventArgs e)
         {
-            try
+            /*try
             {
                 ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
 
@@ -167,6 +348,17 @@ namespace DS9908R_App
             {
                 ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }*/
+            try
+            {
+                ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
+
+                performGetScannerFrmLector();
+            }
+            catch (Exception ex)
+            {
+                ActualizarEstadoConexion("ERROR AL BUSCAR", Color.Firebrick);
+                toolStripStatusLbl.Text = ex.Message;
             }
         }
 
