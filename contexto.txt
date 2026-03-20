@@ -1,9 +1,58 @@
-Rebuild started...
-1>------ Rebuild All started: Project: DS9908R_App, Configuration: Debug x64 ------
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\VinculadorService.cs(24,29,24,47): error CS0246: The type or namespace name 'VinculacionRequest' could not be found (are you missing a using directive or an assembly reference?)
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\VinculadorService.cs(48,42,48,60): error CS0246: The type or namespace name 'VinculacionRequest' could not be found (are you missing a using directive or an assembly reference?)
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\VinculadorService.cs(14,26,14,61): error CS0246: The type or namespace name 'ConcurrentQueue<>' could not be found (are you missing a using directive or an assembly reference?)
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\VinculadorService.cs(14,42,14,60): error CS0246: The type or namespace name 'VinculacionRequest' could not be found (are you missing a using directive or an assembly reference?)
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-muestra esos errores vamos con UI luego vamos con RFID real pero por favor validar y corregir se actualizo el repo
-Solo dime: “vamos con RFID real” o “vamos con UI”
+Vamos con UI, pero primero deja compilando.
+Tus errores son por dos cosas:
+1. Falta crear VinculacionRequest.cs
+Crea un archivo nuevo llamado:
+Plain text
+VinculacionRequest.cs
+y pon esto:
+C#
+namespace DS9908R_App
+{
+    public class VinculacionRequest
+    {
+        public string CodigoBarras { get; set; }
+        public string Rfid { get; set; }
+        public string HojaMarcacion { get; set; }
+        public string CodTrabajador { get; set; }
+        public string Empresa { get; set; }
+    }
+}
+2. Falta el using de ConcurrentQueue
+En VinculadorService.cs, arriba, agrega:
+C#
+using System.Collections.Concurrent;
+y deja los usings así:
+C#
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading.Tasks;
+3. Si tu proyecto es viejo, verifica que el archivo esté incluido en el .csproj
+Si Visual Studio no lo agrega solo, mete esto dentro del <ItemGroup> de los Compile:
+XML
+<Compile Include="VinculacionRequest.cs" />
+<Compile Include="VinculadorService.cs" />
+4. Si ConcurrentQueue sigue fallando
+Eso sería raro en .NET 4.8, pero si pasa, agrega también esta referencia en el .csproj dentro de <ItemGroup> de referencias:
+XML
+<Reference Include="System.Core" />
+Quedaría así:
+XML
+<ItemGroup>
+  <Reference Include="System" />
+  <Reference Include="System.Core" />
+  <Reference Include="System.Data" />
+  <Reference Include="System.Deployment" />
+  <Reference Include="System.Drawing" />
+  <Reference Include="System.Windows.Forms" />
+  <Reference Include="System.Xml" />
+  <Reference Include="System.Xml.Linq" />
+</ItemGroup>
+Resumen exacto
+Haz estas 3 cosas:
+crear VinculacionRequest.cs
+agregar using System.Collections.Concurrent;
+verificar que ambos .cs estén incluidos en el .csproj
+Después de eso vuelve a compilar.
+Cuando pase ese error, seguimos con la UI de tabVinculador y el grid dgvTagList.
