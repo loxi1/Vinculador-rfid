@@ -112,7 +112,15 @@ namespace DS9908R_App
             _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
 
             scanToConnect = ScanToConnect.GetInstance();
-            discoverScanner = DiscoverScanner.GetInstance();
+            try
+            {
+                m_pCoreScanner = new CCoreScannerClass();
+                discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
+            }
 
             m_arScanners = new Scanner[255];
             for (int i = 0; i < m_arScanners.Length; i++)
