@@ -1,2 +1,69 @@
-No tengo mapiado esto:
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(724,13,724,28): error CS0103: The name '_rfidLeidosGrid' does not exist in the current context
+Ese error significa solo una cosa:
+Falta declarar la variable en la clase frmLector
+Agrega esto arriba, junto con tus demás campos privados de frmLector.cs:
+C#
+private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+Y asegúrate de tener este using
+Arriba del archivo:
+C#
+using System.Collections.Generic;
+Si usas StringComparer, normalmente con using System; ya basta.
+Debe quedar parecido a esto
+C#
+public partial class frmLector : Form
+{
+    private string mEmpresa = "COFACO";
+    private string mCodTrabajador;
+    private string mUsuTrabajador;
+    private string mTurnoTrabajador;
+
+    private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
+    private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    private VinculadorService _vinculador;
+    private string _ultimoCodigoBarra = "";
+    private string _ultimoRfid = "";
+Si borraste campos de la vista
+No hay problema. _rfidLeidosGrid no es un control visual, es solo una variable interna para evitar duplicados.
+No se crea en el Designer.
+Va en frmLector.cs, dentro de la clase.
+Si no quieres validar duplicados todavía
+Entonces elimina estas líneas donde se usa:
+C#
+_rfidLeidosGrid.Contains(rfid)
+_rfidLeidosGrid.Add(rfid)
+_rfidLeidosGrid.Clear()
+y deja AgregarRfidAlGrid así:
+C#
+private void AgregarRfidAlGrid(string rfid)
+{
+    if (string.IsNullOrWhiteSpace(rfid))
+        return;
+
+    rfid = rfid.Trim().ToUpperInvariant();
+    dgvTagList.Rows.Insert(0, rfid);
+}
+Y en btnClear_Click:
+C#
+private void btnClear_Click(object sender, EventArgs e)
+{
+    dgvTagList.Rows.Clear();
+
+    _ultimoRfid = "";
+    _ultimoCodigoBarra = "";
+
+    toolStripStatusLbl.Text = "Lista RFID limpiada";
+    CodBarras.Clear();
+    CodBarras.Focus();
+}
+Mi recomendación
+Por ahora sí conviene dejar _rfidLeidosGrid, porque tú mismo dijiste que quieres validar si lee dos RFID.
+Entonces la corrección correcta es:
+C#
+private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+Si quieres, en el siguiente paso te dejo ya armado el bloque completo de:
+ConfigurarGridRfid()
+SetRfid()
+AgregarRfidAlGrid()
+btnClear_Click()
+adaptado exactamente a tu frmLector.cs.
