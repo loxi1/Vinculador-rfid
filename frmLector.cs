@@ -16,6 +16,11 @@ namespace DS9908R_App
 {
     public partial class frmLector : Form
     {
+        private VinculadorService _vinculador;
+        private string _ultimoCodigoBarra = "";
+        private string _ultimoRfid = "";
+        private string _hojaMarcacionActual = "";
+
         private string mEmpresa = "COFACO";
         private string mCodTrabajador;
         private string mUsuTrabajador;
@@ -72,6 +77,14 @@ namespace DS9908R_App
                     new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
 
                 ActualizarEstadoConexion("SDK INICIALIZADO", Color.DarkOrange);
+
+                _vinculador = new VinculadorService();
+
+                _vinculador.OnInfo += Vinculador_OnInfo;
+                _vinculador.OnError += Vinculador_OnError;
+                _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+                CodBarras.Focus();
             }
             catch (Exception ex)
             {
@@ -393,6 +406,93 @@ namespace DS9908R_App
                     toolStripStatusLbl.Text = "Error PNP: " + ex.Message;
                 }));
             }
+        }
+
+        private void CodBarras_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                _ultimoCodigoBarra = CodBarras.Text.Trim();
+                IntentarVincular();
+            }
+        }
+
+        private void SetRfid(string rfid)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<string>(SetRfid), rfid);
+                return;
+            }
+
+            _ultimoRfid = rfid.Trim().Replace(" ", "");
+            IntentarVincular();
+        }
+
+        private void IntentarVincular()
+        {
+            if (string.IsNullOrWhiteSpace(_ultimoCodigoBarra)) return;
+            if (string.IsNullOrWhiteSpace(_ultimoRfid)) return;
+
+            var request = new VinculacionRequest
+            {
+                CodigoBarras = _ultimoCodigoBarra,
+                Rfid = _ultimoRfid,
+                HojaMarcacion = nroHM.Text,
+                CodTrabajador = mCodTrabajador,
+                Empresa = mEmpresa
+            };
+
+            _vinculador.Enqueue(request);
+        }
+
+        private void Vinculador_OnInfo(string msg)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
+                return;
+            }
+
+            toolStripStatusLbl.Text = msg;
+        }
+
+        private void Vinculador_OnError(string msg)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+                return;
+            }
+
+            toolStripStatusLbl.Text = msg;
+
+            CodBarras.Clear();
+            CodBarras.Focus();
+        }
+
+        private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+        {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+                return;
+            }
+
+            dgvTagList.Rows.Insert(0,
+                dgvTagList.Rows.Count + 1,
+                data["id_rfid"],
+                data["op"],
+                data["talla"],
+                data["color"]
+            );
+
+            CodBarras.Clear();
+            _ultimoCodigoBarra = "";
+            _ultimoRfid = "";
+
+            toolStripStatusLbl.Text = "OK";
+            CodBarras.Focus();
         }
     }
 }

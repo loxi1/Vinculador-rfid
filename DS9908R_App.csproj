@@ -232,6 +232,9 @@
   <ItemGroup>
     <Compile Include="AlertaManager.cs" />
     <Compile Include="BaseMethods.cs" />
+    <Compile Include="BDPrenda.cs" />
+    <Compile Include="BDPrendaScm.cs" />
+    <Compile Include="DBConsultarPrenda.cs" />
     <Compile Include="DBConsultas.cs" />
     <Compile Include="FormAlerta.cs">
       <SubType>Form</SubType>
@@ -420,11 +423,13 @@
     <Compile Include="ViewScannerAcction.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="VinculadorService.cs" />
     <Compile Include="XmlReader.cs" />
     <None Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="form.ico" />
+    <Content Include="prueba.txt" />
     <None Include="Resources\ok_90.png" />
     <None Include="Resources\icon_rfid.png" />
     <None Include="Resources\conex_1.png" />
