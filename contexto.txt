@@ -4,6 +4,9 @@ tabConsultar  -> BuscarCodBarras
 
 tabHojaMarcacion -> TextBoxOPm, TextBoxHM, BtnBuscarHM y BtnLimpiarHM 
 
+creo que seria una buena opcion ya definir los archivos:
+BDPrenda.cs, BDPrendaScm y DBConsultarPrenda
+
 Sí, ya tengo el contexto y el patrón VB que quieres llevar a C#.
 En tu repo actual, frmLector.cs todavía está en una fase básica: estado de conexión, combo de scanners y tabs habilitados/deshabilitados, pero aún sin lógica de captura ni de vinculación real. �
 GitHub +1
