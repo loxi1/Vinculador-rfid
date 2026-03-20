@@ -1,4 +1,108 @@
-busco el dispositivo se conecto pero cuando leo un codigo rfid tiene el sonido pero no se muerta como codigo por favor revisar todo el repo ya sabas tienes todo el context pro pavor ayud el errorr es estadoEstado de la conexión después de intentar abrir: Open
-'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms.resources\v4.0_4.0.0.0_es_b77a5c561934e089\System.Windows.Forms.resources.dll'. Module was built without symbols.
-'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Interop.CoreScanner.dll'. Module was built without symbols.
-'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\Accessibility\v4.0_4.0.0.0__b03f5f7f11d50a3a\Accessibility.dll'.
+Ya encontré el problema en tu repo.
+El RFID sí entra por OnBarcodeEventLector, se clasifica con PareceRfid(valor), y luego llama a AgregarRfid(valor). Pero en AgregarRfid(...) solo haces esto:
+normalizas epc
+validas duplicado con _rfidLeidos
+cambias toolStripStatusLbl
+y no agregas nada a dgvTagList, ni guardas _ultimoRfid, ni llamas a IntentarVincular(). Por eso suena, pero no aparece en pantalla. �
+GitHub +1
+Además, dgvTagList hoy solo se llena en Vinculador_OnInsertadoOk(...), o sea después del guardado exitoso. Si lo que quieres es ver cada RFID leído apenas se detecta, esa inserción debe pasar a AgregarRfid(...). �
+GitHub +1
+Cambia AgregarRfid por esto
+C#
+private void AgregarRfid(string epc)
+{
+    BeginInvoke(new Action(() =>
+    {
+        epc = (epc ?? "").Trim().ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(epc))
+            return;
+
+        if (_rfidLeidos.Contains(epc))
+        {
+            toolStripStatusLbl.Text = "RFID repetido: " + epc;
+            return;
+        }
+
+        _rfidLeidos.Add(epc);
+        _ultimoRfid = epc;
+
+        // Si el grid no tiene columnas, crea una sola
+        if (dgvTagList.Columns.Count == 0)
+        {
+            dgvTagList.Columns.Add("RFID", "RFID");
+        }
+
+        // Inserta arriba
+        dgvTagList.Rows.Insert(0, epc);
+
+        toolStripStatusLbl.Text = "RFID leído: " + epc;
+
+        // Si luego ya tienes código de barras, intenta vincular
+        IntentarVincular();
+    }));
+}
+Y revisa esto en frmLector_Load
+Asegúrate de configurar el grid una sola vez:
+C#
+private void ConfigurarGridRfid()
+{
+    dgvTagList.Columns.Clear();
+    dgvTagList.Rows.Clear();
+
+    dgvTagList.AllowUserToAddRows = false;
+    dgvTagList.AllowUserToDeleteRows = false;
+    dgvTagList.AllowUserToResizeRows = false;
+    dgvTagList.MultiSelect = false;
+    dgvTagList.ReadOnly = true;
+    dgvTagList.RowHeadersVisible = false;
+    dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+    dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+    dgvTagList.Columns.Add("RFID", "RFID");
+}
+Y en el load:
+C#
+ConfigurarGridRfid();
+También corrige Vinculador_OnInsertadoOk
+Ahora mismo insertas 3 valores en dgvTagList:
+C#
+dgvTagList.Rows.Insert(0,
+    data.ContainsKey("id_rfid") ? data["id_rfid"] : "",
+    data.ContainsKey("op") ? data["op"] : "",
+    data.ContainsKey("hoja_marcacion") ? data["hoja_marcacion"] : ""
+);
+Pero tú dijiste que dgvTagList debe mostrar solo RFID. Entonces cámbialo a:
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    toolStripStatusLbl.Text = "OK";
+
+    CodBarras.Clear();
+    _ultimoCodigoBarra = "";
+    _ultimoRfid = "";
+
+    if (data.ContainsKey("op"))
+        nroOP.Text = Convert.ToString(data["op"]);
+
+    if (data.ContainsKey("hoja_marcacion"))
+        nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
+    CodBarras.Focus();
+}
+Resultado esperado
+Con esos cambios:
+lees un RFID → aparece una fila en dgvTagList
+lees otro RFID diferente → aparece otra fila
+lees el mismo RFID → te dirá “RFID repetido” y no duplica
+cuando luego pongas el código de barras, IntentarVincular() ya tendrá _ultimoRfid
+El punto exacto del fallo
+El fallo no está en la conexión ni en Zebra. Está en que AgregarRfid() actualmente no pinta nada en la UI, solo cambia el texto de estado. Eso se ve directo en tu frmLector.cs. �
+GitHub
+Si quieres, el siguiente paso es dejar que al leer el barcode en CodBarras se vincule automáticamente con el último RFID de dgvTagList.
