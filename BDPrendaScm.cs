@@ -9,21 +9,21 @@ namespace DS9908R_App
 {
     public class BDPrendaScm
     {
+        private readonly MySQLconexion _mysql = new MySQLconexion();
+
         public long Insert(Dictionary<string, object> data)
         {
-            using (var conn = MySQLconexion.GetConnection())
+            using (var conn = _mysql.Connect())
             {
-                conn.Open();
-
                 var columns = string.Join(",", data.Keys);
                 var parameters = string.Join(",", data.Keys.Select(k => "@" + k));
 
                 string sql = $"INSERT INTO prenda ({columns}) VALUES ({parameters})";
 
-                using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(sql, conn))
+                using (var cmd = new MySqlCommand(sql, conn))
                 {
                     foreach (var kv in data)
-                        cmd.Parameters.AddWithValue("@" + kv.Key, kv.Value);
+                        cmd.Parameters.AddWithValue("@" + kv.Key, kv.Value ?? "");
 
                     return cmd.ExecuteNonQuery();
                 }

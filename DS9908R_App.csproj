@@ -430,6 +430,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="form.ico" />
+    <Content Include="MySQLconexion.txt" />
     <Content Include="prueba.txt" />
     <None Include="Resources\ok_90.png" />
     <None Include="Resources\icon_rfid.png" />

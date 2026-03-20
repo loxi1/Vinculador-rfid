@@ -10,6 +10,8 @@ namespace DS9908R_App
 {
     public class BDPrenda
     {
+        private readonly Sybase _sybase = new Sybase();
+
         public Tuple<int, string> SaveRFID(
             string codigoBarra,
             string empresa,
@@ -19,15 +21,11 @@ namespace DS9908R_App
         {
             try
             {
-                using (var conn = SybaseHelper.GetConnection())
+                using (var conn = _sybase.Connect())
                 {
-                    conn.Open();
-
-                    using (var cmd = conn.CreateCommand())
+                    using (var cmd = new AseCommand("USP_SAL_EMB_CON_RFID", conn))
                     {
-                        cmd.CommandText = "USP_SAL_EMB_CON_RFID";
                         cmd.CommandType = CommandType.StoredProcedure;
-
                         cmd.Parameters.AddWithValue("@CodigoBarra", codigoBarra);
                         cmd.Parameters.AddWithValue("@Empresa", empresa);
                         cmd.Parameters.AddWithValue("@Trabajador", trabajador);
@@ -48,22 +46,18 @@ namespace DS9908R_App
 
         public DataTable GetTimbradasByWorkerAndEtiqueta(string worker, string etiqueta)
         {
-            using (var conn = SybaseHelper.GetConnection())
+            using (var conn = _sybase.Connect())
             {
-                conn.Open();
-
-                using (var cmd = conn.CreateCommand())
+                using (var cmd = new AseCommand(
+                    @"SELECT * 
+                      FROM tmp_etiq_timbradas 
+                      WHERE fotocheck = @worker 
+                      AND etiqueta = @etiqueta", conn))
                 {
-                    cmd.CommandText = @"
-                    SELECT * 
-                    FROM tmp_etiq_timbradas 
-                    WHERE fotocheck = @worker 
-                    AND etiqueta = @etiqueta";
-
                     cmd.Parameters.AddWithValue("@worker", worker);
                     cmd.Parameters.AddWithValue("@etiqueta", etiqueta);
 
-                    using (var da = new Sybase.Data.AseClient.AseDataAdapter(cmd))
+                    using (var da = new AseDataAdapter(cmd))
                     {
                         var dt = new DataTable();
                         da.Fill(dt);

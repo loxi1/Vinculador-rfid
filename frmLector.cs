@@ -292,7 +292,6 @@ namespace DS9908R_App
                 }
 
                 _rfidLeidos.Add(epc);
-                txtRFID.Text = epc; // último leído
                 toolStripStatusLbl.Text = "RFID leído";
             }));
         }
@@ -425,7 +424,10 @@ namespace DS9908R_App
                 return;
             }
 
-            _ultimoRfid = rfid.Trim().Replace(" ", "");
+            _ultimoRfid = (rfid ?? "").Trim().Replace(" ", "");
+
+            toolStripStatusLbl.Text = "RFID leído: " + _ultimoRfid;
+
             IntentarVincular();
         }
 
@@ -480,16 +482,17 @@ namespace DS9908R_App
             }
 
             dgvTagList.Rows.Insert(0,
-                dgvTagList.Rows.Count + 1,
-                data["id_rfid"],
-                data["op"],
-                data["talla"],
-                data["color"]
+                data.ContainsKey("id_rfid") ? data["id_rfid"] : "",
+                data.ContainsKey("op") ? data["op"] : "",
+                data.ContainsKey("hoja_marcacion") ? data["hoja_marcacion"] : ""
             );
 
             CodBarras.Clear();
             _ultimoCodigoBarra = "";
             _ultimoRfid = "";
+
+            if (data.ContainsKey("op")) nroOP.Text = Convert.ToString(data["op"]);
+            if (data.ContainsKey("hoja_marcacion")) nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
 
             toolStripStatusLbl.Text = "OK";
             CodBarras.Focus();

@@ -10,19 +10,19 @@ namespace DS9908R_App
 {
     public class DBConsultarPrenda
     {
+        private readonly MySQLconexion _mysql = new MySQLconexion();
+
         public DataTable BuscarPorCodigo(string codigo)
         {
-            using (var conn = MySQLconexion.GetConnection())
+            using (var conn = _mysql.Connect())
             {
-                conn.Open();
-
                 string sql = "SELECT * FROM prenda WHERE id_barras = @codigo";
 
-                using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(sql, conn))
+                using (var cmd = new MySqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@codigo", codigo);
 
-                    using (var da = new MySql.Data.MySqlClient.MySqlDataAdapter(cmd))
+                    using (var da = new MySqlDataAdapter(cmd))
                     {
                         var dt = new DataTable();
                         da.Fill(dt);
