@@ -72,27 +72,32 @@ namespace DS9908R_App
 
         private void frmLector_Load(object sender, EventArgs e)
         {
-            /*ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
+            ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
             HabilitarTabsTrabajo(false);
 
             try
             {
                 m_pCoreScanner = new CCoreScannerClass();
+                discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+                scanToConnect = ScanToConnect.GetInstance();
 
-                m_pCoreScanner.BarcodeEvent +=
-                    new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+                m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+                m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
 
-                m_pCoreScanner.PNPEvent +=
-                    new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
+                m_arScanners = new Scanner[255];
+                for (int i = 0; i < m_arScanners.Length; i++)
+                    m_arScanners[i] = new Scanner();
 
                 ActualizarEstadoConexion("SDK INICIALIZADO", Color.DarkOrange);
 
                 _vinculador = new VinculadorService();
-
                 _vinculador.OnInfo += Vinculador_OnInfo;
                 _vinculador.OnError += Vinculador_OnError;
                 _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
 
+                cmbScanners.Items.Clear();
+                cmbScanners.DropDownStyle = ComboBoxStyle.DropDownList;
+                this.KeyPreview = true;
                 CodBarras.Focus();
             }
             catch (Exception ex)
@@ -100,42 +105,6 @@ namespace DS9908R_App
                 MessageBox.Show("Error inicializando CoreScanner: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-            cmbScanners.Items.Clear();
-            cmbScanners.DropDownStyle = ComboBoxStyle.DropDownList;
-
-
-            this.KeyPreview = true;*/
-            _vinculador = new VinculadorService();
-            _vinculador.OnInfo += Vinculador_OnInfo;
-            _vinculador.OnError += Vinculador_OnError;
-            _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
-
-            scanToConnect = ScanToConnect.GetInstance();
-            try
-            {
-                m_pCoreScanner = new CCoreScannerClass();
-                discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
-            }
-
-            m_arScanners = new Scanner[255];
-            for (int i = 0; i < m_arScanners.Length; i++)
-                m_arScanners[i] = new Scanner();
-
-            try
-            {
-                m_pCoreScanner = new CCoreScannerClass();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
-            }
-
-            CodBarras.Focus();
         }
 
         private void performGetScannerFrmLector()
@@ -317,14 +286,14 @@ namespace DS9908R_App
 
         private void btnBuscarScanners_Click(object sender, EventArgs e)
         {
-            /*try
+            try
             {
                 ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
 
                 if (!m_bScannerOpen)
                 {
                     short[] types = new short[1];
-                    types[0] = 1; // todos
+                    types[0] = 1;
 
                     int status;
                     m_pCoreScanner.Open(0, types, 1, out status);
@@ -339,7 +308,7 @@ namespace DS9908R_App
                 }
 
                 RegistrarEventos();
-                CargarScannersEnCombo();
+                CargarScannersEnComboDesdeSDK();
 
                 if (cmbScanners.Items.Count > 0)
                 {
@@ -356,17 +325,6 @@ namespace DS9908R_App
             {
                 ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }*/
-            try
-            {
-                ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
-
-                performGetScannerFrmLector();
-            }
-            catch (Exception ex)
-            {
-                ActualizarEstadoConexion("ERROR AL BUSCAR", Color.Firebrick);
-                toolStripStatusLbl.Text = ex.Message;
             }
         }
 
@@ -696,6 +654,54 @@ namespace DS9908R_App
 
             toolStripStatusLbl.Text = "OK";
             CodBarras.Focus();
+        }
+        private void CargarScannersEnComboDesdeSDK()
+        {
+            cmbScanners.Items.Clear();
+            _scanners.Clear();
+
+            if (!m_bScannerOpen)
+                return;
+
+            int status = -1;
+            short numOfScanners = 0;
+            string outXML = "";
+
+            try
+            {
+                m_arScanners = discoverScanner.GetScanners(
+                    ref numOfScanners,
+                    ref outXML,
+                    ref status,
+                    claimlist
+                );
+
+                toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
+
+                if (status != 0 || numOfScanners <= 0 || m_arScanners == null)
+                    return;
+
+                m_nTotalScanners = numOfScanners;
+
+                for (int i = 0; i < numOfScanners; i++)
+                {
+                    Scanner scn = m_arScanners[i];
+                    if (scn == null) continue;
+
+                    var item = new ScannerInfoItem
+                    {
+                        ScannerId = scn.SCANNERID,
+                        DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
+                    };
+
+                    _scanners.Add(item);
+                    cmbScanners.Items.Add(item);
+                }
+            }
+            catch (Exception ex)
+            {
+                toolStripStatusLbl.Text = "Error GET_SCANNERS: " + ex.Message;
+            }
         }
     }
 }

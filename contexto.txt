@@ -1,171 +1,30 @@
-Sí, revisé el repo y el problema está en frmLector.cs.
-Qué está pasando
-Tu btnBuscarScanners_Click hace Open(), luego RegistrarEventos(), luego CargarScannersEnCombo(). En esa carga nueva estás llamando ExecCommand(5000, ...) y parseando el XML tú mismo. �
-GitHub +2
-Pero en el código que sí te funcionaba antes, ViewDiscoverScanner.cs, la detección no se hacía así: se apoyaba en discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist) dentro de ShowScanners(), después de registerForEvents(). �
-GitHub +2
-La causa más probable
-Tu versión nueva de CargarScannersEnCombo() está usando una ruta distinta a la del sample funcional. Por eso te abre CoreScanner pero no te llena el combo. En otras palabras: el problema no parece ser el driver ni el login, sino que frmLector no está reutilizando la misma lógica de descubrimiento que sí tenía el sample. �
-GitHub +1
-Qué debes cambiar
-No uses esta versión actual para cargar el combo:
-ExecCommand(5000, ...)
-parseo manual de //scanner
-Usa la misma estrategia del sample:
-discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
-registerForEvents()
-discoverScanner.GetScanners(...)
-con eso llenas cmbScanners �
-GitHub +2
-Reemplazo recomendado
-1. En frmLector_Load
-Asegúrate de inicializar discoverScanner y scanToConnect:
-C#
-private DiscoverScanner discoverScanner;
-private ScanToConnect scanToConnect;
-private Scanner[] m_arScanners;
-private int m_nTotalScanners = 0;
-private List<string> claimlist = new List<string>();
-Y en el load:
-C#
-private void frmLector_Load(object sender, EventArgs e)
-{
-    ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
-    HabilitarTabsTrabajo(false);
-
-    try
-    {
-        m_pCoreScanner = new CCoreScannerClass();
-        discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
-        scanToConnect = ScanToConnect.GetInstance();
-
-        m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
-        m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
-
-        m_arScanners = new Scanner[255];
-        for (int i = 0; i < m_arScanners.Length; i++)
-            m_arScanners[i] = new Scanner();
-
-        ActualizarEstadoConexion("SDK INICIALIZADO", Color.DarkOrange);
-
-        _vinculador = new VinculadorService();
-        _vinculador.OnInfo += Vinculador_OnInfo;
-        _vinculador.OnError += Vinculador_OnError;
-        _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
-
-        cmbScanners.Items.Clear();
-        cmbScanners.DropDownStyle = ComboBoxStyle.DropDownList;
-        this.KeyPreview = true;
-        CodBarras.Focus();
-    }
-    catch (Exception ex)
-    {
-        MessageBox.Show("Error inicializando CoreScanner: " + ex.Message,
-            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-    }
-}
-2. Reemplaza btnBuscarScanners_Click
-C#
-private void btnBuscarScanners_Click(object sender, EventArgs e)
-{
-    try
-    {
-        ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
-
-        if (!m_bScannerOpen)
-        {
-            short[] types = new short[1];
-            types[0] = 1;
-
-            int status;
-            m_pCoreScanner.Open(0, types, 1, out status);
-
-            if (status != 0)
-            {
-                ActualizarEstadoConexion("ERROR OPEN: " + status, Color.Firebrick);
-                return;
-            }
-
-            m_bScannerOpen = true;
-        }
-
-        RegistrarEventos();
-        CargarScannersEnComboDesdeSDK();
-
-        if (cmbScanners.Items.Count > 0)
-        {
-            cmbScanners.SelectedIndex = 0;
-            HabilitarTabsTrabajo(true);
-            ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-        }
-        else
-        {
-            ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-        }
-    }
-    catch (Exception ex)
-    {
-        ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
-        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-    }
-}
-3. Deja RegistrarEventos() como está
-Tu XML de REGISTER_FOR_EVENTS sí está bien formado en el repo actual. �
-GitHub
-4. Crea esta nueva carga del combo
-C#
-private void CargarScannersEnComboDesdeSDK()
-{
-    cmbScanners.Items.Clear();
-    _scanners.Clear();
-
-    if (!m_bScannerOpen)
-        return;
-
-    int status = -1;
-    short numOfScanners = 0;
-    string outXML = "";
-
-    try
-    {
-        m_arScanners = discoverScanner.GetScanners(
-            ref numOfScanners,
-            ref outXML,
-            ref status,
-            claimlist
-        );
-
-        toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
-
-        if (status != 0 || numOfScanners <= 0 || m_arScanners == null)
-            return;
-
-        m_nTotalScanners = numOfScanners;
-
-        for (int i = 0; i < numOfScanners; i++)
-        {
-            Scanner scn = m_arScanners[i];
-            if (scn == null) continue;
-
-            var item = new ScannerInfoItem
-            {
-                ScannerId = scn.SCANNERID,
-                DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
-            };
-
-            _scanners.Add(item);
-            cmbScanners.Items.Add(item);
-        }
-    }
-    catch (Exception ex)
-    {
-        toolStripStatusLbl.Text = "Error GET_SCANNERS: " + ex.Message;
-    }
-}
-También vi otro detalle
-En el repo actual todavía aparece txtRFID dentro de AgregarRfid(), pero antes me dijiste que en tabVinculador usas dgvTagList para mostrar RFID. Eso también te va a traer problemas funcionales después. �
-GitHub
-Conclusión
-El combo no se llena porque tu frmLector se apartó de la ruta que sí funcionaba en el sample. La corrección es volver a usar discoverScanner.GetScanners(...) en vez de ExecCommand(5000, ...). Eso está alineado con tu propio código viejo del repo. �
-GitHub +2
-Pega luego el valor que salga en toolStripStatusLbl para GET_SCANNERS status: X total: Y.
+Perfecto si lee el RFID
+'DS9908R_App.exe' (CLR v4.0.30319: DefaultDomain): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DefaultDomain): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\DS9908R_App.exe'. Symbols loaded.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms\v4.0_4.0.0.0__b77a5c561934e089\System.Windows.Forms.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Drawing\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Drawing.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Configuration\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Configuration.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.Data\v4.0_4.0.0.0__b77a5c561934e089\System.Data.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Newtonsoft.Json.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+baseDirectory-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\
+binDirectory-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64
+iniDirectory-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Ini
+configPath-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Ini\tsconfig.json
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Numerics\v4.0_4.0.0.0__b77a5c561934e089\System.Numerics.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Serialization\v4.0_4.0.0.0__b77a5c561934e089\System.Runtime.Serialization.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+lsPassword->654123 clave->6z+IseYi2U62UBLglqK4Lg==
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Sybase.AdoNet4.AseClient.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.Transactions\v4.0_4.0.0.0__b77a5c561934e089\System.Transactions.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+Query->SELECT identificador, codigo, datos, empresa, estado, clave, turno FROM usuario_timbrado WHERE codigo = @codigo AND clave = @clave
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.EnterpriseServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.EnterpriseServices.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.EnterpriseServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.EnterpriseServices.Wrapper.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+Estado de la conexión después de intentar abrir: Open
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\mscorlib.resources\v4.0_4.0.0.0_es_b77a5c561934e089\mscorlib.resources.dll'. Module was built without symbols.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms.resources\v4.0_4.0.0.0_es_b77a5c561934e089\System.Windows.Forms.resources.dll'. Module was built without symbols.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Interop.CoreScanner.dll'. Module was built without symbols.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\Accessibility\v4.0_4.0.0.0__b03f5f7f11d50a3a\Accessibility.dll'. 
+ahora lo que deseo es que muestre el codigo rfid en:
+dgvTagList pero nose ahi solo se va ver una columna RFID no mostrar TIP y CANTIDAD, considerar que si lee dos rfid tambien ponerlo porque muestro una validacion
