@@ -1,96 +1,102 @@
-Entonces el problema ya está en ShowScannersFrmLector() o antes de eso.
-Si no llega a cargar cmbScanners, hay que validar en este orden:
-1. Confirmar si Open() sí funcionó
-En ConnectFrmLector() deja esto:
+Sí, revisé el repo y el problema está en frmLector.cs.
+Qué está pasando
+Tu btnBuscarScanners_Click hace Open(), luego RegistrarEventos(), luego CargarScannersEnCombo(). En esa carga nueva estás llamando ExecCommand(5000, ...) y parseando el XML tú mismo. �
+GitHub +2
+Pero en el código que sí te funcionaba antes, ViewDiscoverScanner.cs, la detección no se hacía así: se apoyaba en discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist) dentro de ShowScanners(), después de registerForEvents(). �
+GitHub +2
+La causa más probable
+Tu versión nueva de CargarScannersEnCombo() está usando una ruta distinta a la del sample funcional. Por eso te abre CoreScanner pero no te llena el combo. En otras palabras: el problema no parece ser el driver ni el login, sino que frmLector no está reutilizando la misma lógica de descubrimiento que sí tenía el sample. �
+GitHub +1
+Qué debes cambiar
+No uses esta versión actual para cargar el combo:
+ExecCommand(5000, ...)
+parseo manual de //scanner
+Usa la misma estrategia del sample:
+discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+registerForEvents()
+discoverScanner.GetScanners(...)
+con eso llenas cmbScanners �
+GitHub +2
+Reemplazo recomendado
+1. En frmLector_Load
+Asegúrate de inicializar discoverScanner y scanToConnect:
 C#
-private void ConnectFrmLector()
+private DiscoverScanner discoverScanner;
+private ScanToConnect scanToConnect;
+private Scanner[] m_arScanners;
+private int m_nTotalScanners = 0;
+private List<string> claimlist = new List<string>();
+Y en el load:
+C#
+private void frmLector_Load(object sender, EventArgs e)
 {
+    ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
+    HabilitarTabsTrabajo(false);
+
     try
     {
-        short[] scannerTypes = new short[1];
-        scannerTypes[0] = 1;
+        m_pCoreScanner = new CCoreScannerClass();
+        discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+        scanToConnect = ScanToConnect.GetInstance();
 
-        int status;
-        m_pCoreScanner.Open(0, scannerTypes, 1, out status);
+        m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+        m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
 
-        MessageBox.Show("Open status = " + status);
+        m_arScanners = new Scanner[255];
+        for (int i = 0; i < m_arScanners.Length; i++)
+            m_arScanners[i] = new Scanner();
 
-        if (status == 0)
-        {
-            m_bSuccessOpen = true;
-            toolStripStatusLbl.Text = "OPEN correcto";
-        }
-        else
-        {
-            m_bSuccessOpen = false;
-            toolStripStatusLbl.Text = "OPEN error: " + status;
-        }
+        ActualizarEstadoConexion("SDK INICIALIZADO", Color.DarkOrange);
+
+        _vinculador = new VinculadorService();
+        _vinculador.OnInfo += Vinculador_OnInfo;
+        _vinculador.OnError += Vinculador_OnError;
+        _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+        cmbScanners.Items.Clear();
+        cmbScanners.DropDownStyle = ComboBoxStyle.DropDownList;
+        this.KeyPreview = true;
+        CodBarras.Focus();
     }
     catch (Exception ex)
     {
-        m_bSuccessOpen = false;
-        MessageBox.Show("Excepción en Open: " + ex.Message);
-        toolStripStatusLbl.Text = "OPEN excepción: " + ex.Message;
+        MessageBox.Show("Error inicializando CoreScanner: " + ex.Message,
+            "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }
-Si aquí no sale 0, el problema está antes del combo.
-2. Confirmar si entra a ShowScannersFrmLector()
-Al inicio del método agrega:
+2. Reemplaza btnBuscarScanners_Click
 C#
-private void ShowScannersFrmLector()
+private void btnBuscarScanners_Click(object sender, EventArgs e)
 {
-    MessageBox.Show("Entró a ShowScannersFrmLector");
-
-    cmbScanners.Items.Clear();
-    _scanners.Clear();
-
-    if (!m_bSuccessOpen)
-    {
-        MessageBox.Show("m_bSuccessOpen = false");
-        ActualizarEstadoConexion("NO ABIERTO", Color.Firebrick);
-        return;
-    }
-
-    short numOfScanners = 0;
-    string outXML = "";
-    int status = -1;
-
     try
     {
-        m_arScanners = discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist);
+        ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
 
-        MessageBox.Show("GET_SCANNERS status=" + status + " total=" + numOfScanners + "\nXML:\n" + outXML);
-
-        if (status == 0 && numOfScanners > 0)
+        if (!m_bScannerOpen)
         {
-            m_nTotalScanners = numOfScanners;
+            short[] types = new short[1];
+            types[0] = 1;
 
-            for (int i = 0; i < numOfScanners; i++)
+            int status;
+            m_pCoreScanner.Open(0, types, 1, out status);
+
+            if (status != 0)
             {
-                Scanner scn = m_arScanners[i];
-                if (scn == null) continue;
-
-                var item = new ScannerInfoItem
-                {
-                    ScannerId = scn.SCANNERID,
-                    DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
-                };
-
-                _scanners.Add(item);
-                cmbScanners.Items.Add(item);
+                ActualizarEstadoConexion("ERROR OPEN: " + status, Color.Firebrick);
+                return;
             }
 
-            MessageBox.Show("cmbScanners.Items.Count = " + cmbScanners.Items.Count);
+            m_bScannerOpen = true;
+        }
 
-            if (cmbScanners.Items.Count > 0)
-            {
-                cmbScanners.SelectedIndex = 0;
-                ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-            }
-            else
-            {
-                ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-            }
+        RegistrarEventos();
+        CargarScannersEnComboDesdeSDK();
+
+        if (cmbScanners.Items.Count > 0)
+        {
+            cmbScanners.SelectedIndex = 0;
+            HabilitarTabsTrabajo(true);
+            ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
         }
         else
         {
@@ -99,64 +105,67 @@ private void ShowScannersFrmLector()
     }
     catch (Exception ex)
     {
-        MessageBox.Show("Error en ShowScannersFrmLector: " + ex.Message);
-        ActualizarEstadoConexion("ERROR GET_SCANNERS", Color.Firebrick);
-        toolStripStatusLbl.Text = ex.Message;
+        ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
+        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }
-3. Confirmar que el botón sí dispara todo
-En btnBuscarScanners_Click deja temporalmente así:
+3. Deja RegistrarEventos() como está
+Tu XML de REGISTER_FOR_EVENTS sí está bien formado en el repo actual. �
+GitHub
+4. Crea esta nueva carga del combo
 C#
-private void btnBuscarScanners_Click(object sender, EventArgs e)
+private void CargarScannersEnComboDesdeSDK()
 {
-    MessageBox.Show("Click btnBuscarScanners");
+    cmbScanners.Items.Clear();
+    _scanners.Clear();
+
+    if (!m_bScannerOpen)
+        return;
+
+    int status = -1;
+    short numOfScanners = 0;
+    string outXML = "";
 
     try
     {
-        ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
-        performGetScannerFrmLector();
+        m_arScanners = discoverScanner.GetScanners(
+            ref numOfScanners,
+            ref outXML,
+            ref status,
+            claimlist
+        );
+
+        toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
+
+        if (status != 0 || numOfScanners <= 0 || m_arScanners == null)
+            return;
+
+        m_nTotalScanners = numOfScanners;
+
+        for (int i = 0; i < numOfScanners; i++)
+        {
+            Scanner scn = m_arScanners[i];
+            if (scn == null) continue;
+
+            var item = new ScannerInfoItem
+            {
+                ScannerId = scn.SCANNERID,
+                DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
+            };
+
+            _scanners.Add(item);
+            cmbScanners.Items.Add(item);
+        }
     }
     catch (Exception ex)
     {
-        MessageBox.Show("Error btnBuscarScanners_Click: " + ex.Message);
-        ActualizarEstadoConexion("ERROR AL BUSCAR", Color.Firebrick);
-        toolStripStatusLbl.Text = ex.Message;
+        toolStripStatusLbl.Text = "Error GET_SCANNERS: " + ex.Message;
     }
 }
-4. Validar performGetScannerFrmLector()
-Déjalo así:
-C#
-private void performGetScannerFrmLector()
-{
-    MessageBox.Show("Entró a performGetScannerFrmLector");
-
-    m_arSelectedTypes = scanToConnect.GetSelectedTypes();
-
-    MakeConnectCtrlFrmLector();
-    registerForEventsFrmLector();
-    ShowScannersFrmLector();
-}
-5. Qué debes observar
-Con esos mensajes sabremos exactamente dónde se corta:
-si no sale Click btnBuscarScanners → el botón no está bien conectado
-si sale eso pero no Entró a performGetScannerFrmLector → el evento está mal
-si entra ahí pero Open status != 0 → falla apertura SDK
-si Open status = 0 pero GET_SCANNERS total=0 → el scanner no está siendo recuperado
-si GET_SCANNERS total>0 pero cmbScanners.Items.Count=0 → el problema está en el for
-si sí llena items pero no se ve → problema de Designer/UI
-6. Muy probable en tu caso
-Por cómo lo describes, sospecho una de estas dos:
-A. discoverScanner.GetScanners(...) devuelve 0
-Entonces el combo nunca se llena.
-B. cmbScanners no es el control visible real
-O sea, el código sí agrega items, pero estás viendo otro ComboBox en el diseñador.
-Para validar eso, agrega después de llenar:
-C#
-MessageBox.Show("Nombre combo: " + cmbScanners.Name + " / Count: " + cmbScanners.Items.Count);
-7. Lo que necesito de ti
-Pásame exactamente qué mensajes salen, en este orden:
-Open status = ?
-GET_SCANNERS status = ?
-total = ?
-cmbScanners.Items.Count = ?
-Con esos cuatro datos ya te digo el punto exacto del fallo.
+También vi otro detalle
+En el repo actual todavía aparece txtRFID dentro de AgregarRfid(), pero antes me dijiste que en tabVinculador usas dgvTagList para mostrar RFID. Eso también te va a traer problemas funcionales después. �
+GitHub
+Conclusión
+El combo no se llena porque tu frmLector se apartó de la ruta que sí funcionaba en el sample. La corrección es volver a usar discoverScanner.GetScanners(...) en vez de ExecCommand(5000, ...). Eso está alineado con tu propio código viejo del repo. �
+GitHub +2
+Pega luego el valor que salga en toolStripStatusLbl para GET_SCANNERS status: X total: Y.
