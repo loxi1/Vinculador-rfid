@@ -1,141 +1,28 @@
-El problema aquí ya no es de lógica ni del repo: en MySQLconexion.cs faltan using.
-Corrige arriba de MySQLconexion.cs
-Debe quedar así:
-C#
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
-Por qué falla
-Tus errores salen porque usaste clases de estos namespaces:
-ConnectionState → System.Data
-Directory, Path, File → System.IO
-Si no importas esos namespaces, C# no los reconoce.
-Resumen exacto
-Agrega estos dos using que te faltan:
-C#
-using System.Data;
-using System.IO;
-Tu bloque completo recomendado
-C#
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.IO;
-using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
-
-namespace DS9908R_App
-{
-    public class MySQLconexion
-    {
-        private MySqlConnection myConexion;
-        private string m_ServerName = "";
-        private string m_Port = "";
-        private string m_Database = "";
-        private string m_Usuario = "";
-        private string m_Password = "";
-        private string m_ConnectionLifetime = "300";
-
-        public string s_error = "";
-
-        public MySqlConnection Connect()
-        {
-            try
-            {
-                if (!LoadConfig("tsconfig.json"))
-                    throw new Exception("No se pudo cargar la configuración MySQL.");
-
-                if (myConexion == null ||
-                    myConexion.State == ConnectionState.Closed ||
-                    myConexion.State == ConnectionState.Broken)
-                {
-                    string connStr =
-                        $"Server={m_ServerName};" +
-                        $"Port={m_Port};" +
-                        $"Database={m_Database};" +
-                        $"Uid={m_Usuario};" +
-                        $"Pwd={m_Password};" +
-                        $"Connection Lifetime={m_ConnectionLifetime};";
-
-                    myConexion = new MySqlConnection(connStr);
-                    myConexion.Open();
-                }
-
-                return myConexion;
-            }
-            catch (Exception ex)
-            {
-                s_error = ex.Message;
-                throw;
-            }
-        }
-
-        public int Disconnect()
-        {
-            try
-            {
-                if (myConexion != null && myConexion.State == ConnectionState.Open)
-                    myConexion.Close();
-            }
-            catch (Exception ex)
-            {
-                s_error = ex.Message;
-            }
-
-            return 1;
-        }
-
-        public string GetError()
-        {
-            return s_error;
-        }
-
-        private bool LoadConfig(string filePath)
-        {
-            try
-            {
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
-                string iniDirectory = Path.Combine(binDirectory, "Ini");
-                string configPath = Path.Combine(iniDirectory, filePath);
-
-                if (!File.Exists(configPath))
-                {
-                    s_error = "No existe el archivo: " + configPath;
-                    return false;
-                }
-
-                string json = File.ReadAllText(configPath);
-                var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-
-                if (config.ContainsKey("DB_SERVER_MY")) m_ServerName = config["DB_SERVER_MY"];
-                if (config.ContainsKey("DB_PORT_MY")) m_Port = config["DB_PORT_MY"];
-                if (config.ContainsKey("DB_NAME_MY")) m_Database = config["DB_NAME_MY"];
-                if (config.ContainsKey("DB_USER_MY")) m_Usuario = config["DB_USER_MY"];
-                if (config.ContainsKey("DB_PASSWORD_MY")) m_Password = config["DB_PASSWORD_MY"];
-                if (config.ContainsKey("Connection Lifetime")) m_ConnectionLifetime = config["Connection Lifetime"];
-
-                return !string.IsNullOrWhiteSpace(m_ServerName)
-                    && !string.IsNullOrWhiteSpace(m_Port)
-                    && !string.IsNullOrWhiteSpace(m_Database)
-                    && !string.IsNullOrWhiteSpace(m_Usuario)
-                    && !string.IsNullOrWhiteSpace(m_Password);
-            }
-            catch (Exception ex)
-            {
-                s_error = ex.Message;
-                return false;
-            }
-        }
-    }
-}
-Las advertencias
-Estas no impiden compilar:
-FormAlerta.conteo
-frmLector._hojaMarcacionActual
-Las dejamos para después.
-Siguiente paso
-Cuando compile, el siguiente error más probable estará en conexión real o en nombres de columnas del dgvTagList. Ahí seguimos con la UI del tabVinculador.
+Cuando busco sale sin scanner:
+'DS9908R_App.exe' (CLR v4.0.30319: DefaultDomain): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\mscorlib\v4.0_4.0.0.0__b77a5c561934e089\mscorlib.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DefaultDomain): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\DS9908R_App.exe'. Symbols loaded.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms\v4.0_4.0.0.0__b77a5c561934e089\System.Windows.Forms.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System\v4.0_4.0.0.0__b77a5c561934e089\System.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Drawing\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Drawing.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Core\v4.0_4.0.0.0__b77a5c561934e089\System.Core.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Configuration\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.Configuration.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Xml\v4.0_4.0.0.0__b77a5c561934e089\System.Xml.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.Data\v4.0_4.0.0.0__b77a5c561934e089\System.Data.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Newtonsoft.Json.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+baseDirectory-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\
+binDirectory-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64
+iniDirectory-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Ini
+configPath-->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Ini\tsconfig.json
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Numerics\v4.0_4.0.0.0__b77a5c561934e089\System.Numerics.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Runtime.Serialization\v4.0_4.0.0.0__b77a5c561934e089\System.Runtime.Serialization.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+lsPassword->654123 clave->6z+IseYi2U62UBLglqK4Lg==
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Sybase.AdoNet4.AseClient.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.Transactions\v4.0_4.0.0.0__b77a5c561934e089\System.Transactions.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+Query->SELECT identificador, codigo, datos, empresa, estado, clave, turno FROM usuario_timbrado WHERE codigo = @codigo AND clave = @clave
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.EnterpriseServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.EnterpriseServices.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_64\System.EnterpriseServices\v4.0_4.0.0.0__b03f5f7f11d50a3a\System.EnterpriseServices.Wrapper.dll'. Skipped loading symbols. Module is optimized and the debugger option 'Just My Code' is enabled.
+Estado de la conexión después de intentar abrir: Open
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\mscorlib.resources\v4.0_4.0.0.0_es_b77a5c561934e089\mscorlib.resources.dll'. Module was built without symbols.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\System.Windows.Forms.resources\v4.0_4.0.0.0_es_b77a5c561934e089\System.Windows.Forms.resources.dll'. Module was built without symbols.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Interop.CoreScanner.dll'. Module was built without symbols.
+'DS9908R_App.exe' (CLR v4.0.30319: DS9908R_App.exe): Loaded 'C:\Windows\Microsoft.Net\assembly\GAC_MSIL\Accessibility\v4.0_4.0.0.0__b03f5f7f11d50a3a\Accessibility.dll'.
