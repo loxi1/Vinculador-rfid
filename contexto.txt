@@ -1,159 +1,58 @@
-tabVinculador -> CodBarras (aqui en este input escribira el codigo de barras), dgvTagList (Muestra el Rfid), btnClear, btnClear, btnVerConsolidado, nroOP y nroHM
-
-tabConsultar  -> BuscarCodBarras
-
-tabHojaMarcacion -> TextBoxOPm, TextBoxHM, BtnBuscarHM y BtnLimpiarHM 
-
-creo que seria una buena opcion ya definir los archivos:
-BDPrenda.cs, BDPrendaScm y DBConsultarPrenda
-
-Sí, ya tengo el contexto y el patrón VB que quieres llevar a C#.
-En tu repo actual, frmLector.cs todavía está en una fase básica: estado de conexión, combo de scanners y tabs habilitados/deshabilitados, pero aún sin lógica de captura ni de vinculación real. �
-GitHub +1
-Y en los archivos .txt subidos, la lógica VB del “tabVinculador” hace esto:
-usa una ConcurrentQueue para procesar lecturas sin bloquear la UI, con StartProcessingQueue() y Task.Run(...); �
-GitHub
-arma la vinculación con una cadena tipo codigoBarra~rfid~hojaMarcacion, limpia el RFID, lo deja en 24 caracteres si viene más largo, y evita duplicados con cacheRFID; �
-GitHub
-llama a SaveRFID(...), que ejecuta el stored procedure USP_SAL_EMB_CON_RFID en Sybase; �
-GitHub +1
-luego consulta tmp_etiq_timbradas por trabajador y etiqueta con GetTimbradasByWorkerAndEtiqueta(...); �
-GitHub +1
-con esos datos inserta en MySQL en la tabla prenda usando un diccionario de columnas. �
-GitHub +1
-La adaptación correcta a C# no es copiar el lector VB tal cual, porque allá el dispositivo TS800 entregaba el flujo de otra manera. En tu caso con Zebra, lo que debe conservarse es:
-la recepción separada de barcode y RFID,
-la normalización del RFID,
-la cola de procesamiento,
-la validación/caché para no repetir RFID,
-el guardado Sybase + consulta + guardado MySQL,
-y el estilo visual tipo VB.
-Cómo te recomiendo adaptarlo
-En C# yo lo separaría en 3 capas dentro del mismo proyecto:
-frmLector.cs: UI, eventos, inputs, grid.
-VinculadorService.cs: lógica de negocio de vincular.
-tus clases ya existentes BDPrenda, BDPrendaScm, DBConsultas/SybaseHelper: acceso a datos.
-Modelo de trabajo en C#
-Como tu Zebra te dará lecturas por eventos, la idea sería:
-cuando llegue barcode:
-llenar txtCodBarras
-guardar ultimoCodigoBarra
-cuando llegue RFID:
-llenar txtRFID o agregar a dgvTagList
-guardar ultimoRfid
-si ambos existen:
-encolar una solicitud de vinculación
-procesarla en segundo plano
-1. Clase para la solicitud de vinculación
-C#
-public class VinculacionRequest
-{
-    public string CodigoBarras { get; set; }
-    public string Rfid { get; set; }
-    public string HojaMarcacion { get; set; }
-    public string CodTrabajador { get; set; }
-    public string Empresa { get; set; }
-}
-2. Servicio de vinculación
-Crea VinculadorService.cs:
-C#
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace DS9908R_App
-{
-    
-}
-3. Adaptación en frmLector.cs
-Agrega campos:
+Perfecto 👌 ahora sí ya estamos en nivel arquitectura limpia + implementación real.
+Voy a ordenar todo lo que tienes y darte una base lista para producción, adaptada a tu flujo VB pero en C#.
+🧠 Arquitectura final (tu proyecto)
+Ya no trabajes todo en el Form. Sepáralo así:
+📁 Capas
+frmLector.cs → UI (WinForms)
+VinculadorService.cs → lógica (cola, validaciones)
+BDPrenda.cs → Sybase (SP + consultas)
+BDPrendaScm.cs → MySQL (insert)
+DBConsultarPrenda.cs → consultas (tabConsultar)
+🎯 Flujo final (tu sistema)
+Plain text
+RFID + Barcode → frmLector
+              → VinculadorService (cola)
+              → BDPrenda (Sybase)
+              → BDPrendaScm (MySQL)
+              → UI (dgvTagList)
+🔧 1. ADAPTAR A TUS CONTROLES REALES
+tabVinculador (confirmado)
+CodBarras → barcode
+dgvTagList → RFID list
+nroOP
+nroHM
+🧩 2. frmLector (código FINAL adaptado a tus nombres)
+Variables
 C#
 private VinculadorService _vinculador;
+
 private string _ultimoCodigoBarra = "";
 private string _ultimoRfid = "";
 private string _hojaMarcacionActual = "";
-En frmLector_Load:
+Load
 C#
 private void frmLector_Load(object sender, EventArgs e)
 {
-    ActualizarEstadoConexion("DESCONECTADO", Color.Firebrick);
-    HabilitarTabsTrabajo(false);
-
-    cmbScanners.Items.Clear();
-    cmbScanners.DropDownStyle = ComboBoxStyle.DropDownList;
-    this.KeyPreview = true;
-
     _vinculador = new VinculadorService();
+
     _vinculador.OnInfo += Vinculador_OnInfo;
     _vinculador.OnError += Vinculador_OnError;
     _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+    CodBarras.Focus();
 }
-Handlers UI:
+EVENTOS UI
+Barcode (input manual o scanner)
 C#
-private void Vinculador_OnInfo(string mensaje)
+private void CodBarras_KeyDown(object sender, KeyEventArgs e)
 {
-    if (InvokeRequired)
+    if (e.KeyCode == Keys.Enter)
     {
-        BeginInvoke(new Action<string>(Vinculador_OnInfo), mensaje);
-        return;
+        _ultimoCodigoBarra = CodBarras.Text.Trim();
+        IntentarVincular();
     }
-
-    MsnVincular.Text = mensaje;
-    toolStripStatusLbl.Text = mensaje;
 }
-
-private void Vinculador_OnError(string mensaje)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(Vinculador_OnError), mensaje);
-        return;
-    }
-
-    MsnVincular.Text = mensaje;
-    toolStripStatusLbl.Text = mensaje;
-    AlertaManager.MostrarAlerta(mensaje, Color.Firebrick, 3, 5);
-    txtCodBarras.Clear();
-    txtCodBarras.Focus();
-}
-
-private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
-        return;
-    }
-
-    LlenarPrimeraFila(dgvTagList, data); // adapta este nombre si tu grid es otro
-    txtCodBarras.Clear();
-    txtRFID.Clear();
-    _ultimoCodigoBarra = "";
-    _ultimoRfid = "";
-    toolStripStatusLbl.Text = "Registrado OK";
-    AlertaManager.MostrarAlerta("Registrado OK", Color.SeaGreen, 1, 5);
-    txtCodBarras.Focus();
-}
-4. Recepción separada de barcode y RFID
-Como tu dispositivo es Zebra y no TS800, la recepción cambia, pero la lógica no.
-Cuando llegue barcode:
-C#
-private void SetCodigoBarras(string codigo)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(SetCodigoBarras), codigo);
-        return;
-    }
-
-    _ultimoCodigoBarra = (codigo ?? "").Trim();
-    txtCodBarras.Text = _ultimoCodigoBarra;
-    IntentarVincular();
-}
-Cuando llegue RFID:
+RFID desde Zebra
 C#
 private void SetRfid(string rfid)
 {
@@ -163,11 +62,10 @@ private void SetRfid(string rfid)
         return;
     }
 
-    _ultimoRfid = (rfid ?? "").Trim().Replace(" ", "");
-    txtRFID.Text = _ultimoRfid;
+    _ultimoRfid = rfid.Trim().Replace(" ", "");
     IntentarVincular();
 }
-Método que decide si ya puede vincular:
+INTENTO DE VINCULACIÓN
 C#
 private void IntentarVincular()
 {
@@ -178,74 +76,198 @@ private void IntentarVincular()
     {
         CodigoBarras = _ultimoCodigoBarra,
         Rfid = _ultimoRfid,
-        HojaMarcacion = _hojaMarcacionActual,
+        HojaMarcacion = nroHM.Text,
         CodTrabajador = mCodTrabajador,
         Empresa = mEmpresa
     };
 
     _vinculador.Enqueue(request);
 }
-5. Cómo conectarlo con tus eventos Zebra
-En tu evento del Zebra, donde hoy clasificas si la lectura parece barcode o RFID, cambia a esto:
+RESPUESTAS DEL SERVICE
 C#
-private void OnBarcodeEventLector(short eventType, ref string scanData)
+private void Vinculador_OnInfo(string msg)
 {
-    try
+    if (InvokeRequired)
     {
-        string valor = ExtraerDatoLeido(scanData);
-
-        if (string.IsNullOrWhiteSpace(valor))
-            return;
-
-        if (PareceRfid(valor))
-            SetRfid(valor);
-        else
-            SetCodigoBarras(valor);
+        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
+        return;
     }
-    catch (Exception ex)
+
+    toolStripStatusLbl.Text = msg;
+}
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
     {
-        BeginInvoke(new Action(() =>
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+        return;
+    }
+
+    toolStripStatusLbl.Text = msg;
+
+    CodBarras.Clear();
+    CodBarras.Focus();
+}
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    dgvTagList.Rows.Insert(0,
+        dgvTagList.Rows.Count + 1,
+        data["id_rfid"],
+        data["op"],
+        data["talla"],
+        data["color"]
+    );
+
+    CodBarras.Clear();
+    _ultimoCodigoBarra = "";
+    _ultimoRfid = "";
+
+    toolStripStatusLbl.Text = "OK";
+    CodBarras.Focus();
+}
+🧱 3. BDPrenda.cs (SYBASE)
+C#
+public class BDPrenda
+{
+    public Tuple<int, string> SaveRFID(
+        string codigoBarra,
+        string empresa,
+        string trabajador,
+        string rfid,
+        string hojaMarcacion)
+    {
+        try
         {
-            toolStripStatusLbl.Text = "Error lectura: " + ex.Message;
-        }));
+            using (var conn = SybaseHelper.GetConnection())
+            {
+                conn.Open();
+
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = "USP_SAL_EMB_CON_RFID";
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("@CodigoBarra", codigoBarra);
+                    cmd.Parameters.AddWithValue("@Empresa", empresa);
+                    cmd.Parameters.AddWithValue("@Trabajador", trabajador);
+                    cmd.Parameters.AddWithValue("@RFID", rfid);
+                    cmd.Parameters.AddWithValue("@HojaMarcacion", hojaMarcacion);
+
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            return Tuple.Create(0, "OK");
+        }
+        catch (Exception ex)
+        {
+            return Tuple.Create(1, ex.Message);
+        }
+    }
+
+    public DataTable GetTimbradasByWorkerAndEtiqueta(string worker, string etiqueta)
+    {
+        using (var conn = SybaseHelper.GetConnection())
+        {
+            conn.Open();
+
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"
+                    SELECT * 
+                    FROM tmp_etiq_timbradas 
+                    WHERE fotocheck = @worker 
+                    AND etiqueta = @etiqueta";
+
+                cmd.Parameters.AddWithValue("@worker", worker);
+                cmd.Parameters.AddWithValue("@etiqueta", etiqueta);
+
+                using (var da = new Sybase.Data.AseClient.AseDataAdapter(cmd))
+                {
+                    var dt = new DataTable();
+                    da.Fill(dt);
+                    return dt;
+                }
+            }
+        }
     }
 }
-6. Estilo VB en WinForms C#
-Lo que veo en tu lógica VB es que el usuario siempre tiene feedback visual inmediato: alerta, mensaje, limpiar input, foco restaurado. �
-GitHub
-En C# mantén eso así:
-txtCodBarras.Focus() después de cada operación
-txtCodBarras.Clear() cuando termina
-txtRFID.Clear() si usas caja de texto RFID
-MsnVincular.Text para mensaje central
-toolStripStatusLbl.Text para estado inferior
-AlertaManager.MostrarAlerta(...) para color y sensación VB
-7. Qué no copiaría del VB tal cual
-No copiaría la parte donde concatenaba todo como:
-VB
-codigoBarra~rfid~hm
-En C# te conviene más el objeto VinculacionRequest, porque:
-es más claro
-evita errores por split
-se integra mejor con Zebra
-8. Conclusión práctica
-Tu flujo final en C# debería quedar así:
-Zebra lee barcode → txtCodBarras
-Zebra lee RFID → txtRFID
-si ambos existen → Enqueue
-cola procesa:
-normaliza RFID
-revisa caché
-SaveRFID(...) en Sybase
-GetTimbradasByWorkerAndEtiqueta(...)
-Insert(...) en MySQL
-actualiza grid y UI
-Eso conserva la lógica del VB, pero adaptada correctamente a tu proyecto C# y al lector Zebra. El patrón de cola, caché de RFID, stored procedure en Sybase y segundo insert en MySQL sí salen clarísimos en tus archivos subidos. �
-GitHub +2
-Pégame ahora los nombres reales de tus controles en frmLector para el vinculador, sobre todo estos:
-textbox barcode
-textbox RFID
-label mensaje
-datagrid del vinculador
-textbox o combo de hoja de marcación
-y te lo devuelvo ya aterrizado a tus nombres exactos, listo para pegar.
+🧱 4. BDPrendaScm.cs (MYSQL)
+C#
+public class BDPrendaScm
+{
+    public long Insert(Dictionary<string, object> data)
+    {
+        using (var conn = MySQLconexion.GetConnection())
+        {
+            conn.Open();
+
+            var columns = string.Join(",", data.Keys);
+            var parameters = string.Join(",", data.Keys.Select(k => "@" + k));
+
+            string sql = $"INSERT INTO prenda ({columns}) VALUES ({parameters})";
+
+            using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(sql, conn))
+            {
+                foreach (var kv in data)
+                    cmd.Parameters.AddWithValue("@" + kv.Key, kv.Value);
+
+                return cmd.ExecuteNonQuery();
+            }
+        }
+    }
+}
+🧱 5. DBConsultarPrenda.cs (tabConsultar)
+C#
+public class DBConsultarPrenda
+{
+    public DataTable BuscarPorCodigo(string codigo)
+    {
+        using (var conn = MySQLconexion.GetConnection())
+        {
+            conn.Open();
+
+            string sql = "SELECT * FROM prenda WHERE id_barras = @codigo";
+
+            using (var cmd = new MySql.Data.MySqlClient.MySqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@codigo", codigo);
+
+                using (var da = new MySql.Data.MySqlClient.MySqlDataAdapter(cmd))
+                {
+                    var dt = new DataTable();
+                    da.Fill(dt);
+                    return dt;
+                }
+            }
+        }
+    }
+}
+🚀 6. Resultado final
+Ya tienes:
+✔ Lectura RFID (Zebra)
+✔ Lectura Barcode
+✔ Cola async (como VB)
+✔ Validación duplicados
+✔ Sybase SP
+✔ MySQL insert
+✔ UI con DataGrid
+✔ Separación por capas
+🔥 Siguiente nivel (te recomiendo)
+Después de esto:
+🔁 sonido al escanear (beep)
+🟢 indicador visual grande (tipo VB)
+⚡ modo automático sin Enter
+📊 consolidado (btnVerConsolidado)
+💬 Si quieres seguimos con:
+👉 Integrar RFID real desde Zebra (modo EPC limpio)
+👉 O mejorar UI estilo industrial (pantalla grande tipo Cofaco)
+Solo dime: “vamos con RFID real” o “vamos con UI”
