@@ -584,9 +584,23 @@ namespace DS9908R_App
 
             _ultimoRfid = (rfid ?? "").Trim().Replace(" ", "");
 
+            if (string.IsNullOrWhiteSpace(_ultimoRfid))
+                return;
+
+            AgregarRfidAlGrid(_ultimoRfid);
+
             toolStripStatusLbl.Text = "RFID leído: " + _ultimoRfid;
 
             IntentarVincular();
+        }
+
+        private void AgregarRfidAlGrid(string rfid)
+        {
+            if (string.IsNullOrWhiteSpace(rfid))
+                return;
+
+            rfid = rfid.Trim().ToUpperInvariant();
+            dgvTagList.Rows.Insert(0, rfid);
         }
 
         private void IntentarVincular()
@@ -702,6 +716,19 @@ namespace DS9908R_App
             {
                 toolStripStatusLbl.Text = "Error GET_SCANNERS: " + ex.Message;
             }
+        }
+
+        private void btnClear_Click(object sender, EventArgs e)
+        {
+            dgvTagList.Rows.Clear();
+            _rfidLeidosGrid.Clear();
+
+            _ultimoRfid = "";
+            _ultimoCodigoBarra = "";
+
+            toolStripStatusLbl.Text = "Lista RFID limpiada";
+            CodBarras.Clear();
+            CodBarras.Focus();
         }
     }
 }
