@@ -1,8 +1,55 @@
-Rebuild started...
-1>------ Rebuild All started: Project: DS9908R_App, Configuration: Debug x64 ------
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(115,47,115,58): error CS7036: There is no argument given that corresponds to the required formal parameter 'm_pCoreScanner' of 'DiscoverScanner.GetInstance(CCoreScannerClass)'
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\FormAlerta.cs(16,21,16,27): warning CS0169: The field 'FormAlerta.conteo' is never used
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(24,24,24,44): warning CS0414: The field 'frmLector._hojaMarcacionActual' is assigned but its value is never used
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(32,22,32,36): warning CS0414: The field 'frmLector.m_bScannerOpen' is assigned but its value is never used
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-verificar estos errores
+Ese error es claro:
+Problema
+DiscoverScanner.GetInstance() en tu proyecto no es sin parámetros.
+Tu clase está definida para recibir:
+C#
+CCoreScannerClass m_pCoreScanner
+Por eso falla esto:
+C#
+discoverScanner = DiscoverScanner.GetInstance();
+y debe ser así:
+C#
+discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+Corrección exacta
+En frmLector_Load, cambia esta línea:
+C#
+discoverScanner = DiscoverScanner.GetInstance();
+por esta:
+C#
+discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+Orden correcto
+Como discoverScanner depende de m_pCoreScanner, inicialízalo después de crear m_pCoreScanner:
+C#
+try
+{
+    m_pCoreScanner = new CCoreScannerClass();
+    discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+}
+catch (Exception ex)
+{
+    MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
+}
+Y scanToConnect lo dejas aparte:
+C#
+scanToConnect = ScanToConnect.GetInstance();
+Advertencias
+Estas no bloquean compilación:
+_hojaMarcacionActual no usado
+m_bScannerOpen no usado
+FormAlerta.conteo no usado
+Las puedes dejar por ahora.
+Resumen
+Haz este bloque en frmLector_Load:
+C#
+scanToConnect = ScanToConnect.GetInstance();
+
+try
+{
+    m_pCoreScanner = new CCoreScannerClass();
+    discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+}
+catch (Exception ex)
+{
+    MessageBox.Show("Error inicializando CoreScanner: " + ex.Message);
+}
+Luego recompila. Si sale otro error, ya probablemente será de Scanner[], GetScanners(...) o del llenado de cmbScanners.
