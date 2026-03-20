@@ -39,6 +39,7 @@ namespace DS9908R_App
         private bool m_bSuccessOpen;
         private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
+        private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         public frmLector()
         {
