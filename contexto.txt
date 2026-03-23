@@ -1,156 +1,242 @@
-Sí, revisé VinculadorService.cs y está bastante bien encaminado. Hace exactamente el flujo principal que buscabas: encola solicitudes con ConcurrentQueue, procesa una por una, normaliza el RFID a 24 caracteres si viene más largo, guarda primero en Sybase con SaveRFID, luego consulta tmp_etiq_timbradas, arma el diccionario y finalmente inserta en MySQL con BDPrendaScm.Insert. Además dispara eventos a la UI con OnInfo, OnError y OnInsertadoOk. �
-GitHub +1
-Lo más útil ahora, si vas a configurar el lector de barras para enviar Enter, es esto:
-1. Tu VinculadorService ya sirve
-No lo cambiaría de fondo todavía. La estructura actual está bien para esta etapa:
-Enqueue() mete la solicitud en cola. �
-GitHub
-StartProcessingQueue() procesa con Task.Run(() => ProcesarVinculacion(...)). �
-GitHub
-ProcesarVinculacion() valida barcode vacío, RFID vacío, repetidos en caché, guarda en Sybase y luego en MySQL. �
-GitHub +1
-2. El cambio importante está más en frmLector, no en el service
-Como vas a hacer que el lector de barras dispare Enter, entonces el flujo ideal queda así:
-RFID: sigue entrando por OnBarcodeEventLector() y termina en SetRfid(...).
-Código de barras: puede entrar por el textbox CodBarras y disparar CodBarras_KeyDown.
-En CodBarras_KeyDown, cuando llegue Enter, debes tomar CodBarras.Text, guardarlo en _ultimoCodigoBarra y llamar IntentarVincular().
-Ese enfoque es consistente con tu idea actual.
-3. Qué sí mejoraría en VinculadorService
-Hay dos mejoras que te recomiendo para evitar problemas después.
-A. Proteger mejor _isProcessing
-Ahora usas un bool _isProcessing para impedir que arranquen varios procesadores a la vez. Eso funciona en muchos casos, pero no es totalmente seguro si entran lecturas muy seguidas desde distintos eventos. Hoy haces:
+Sí. La clave ahora es que el flujo soporte dos modos:
+modo mixto: RFID + código de barras
+modo solo barras: clientes que no tienen RFID
+Entonces no conviene que IntentarVincular() exija siempre ambos.
+Enfoque recomendado
+Haz que frmLector tenga una bandera de trabajo:
 C#
-if (_isProcessing) return;
-_isProcessing = true;
-Eso puede tener condición de carrera. �
-GitHub
-Para dejarlo más sólido, cambia eso por un lock simple.
-Agrega este campo:
-C#
-private readonly object _queueLock = new object();
-Y cambia StartProcessingQueue() por:
-C#
-private async Task StartProcessingQueue()
-{
-    lock (_queueLock)
-    {
-        if (_isProcessing) return;
-        _isProcessing = true;
-    }
-
-    try
-    {
-        while (_queue.TryDequeue(out var request))
-        {
-            await Task.Run(() => ProcesarVinculacion(request));
-        }
-    }
-    finally
-    {
-        lock (_queueLock)
-        {
-            _isProcessing = false;
-        }
-
-        if (!_queue.IsEmpty)
-        {
-            _ = StartProcessingQueue();
-        }
-    }
-}
-Eso evita que se queden elementos en cola si entró uno nuevo justo cuando salía el procesamiento.
-B. Mejorar el mensaje de duplicado
-Ahora si el RFID ya existe en caché, el mensaje es:
-C#
-"Error: El RFID ya existe. Verifique."
-Eso está bien, pero como tú trabajas en planta y el operador necesita algo más directo, yo lo cambiaría por:
-C#
-OnError?.Invoke("RFID repetido: " + rfid);
-La validación actual está aquí. �
-GitHub
-4. No cambiaría todavía estas partes
-Estas partes déjalas como están por ahora:
-NormalizarRfid() con recorte a 24 caracteres. �
-GitHub
-GuardarEnCache() con límite de 500. �
-GitHub
-el armado de insertData con op, corte, subcorte, talla, color, etc. �
-GitHub
-Eso ya está alineado con la lógica de negocio que vienes copiando del sistema anterior.
-5. Cómo dejarlo funcionando con el Enter del lector
-En frmLector, tu CodBarras_KeyDown debería quedar así:
+private bool _usarRfid = true;
+Esa bandera luego puede venir de:
+configuración
+checkbox
+combo de modo
+o detectar si el scanner RFID está disponible
+Por ahora puedes dejarla fija o atarla a un CheckBox, por ejemplo chkUsarRfid.
+1) CodBarras_KeyDown final
+Esto sirve tanto para lector que manda Enter como para digitación manual.
 C#
 private void CodBarras_KeyDown(object sender, KeyEventArgs e)
 {
-    if (e.KeyCode == Keys.Enter)
+    if (e.KeyCode != Keys.Enter)
+        return;
+
+    e.SuppressKeyPress = true;
+    e.Handled = true;
+
+    string codigo = (CodBarras.Text ?? "").Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo) || codigo == "Codigo de Barras...")
     {
-        e.SuppressKeyPress = true;
-
-        _ultimoCodigoBarra = (CodBarras.Text ?? "").Trim();
-
-        if (string.IsNullOrWhiteSpace(_ultimoCodigoBarra))
-        {
-            toolStripStatusLbl.Text = "Código de barras vacío";
-            return;
-        }
-
-        toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
-
-        IntentarVincular();
+        toolStripStatusLbl.Text = "Código de barras vacío";
+        return;
     }
-}
-Y IntentarVincular() debe seguir siendo el punto donde se juntan:
-_ultimoCodigoBarra
-_ultimoRfid
-Si ambos existen, encolas el request.
-6. Recomendación práctica
-Como ya te funciona el RFID, yo haría esta secuencia:
-dejar VinculadorService casi igual, solo con el fix del lock;
-configurar el scanner de barras para mandar Enter;
-probar este flujo:
-lees RFID → aparece en dgvTagList
-lees barcode → cae en CodBarras_KeyDown
-IntentarVincular() encola
-VinculadorService guarda
-Con eso ya tendrías el flujo base estable.
-Si quieres, en el siguiente paso te dejo el bloque completo de IntentarVincular() y CodBarras_KeyDown revisado para que quede amarrado con tu VinculadorService actual.
 
-Sí. Vi el repo actualizado y ya estás muy cerca.
-Lo que vi
-En frmLector.cs ya tienes:
-CodBarras_KeyDown guardando _ultimoCodigoBarra y llamando IntentarVincular(). �
-GitHub +1
-SetRfid() guardando _ultimoRfid, agregando al grid y llamando IntentarVincular(). �
-GitHub +1
-IntentarVincular() creando VinculacionRequest con barcode, RFID y nroHM.Text. �
-GitHub
-Y en VinculadorService.cs ya tienes la cola, Enqueue() y el procesamiento. �
-GitHub +2
-Qué te recomiendo ajustar ahora
-1. Mejorar CodBarras_KeyDown
-Déjalo así para que no meta salto de línea ni beep raro al presionar Enter:
+    _ultimoCodigoBarra = codigo;
+    toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
+
+    IntentarVincular();
+}
+2) SetCodigoBarras final
+Esto es para cuando el Zebra entregue un barcode por evento, sin pasar por teclado.
 C#
-private void CodBarras_KeyDown(object sender, KeyEventArgs e)
+private void SetCodigoBarras(string codigo)
 {
-    if (e.KeyCode == Keys.Enter)
+    BeginInvoke(new Action(() =>
     {
-        e.SuppressKeyPress = true;
-        e.Handled = true;
-
-        _ultimoCodigoBarra = (CodBarras.Text ?? "").Trim();
+        _ultimoCodigoBarra = (codigo ?? "").Trim();
 
         if (string.IsNullOrWhiteSpace(_ultimoCodigoBarra))
+            return;
+
+        CodBarras.Text = _ultimoCodigoBarra;
+        toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
+
+        IntentarVincular();
+    }));
+}
+3) SetRfid final
+C#
+private void SetRfid(string rfid)
+{
+    BeginInvoke(new Action(() =>
+    {
+        rfid = (rfid ?? "").Trim().ToUpperInvariant().Replace(" ", "");
+
+        if (string.IsNullOrWhiteSpace(rfid))
+            return;
+
+        if (_rfidLeidos.Contains(rfid))
         {
-            toolStripStatusLbl.Text = "Código de barras vacío";
+            toolStripStatusLbl.Text = "RFID repetido: " + rfid;
             return;
         }
 
-        toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
+        _rfidLeidos.Add(rfid);
+        _ultimoRfid = rfid;
+
+        if (dgvTagList.Columns.Count == 0)
+            ConfigurarGridRfid();
+
+        dgvTagList.Rows.Insert(0, rfid);
+
+        toolStripStatusLbl.Text = "RFID leído: " + rfid;
+
         IntentarVincular();
+    }));
+}
+4) IntentarVincular() preparado para clientes sin RFID
+Aquí está la parte importante.
+C#
+private void IntentarVincular()
+{
+    string codigo = (_ultimoCodigoBarra ?? "").Trim();
+    string rfid = (_ultimoRfid ?? "").Trim();
+    string hojaMarcacion = (nroHM.Text ?? "").Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo))
+        return;
+
+    // Modo con RFID: exige ambos
+    if (_usarRfid)
+    {
+        if (string.IsNullOrWhiteSpace(rfid))
+            return;
+    }
+    else
+    {
+        // Modo solo barras: manda vacío o null
+        rfid = "";
+    }
+
+    var request = new VinculacionRequest
+    {
+        CodigoBarras = codigo,
+        Rfid = rfid,
+        HojaMarcacion = hojaMarcacion,
+        CodTrabajador = mCodTrabajador,
+        Empresa = mEmpresa,
+        UsarRfid = _usarRfid
+    };
+
+    _vinculador.Enqueue(request);
+}
+5) Agrega UsarRfid al request
+En VinculacionRequest.cs:
+C#
+namespace DS9908R_App
+{
+    public class VinculacionRequest
+    {
+        public string CodigoBarras { get; set; }
+        public string Rfid { get; set; }
+        public string HojaMarcacion { get; set; }
+        public string CodTrabajador { get; set; }
+        public string Empresa { get; set; }
+        public bool UsarRfid { get; set; }
     }
 }
-Con eso, si configuras el lector para enviar Enter, el flujo queda limpio.
-2. Endurecer IntentarVincular()
-Para evitar encolar varias veces el mismo par cuando el RFID ya quedó leído y el barcode vuelve a disparar Enter, usa esto:
+6) Ajuste en VinculadorService.cs
+Tu service hoy valida que RFID no esté vacío siempre. Eso hay que cambiarlo.
+Busca esta parte:
 C#
-private
+if (string.IsNullOrWhiteSpace(rfid))
+{
+    OnError?.Invoke("El RFID está vacío.");
+    return;
+}
+Y cámbiala por:
+C#
+if (request.UsarRfid && string.IsNullOrWhiteSpace(rfid))
+{
+    OnError?.Invoke("El RFID está vacío.");
+    return;
+}
+También la validación de duplicado
+Busca esto:
+C#
+if (_cacheRFID.ContainsKey(rfid))
+{
+    OnError?.Invoke("RFID repetido: " + rfid);
+    return;
+}
+Y cámbialo por:
+C#
+if (request.UsarRfid && !string.IsNullOrWhiteSpace(rfid) && _cacheRFID.ContainsKey(rfid))
+{
+    OnError?.Invoke("RFID repetido: " + rfid);
+    return;
+}
+Y al guardar cache
+Busca:
+C#
+GuardarEnCache(rfid);
+y deja:
+C#
+if (request.UsarRfid && !string.IsNullOrWhiteSpace(rfid))
+    GuardarEnCache(rfid);
+Eso aplícalo en los dos puntos donde hoy guardas cache.
+7) Si SaveRFID(...) en Sybase exige RFID siempre
+Aquí hay dos escenarios:
+Escenario A: el SP acepta RFID vacío
+Entonces no haces nada más.
+Escenario B: el SP exige RFID sí o sí
+Entonces en modo solo barras no llames SaveRFID(...), sino otro método, por ejemplo:
+SaveSoloCodigoBarra(...)
+o insertar directo en MySQL
+o consultar primero y registrar sin RFID
+Como todavía no me has mostrado ese SP completo, la forma segura es esta:
+C#
+Tuple<int, string> result;
+
+if (request.UsarRfid)
+{
+    result = _bdPrenda.SaveRFID(
+        codigoBarra,
+        request.Empresa,
+        request.CodTrabajador,
+        rfid,
+        request.HojaMarcacion
+    );
+}
+else
+{
+    result = Tuple.Create(0, "OK");
+}
+Así dejas que el modo solo barras avance al siguiente paso sin romperse.
+8) frmLector_Load
+Por ahora puedes dejarlo así:
+C#
+private void frmLector_Load(object sender, EventArgs e)
+{
+    ConfigurarGridRfid();
+
+    _usarRfid = true; // luego esto puede venir de un checkbox o configuración
+
+    _vinculador = new VinculadorService();
+    _vinculador.OnInfo += Vinculador_OnInfo;
+    _vinculador.OnError += Vinculador_OnError;
+    _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+    CodBarras.Focus();
+}
+Si quieres dejarlo preparado desde ya para clientes solo barras, usa un checkbox:
+C#
+private void chkUsarRfid_CheckedChanged(object sender, EventArgs e)
+{
+    _usarRfid = chkUsarRfid.Checked;
+}
+9) Resumen práctico
+Con esto tu sistema queda listo para:
+Cliente con RFID
+lee RFID
+aparece en dgvTagList
+lee código de barras
+Enter
+vincula
+Cliente sin RFID
+solo lee código de barras
+Enter
+vincula sin esperar RFID
+10) Qué te recomiendo ahora
+El siguiente ajuste importante es revisar VinculadorService.cs para dejarlo exactamente con estas condiciones de UsarRfid, porque ahí está la parte que hoy te bloquearía el modo solo barras.
+Si me pegas el contenido actual de VinculadorService.cs, te lo devuelvo ya corregido completo.
