@@ -13,5 +13,6 @@ namespace DS9908R_App
         public string HojaMarcacion { get; set; }
         public string CodTrabajador { get; set; }
         public string Empresa { get; set; }
+        public bool UsarRfid { get; set; }
     }
 }

@@ -40,7 +40,6 @@ namespace DS9908R_App
         private bool[] m_arSelectedTypes;
         private List<string> claimlist = new List<string>();
         private bool m_bSuccessOpen;
-        private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
         private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -506,7 +505,7 @@ namespace DS9908R_App
 
         private void ActualizarCantidadRfid()
         {
-            cantidadRfid.Text = _rfidPendientes.Count.ToString();
+            cantidadRFID.Text = _rfidPendientes.Count.ToString();
         }
 
         private string HexTokensATexto(string entrada)
@@ -625,31 +624,12 @@ namespace DS9908R_App
             if (e.KeyCode != Keys.Enter)
                 return;
 
-            e.SuppressKeyPress = true;
-            e.Handled = true;
+            string codigo = CodBarras.Text.Trim();
 
-            string codigo = (CodBarras.Text ?? "").Trim();
-
-            if (string.IsNullOrWhiteSpace(codigo) || codigo == "Codigo de Barras...")
-            {
-                toolStripStatusLbl.Text = "Código de barras vacío";
+            if (string.IsNullOrWhiteSpace(codigo))
                 return;
-            }
 
             _ultimoCodigoBarra = codigo;
-
-            if (_rfidPendientes.Count > 1)
-            {
-                toolStripStatusLbl.Text = "Error: hay más de un RFID leído. Use Limpiar.";
-                return;
-            }
-
-            if (_rfidPendientes.Count == 1)
-                _ultimoRfid = _rfidPendientes[0];
-            else
-                _ultimoRfid = "";
-
-            toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
 
             IntentarVincular();
         }
@@ -658,35 +638,32 @@ namespace DS9908R_App
         {
             BeginInvoke(new Action(() =>
             {
-                epc = (epc ?? "").Trim().ToUpperInvariant().Replace(" ", "");
+                epc = (epc ?? "").Trim().ToUpperInvariant();
 
                 if (string.IsNullOrWhiteSpace(epc))
                     return;
 
-                if (_rfidLeidos.Contains(epc))
+                if (_rfidPendientes.Contains(epc))
                 {
-                    toolStripStatusLbl.Text = "RFID repetido: " + epc;
+                    toolStripStatusLbl.Text = "RFID repetido";
                     return;
                 }
 
-                _rfidLeidos.Add(epc);
                 _rfidPendientes.Add(epc);
                 _ultimoRfid = epc;
 
-                if (dgvTagList.Columns.Count == 0)
-                    ConfigurarGridRfid();
+                cantidadRFID.Text = _rfidPendientes.Count.ToString();
 
                 dgvTagList.Rows.Insert(0, epc);
 
-                ActualizarCantidadRfid();
-
                 if (_rfidPendientes.Count > 1)
                 {
-                    toolStripStatusLbl.Text = "Error: se detectó más de un RFID. Presione Limpiar.";
-                    return;
+                    toolStripStatusLbl.Text = "ERROR: Más de un RFID detectado";
                 }
-
-                toolStripStatusLbl.Text = "RFID leído: " + epc;
+                else
+                {
+                    toolStripStatusLbl.Text = "RFID OK";
+                }
             }));
         }
 
@@ -702,17 +679,21 @@ namespace DS9908R_App
         private void IntentarVincular()
         {
             string codigo = (_ultimoCodigoBarra ?? "").Trim();
-            string rfid = (_ultimoRfid ?? "").Trim();
             string hojaMarcacion = (nroHM.Text ?? "").Trim();
 
             if (string.IsNullOrWhiteSpace(codigo))
                 return;
 
+            // 🔴 VALIDACIÓN CRÍTICA
             if (_rfidPendientes.Count > 1)
             {
-                toolStripStatusLbl.Text = "Error: múltiples RFID detectados.";
+                toolStripStatusLbl.Text = "ERROR: múltiples RFID detectados. Limpie.";
                 return;
             }
+
+            string rfid = _rfidPendientes.Count == 1
+                ? _rfidPendientes[0]
+                : "";
 
             var request = new VinculacionRequest
             {
@@ -723,6 +704,8 @@ namespace DS9908R_App
                 Empresa = mEmpresa,
                 UsarRfid = !string.IsNullOrWhiteSpace(rfid)
             };
+
+            toolStripStatusLbl.Text = "Procesando...";
 
             _vinculador.Enqueue(request);
         }
@@ -775,13 +758,22 @@ namespace DS9908R_App
 
             toolStripStatusLbl.Text = "OK";
 
+            // 🔥 LIMPIAR TODO
+            CodBarras.Clear();
+            _ultimoCodigoBarra = "";
+            _ultimoRfid = "";
+            _rfidPendientes.Clear();
+
+            dgvTagList.Rows.Clear();
+            cantidadRFID.Text = "0";
+
             if (data.ContainsKey("op"))
                 nroOP.Text = Convert.ToString(data["op"]);
 
             if (data.ContainsKey("hoja_marcacion"))
                 nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
 
-            LimpiarLecturaActual();
+            CodBarras.Focus();
         }
 
         private void CargarScannersEnComboDesdeSDK()
@@ -835,7 +827,11 @@ namespace DS9908R_App
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            LimpiarLecturaActual();
+            _rfidPendientes.Clear();
+            dgvTagList.Rows.Clear();
+            cantidadRFID.Text = "0";
+
+            toolStripStatusLbl.Text = "RFID limpiados";
         }
 
         private void CodBarras_Leave(object sender, EventArgs e)
