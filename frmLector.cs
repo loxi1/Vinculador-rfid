@@ -712,17 +712,15 @@ namespace DS9908R_App
 
         private void LimpiarLecturaActual()
         {
-            dgvTagList.Rows.Clear();
-            _rfidLeidos.Clear();
             _rfidPendientes.Clear();
-
             _ultimoRfid = "";
             _ultimoCodigoBarra = "";
 
+            dgvTagList.Rows.Clear();
+            cantidadRFID.Text = "0";
             CodBarras.Clear();
-            ActualizarCantidadRfid();
 
-            toolStripStatusLbl.Text = "Lecturas limpiadas";
+            SetEstado("Listo para nueva lectura", Color.LightGreen);
             CodBarras.Focus();
         }
 
@@ -734,7 +732,7 @@ namespace DS9908R_App
                 return;
             }
 
-            toolStripStatusLbl.Text = msg;
+            SetEstado(msg, Color.Khaki);
         }
 
         private void Vinculador_OnError(string msg)
@@ -745,7 +743,8 @@ namespace DS9908R_App
                 return;
             }
 
-            toolStripStatusLbl.Text = msg;
+            SetEstado(msg, Color.LightCoral);
+            CodBarras.Focus();
         }
 
         private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
@@ -850,6 +849,21 @@ namespace DS9908R_App
                 CodBarras.Text = "";
                 CodBarras.ForeColor = pinturaNegra;
             }
+        }
+        private void SetEstado(string mensaje, Color color)
+        {
+            toolStripStatusLbl.Text = mensaje;
+            toolStripStatusLbl.BackColor = color;
+        }
+
+        private void ReproducirOk()
+        {
+            System.Media.SystemSounds.Asterisk.Play();
+        }
+
+        private void ReproducirError()
+        {
+            System.Media.SystemSounds.Hand.Play();
         }
     }
 }
