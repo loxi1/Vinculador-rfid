@@ -1,251 +1,560 @@
-aca me ayudas hay mensajes que se muestran quizas es un mensaje de error:
-Private Sub SaveCodigoRFID(cadena As String)
-        Dim partes() As String = cadena.Split("~"c) ' Divide la cadena por el símbolo ~
-        Dim mCodBarra As String = partes(0)
-        Dim sCodigoRFID As String = partes(1)
-        Dim hm As String = partes(2)
-        sCodigoRFID = sCodigoRFID.Trim().Replace(" ", "")
-        sCodigoRFID = If(sCodigoRFID.Length > 24, sCodigoRFID.Substring(sCodigoRFID.Length - 24), sCodigoRFID)
-
-        Dim M_S_N As String = ""
-
-        Dim cantLeidas As Integer = CantidadFilasLeidas()
-        ' Evitar consulta si ya sabemos que este RFID está registrado
-        If cacheRFID.ContainsKey(sCodigoRFID) Then
-            SafeUpdateLabel(MsnVincular, "")
-            SafeUpdateTextBox(CodBarras, "")
-            AlertaManager.MostrarAlerta($"Error: El RFID ya existe. Verifique.", pinturaRoja, 3, 5)
-            'MostrarAlerta($"Error: El RFID ya existe. Verifique.")
-            Exit Sub
-        End If
-
-        'Prueba
-        'sCodigoRFID = GenerarCadenaAleatoria(24)
-
-        'Console.WriteLine($"Código de Barras: {mCodBarra}, Código RFID: {sCodigoRFID}")
-
-        'Se intertan los valores al procedimento almacenado USP_SAL_EMB_CON_RFID
-        'El procediento valida y muestra msn con codigo de error lugo se actualiza la taba ordenacabadostallasmov y inserta en tmp_etiq_timbradas
-        Console.WriteLine($"Se envia este valor de :{sCodigoRFID}:")
-        Dim lsResult = m_BDPrenda.SaveRFID(mCodBarra, mEmpresa, mCodTrabajador, sCodigoRFID, hm)
-        ' Actualizar el control 'MsnVincular' de forma segura
-        SafeUpdateLabel(MsnVincular, lsResult.Item2)
-        If lsResult.Item1 <> 0 Then
-            If lsResult.Item1 = 3 And sCodigoRFID.Length > 0 Then
-                cacheRFID(sCodigoRFID) = True
-            End If
-            AlertaManager.MostrarAlerta($"{lsResult.Item2}", pinturaRoja, 3, 5)
-            SafeUpdateLabel(MsnVincular, lsResult.Item2)
-            SafeUpdateTextBox(CodBarras, "")
-            Exit Sub
-        End If
-
-        If sCodigoRFID.Length > 0 Then
-            ' Guardar el RFID en caché después de una inserción exitosa
-            cacheRFID(sCodigoRFID) = True
-        End If
-
-        Try
-            Dim dataTimbrado = m_BDPrenda.GetTimbradasByWorkerAndEtiqueta(mCodTrabajador, mCodBarra)
-            If dataTimbrado.Rows.Count = 0 Then
-                M_S_N = "No se registraron datos en la tabla timbrada. Verifique con el administrador."
-                MostrarAlerta(M_S_N)
-                Exit Sub
-            End If
-
-            Dim row As DataRow = dataTimbrado.Rows(0)
-            Dim insertData As New Dictionary(Of String, Object) From {
-                {"id_rfid", sCodigoRFID},
-                {"id_barras", row("etiqueta")},
-                {"op", row("op")},
-                {"corte", row("corte")},
-                {"subcorte", row("sub_corte")},
-                {"cod_talla", row("cod_talla")},
-                {"id_talla", row("id_talla")},
-                {"talla", row("talla")},
-                {"cod_combinacion", row("cod_comb")},
-                {"color", row("color")},
-                {"cod_trabajador", row("fotocheck")},
-                {"hoja_marcacion", hm}
-            }
-            Console.WriteLine($"sCodigoRFID-->{sCodigoRFID}")
-
-            Dim llReturn = m_BDPrendaScm.Insert(insertData)
-            If llReturn <> 1 Then
-                M_S_N = Msn(llReturn)
-                MostrarAlerta(M_S_N)
-                Exit Sub
-            Else
-                SafeUpdateLabel(MsnVincular, "Prenda registrada exitosamente.")
-                ' Eliminar el elemento "id_barras" del diccionario insertData
-                insertData("fecha") = DateTime.Now
-                If insertData.ContainsKey("id_barras") Then
-                    insertData.Remove("id_barras")
-                    insertData.Remove("cod_combinacion")
-                    insertData.Remove("cod_trabajador")
-                End If
-                insertData.Add("linea", row("linea"))
-                'LlenarDataGridView(DataGridView1, insertData)
-                LlenarPrimeraFila(DataGridView1, insertData)
-                CantidadFilas()
-                SafeUpdateTextBox(CodBarras, "")
-                AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5)
-            End If
-        Catch ex As Exception
-            Console.WriteLine($"Error en el flujo de registro: {ex.Message}")
-            SafeUpdateLabel(MsnVincular, "Error inesperado al registrar la prenda. Consulte con el administrador.")
-        End Try
+Creo que no revisas los archivo .txt te adjunto algunos:
+FromAlertaError.vb es muy grande te doy el link para anlizar: https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/frmLecto.txt o https://github.com/loxi1/Vinculador-rfid/blob/main/frmLecto.txt
+como vez existen varias alerta una de ellas es: 
+Private Sub AlertaErrorMsn(mensaje As String, color As Color)
+        SafeUpdateLabel(MsnVincular, mensaje)
+        Dim alertaError As New FormAlertaError("Error", mensaje, color)
+        alertaError.ShowDialog()
     End Sub
-es aqui donde ya podemos implementar los mensajes que me dices y si vez hay mas logica se mustra alerta, se agrean registros a DataGridView1 por favor revisar frmLect.txt y las funciones vinculadas a los archivos *.txt
-Bien: scanner OK, RFID OK, código de barras OK.
-El fallo ya está en la capa de base de datos, casi seguro en SaveRFID(...) o en la consulta posterior a Sybase.
-Qué significa ese error
-Sybase.Data.AseClient.AseException indica que:
-sí llegó a abrir conexión
-sí intentó ejecutar comando SQL/SP
-Sybase rechazó la operación
-No parece problema del lector ni de la cola.
-Dónde está el punto más probable
-En tu flujo actual, VinculadorService hace esto:
-SaveRFID(...) en Sybase
-GetTimbradasByWorkerAndEtiqueta(...)
-insert en MySQL
-Como dices “no pudo registrar”, el primer sospechoso es:
-C#
-_bdPrenda.SaveRFID(...)
-Qué debes hacer ahora
-Necesitas ver el mensaje real de Sybase, no solo “AseException”.
-1) Mejora el catch en VinculadorService.cs
-Cambia este bloque:
-C#
-catch (Exception ex)
-{
-    OnError?.Invoke("Error inesperado al registrar: " + ex.Message);
-}
-por este:
-C#
-catch (Sybase.Data.AseClient.AseException ex)
-{
-    var sb = new StringBuilder();
-    sb.AppendLine("Error Sybase al registrar.");
+    Private Sub MostrarAlerta(mensaje As String, Optional callback As Action = Nothing)
+        SafeUpdateLabel(MsnVincular, mensaje)
 
-    foreach (Sybase.Data.AseClient.AseError err in ex.Errors)
-    {
-        sb.AppendLine(
-            $"Msg={err.MessageNumber} Proc={err.ProcedureName} Line={err.LineNumber} Text={err.Message}");
-    }
+        ' 🔥 Verificar si ya hay una alerta abierta antes de mostrar otra
+        If FormAlertaError.alertaAbierta Then Exit Sub
 
-    OnError?.Invoke(sb.ToString());
-}
-catch (Exception ex)
-{
-    OnError?.Invoke("Error inesperado al registrar: " + ex.Message);
-}
-Y arriba agrega:
-C#
-using Sybase.Data.AseClient;
-using System.Text;
-2) Instrumenta BDPrenda.SaveRFID(...)
-En ese método debes mostrar:
-SQL o procedimiento ejecutado
-parámetros enviados
-mensaje exacto de Sybase
-La idea es dejarlo así:
-C#
-public Tuple<int, string> SaveRFID(string codigoBarra, string empresa, string codTrabajador, string rfid, string hojaMarcacion)
-{
-    try
-    {
-        using (var conn = SybaseHelper.GetConnection())
-        {
-            using (var cmd = conn.CreateCommand())
-            {
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandText = "sp_tu_procedimiento"; // o el nombre real
+        AlertaError(mensaje, pinturaRojoLadrillo, callback)
+    End Sub
 
-                cmd.Parameters.AddWithValue("@codigo_barra", codigoBarra);
-                cmd.Parameters.AddWithValue("@empresa", empresa);
-                cmd.Parameters.AddWithValue("@cod_trabajador", codTrabajador);
-                cmd.Parameters.AddWithValue("@rfid", rfid);
-                cmd.Parameters.AddWithValue("@hoja_marcacion", hojaMarcacion);
+    Private Sub AlertaError(mensaje As String, color As Color, Optional callback As Action = Nothing)
+        If FormAlertaError.alertaAbierta Then Exit Sub ' 🔥 Doble control para evitar ejecución múltiple
 
-                cmd.ExecuteNonQuery();
-                return Tuple.Create(0, "OK");
-            }
-        }
-    }
-    catch (AseException ex)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine("SaveRFID Sybase error:");
+        ' ✅ Llamar la alerta pasando el callback correctamente
+        Dim alertaError As New FormAlertaError("Error", mensaje, color, callback)
+        alertaError.ShowDialog()
+    End Sub
 
-        foreach (AseError err in ex.Errors)
-        {
-            sb.AppendLine(
-                $"Msg={err.MessageNumber} Proc={err.ProcedureName} Line={err.LineNumber} Text={err.Message}");
-        }
+    Private Sub Alerta(mensaje As String, color_ As Color, tipo As Integer, Optional tiempo As Integer = 10)
+        Using alerta As New FormAlerta(mensaje, color_, tipo, tiempo)
+            alerta.ShowDialog()
+        End Using
+    End Sub
+    Private Sub AlertaOk(titulo As String, color_ As Color, tiempo As Integer, descripcion As String)
+        Using alerta As New FormAlertaOk(titulo, color_, tiempo, descripcion)
+            alerta.ShowDialog()
+        End Using
+    End Sub
 
-        return Tuple.Create(99, sb.ToString());
-    }
-    catch (Exception ex)
-    {
-        return Tuple.Create(99, "SaveRFID error: " + ex.Message);
-    }
-}
-3) Lo más probable que esté fallando
-Por experiencia, en este punto suelen fallar estas cosas:
-A. El SP espera parámetros en otro formato
-Por ejemplo:
-RFID con longitud distinta
-barcode con espacios o salto de línea
-hoja de marcación nula
-trabajador no válido
-B. El SP o query usa una tabla temporal o dato que no existe
-Luego de guardar, haces:
-C#
-GetTimbradasByWorkerAndEtiqueta(request.CodTrabajador, codigoBarra)
-Si SaveRFID no insertó lo esperado, esa tabla puede quedar vacía.
-C. El procedimiento lanza RAISERROR
-Eso te llega justamente como AseException.
-D. Tipos incompatibles
-Por ejemplo:
-mandas string a campo numérico
-longitud del parámetro mayor al permitido
-4) Revisión rápida de lógica antes de guardar
-Antes de llamar a SaveRFID, agrega este log temporal en VinculadorService:
-C#
-OnInfo?.Invoke(
-    $"Guardando -> Barra: {codigoBarra} | RFID: {rfid} | Trabajador: {request.CodTrabajador} | HM: {request.HojaMarcacion}");
-Así validas qué valores reales llegan.
-5) Validación útil en IntentarVincular()
-Asegúrate de no mandar basura:
-C#
-if (string.IsNullOrWhiteSpace(codigo))
-{
-    SetEstado("Código de barras vacío", Color.LightCoral);
-    return;
-}
+    ..
+Public Class FormAlertaError
+    Public Shared alertaAbierta As Boolean = False ' 🔥 Variable de control
+    Private callback As Action
+    Public Sub New(Titulo As String, Detalle As String, PColor As Color, Optional callback As Action = Nothing)
+        InitializeComponent()
+        Me.callback = callback ' Guardar la función de retorno
 
-if (_rfidPendientes.Count > 1)
-{
-    SetEstado("ERROR: múltiples RFID detectados", Color.LightCoral);
-    return;
-}
-Eso ya lo tienes bastante bien.
-6) Qué necesito para decirte la causa exacta
-Pégame cualquiera de estas dos cosas:
-el código de BDPrenda.SaveRFID(...)
-o el mensaje exacto que salga después de meter el catch de AseException
-Con eso ya te digo si el problema es:
-parámetro
-stored procedure
-tabla temporal
-validación de negocio de Sybase
-7) Conclusión
-Tu app ya pasó estas etapas:
-login ✅
-conexión scanner ✅
-lectura RFID ✅
-lectura barcode ✅
-El cuello de botella actual está en Sybase, no en frmLector.cs.
-Haz primero el cambio del catch para ver el error real; sin eso solo estamos viendo la carcasa del problema.
+        icon_error.ForeColor = PColor
+        FranjaAbajo.BackColor = PColor
+        TituloAviso.Text = Titulo
+        DescripcionAviso.Text = Detalle
+    End Sub
+
+    Private Sub FormAlertaError_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Verificar si ya hay una alerta en pantalla
+        If alertaAbierta Then
+            Me.Close()
+            Return
+        End If
+        alertaAbierta = True ' Marcamos que hay una alerta activa
+
+        ' Centrar la ventana en la pantalla
+        Me.StartPosition = FormStartPosition.Manual
+        Me.Location = New Point(
+            (Screen.PrimaryScreen.WorkingArea.Width - Me.Width) \ 2,
+            (Screen.PrimaryScreen.WorkingArea.Height - Me.Height) \ 2
+        )
+    End Sub
+
+    Private Sub BtnAceptar_Click(sender As Object, e As EventArgs) Handles BtnAceptar.Click
+        CerrarAlerta()
+    End Sub
+
+    ' Método para cerrar la alerta con animación y liberar la variable de control
+    Private Sub CerrarAlerta()
+        alertaAbierta = False ' 🔥 Asegurar que la variable se restablece
+        Me.Close()
+        If callback IsNot Nothing Then
+            callback.Invoke()
+        End If
+    End Sub
+
+    ' Asegurar que la variable de control se libere si la alerta se cierra de otra forma
+    Private Sub FormAlertaError_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
+        alertaAbierta = False
+    End Sub
+End Class
+
+FormAlerta.vb
+Imports System.Drawing
+Imports System.IO
+Imports System.Threading.Tasks
+
+Public Class FormAlerta
+    Private conteo As Integer
+    Private tiempo_ As Integer = 30 ' Tiempo en segundos
+    Private desplazamiento As Integer = 10 ' Velocidad de desplazamiento en píxeles
+    Private destinoY As Integer ' Coordenada final del formulario en Y
+    Private ReadOnly utilSVG As New UtilidadesSVG() ' Instancia de UtilidadesSVG
+
+    ''' <summary>
+    ''' Constructor que recibe un PictureBox y la ruta del archivo SVG.
+    ''' </summary>
+    ''' <param name="pictureBox">El PictureBox donde se mostrará el SVG.</param>
+    ''' <param name="svgPath">La ruta del archivo SVG.</param>
+    Public Sub New(pictureBox As PictureBox, svgPath As String)
+        InitializeComponent()
+        utilSVG.CargarIconoSVG(pictureBox, svgPath)
+    End Sub
+
+    ''' <summary>
+    ''' Constructor que recibe un mensaje, color y tipo de alerta.
+    ''' </summary>
+    ''' <param name="mensaje">Mensaje de la alerta.</param>
+    ''' <param name="color">Color de la alerta.</param>
+    ''' <param name="tipo">Tipo de alerta (1=OK, 2=Info, otro=Error).</param>
+    ''' <param name="tiempo">Tiempo de visualización (opcional).</param>
+    Public Sub New(mensaje As String, color As Color, tipo As Integer, Optional tiempo As Integer = 30)
+        InitializeComponent()
+        MSNAlerta.Text = mensaje
+        MSNAlerta.ForeColor = color
+        FranjaTop.BackColor = color
+        Me.BackColor = ColorTranslator.FromHtml("#fff3cd")
+
+        ' Asegurar que la alerta siempre esté en primer plano
+        Me.TopMost = True
+        Me.BringToFront()
+
+        ' Ocultar todos los iconos
+        icon_error.Visible = False
+        icon_ok.Visible = False
+        icon_info.Visible = False
+
+        ' Cargar el icono adecuado según el tipo de alerta
+        CargarIcono(tipo)
+
+        ' Asignar tiempo personalizado
+        tiempo_ = tiempo
+    End Sub
+
+    ''' <summary>
+    ''' Carga el icono correspondiente según el tipo de alerta.
+    ''' </summary>
+    ''' <param name="tipo">Tipo de alerta (1=OK, 2=Info, otro=Error).</param>
+    Private Sub CargarIcono(tipo As Integer)
+        Dim svgFileName As String
+
+        Select Case tipo
+            Case 1
+                icon_ok.Visible = True
+                svgFileName = "icono_check_512.svg"
+            Case 2
+                icon_info.Visible = True
+                svgFileName = "icono_info_512.svg"
+            Case Else
+                icon_error.Visible = True
+                svgFileName = "icono_error_512.svg"
+        End Select
+
+        ' Cargar el SVG en el PictureBox correspondiente
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG(svgFileName)
+        utilSVG.CargarIconoSVG(If(tipo = 1, icon_ok, If(tipo = 2, icon_info, icon_error)), svgPath)
+    End Sub
+
+    ''' <summary>
+    ''' Manejo de animación y cierre de la alerta.
+    ''' </summary>
+    Private Async Sub FormAlerta_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Posicionar la alerta fuera de la pantalla (abajo)
+        Me.Left = Screen.PrimaryScreen.WorkingArea.Width - Me.Width - 50
+        Me.Top = Screen.PrimaryScreen.WorkingArea.Height
+
+        ' Obtener la posición correcta
+        destinoY = AlertaManager.ObtenerPosicion()
+
+        ' Animación para desplazar la alerta hacia arriba
+        While Me.Top > destinoY
+            Me.Top -= desplazamiento
+            Await Task.Delay(10) ' Delay para suavizar la animación
+        End While
+
+        ' Esperar el tiempo de visualización antes de cerrar
+        Await Task.Delay(tiempo_ * 1000)
+
+        ' Desvanecer y cerrar
+        For i As Double = 1.0 To 0 Step -0.1
+            Me.Opacity = i
+            Await Task.Delay(50)
+        Next
+
+        ' Remover la alerta y reorganizar
+        Me.Close()
+        AlertaManager.RemoverAlerta(Me)
+    End Sub
+End Class
+
+
+AlartaManger
+formLector.vb para analizar
+Public Class AlertaManager
+    Private Shared alertasActivas As New List(Of FormAlerta)()
+    Private Shared ReadOnly alertasLock As New Object() ' Bloqueo para evitar concurrencia
+
+    ' Muestra una nueva alerta sin bloquear la UI
+    Public Shared Sub MostrarAlerta(mensaje As String, color As Color, Optional tipo As Integer = 3, Optional tiempo As Integer = 5)
+        Dim nuevaAlerta As New FormAlerta(mensaje, color, tipo, tiempo)
+
+        ' Asegurar ejecución en la UI
+        If Application.OpenForms.Count > 0 Then
+            Dim form As Form = Application.OpenForms(0)
+            If form.InvokeRequired Then
+                form.Invoke(New Action(Sub() MostrarAlertaInterno(nuevaAlerta)))
+            Else
+                MostrarAlertaInterno(nuevaAlerta)
+            End If
+        Else
+            MostrarAlertaInterno(nuevaAlerta)
+        End If
+    End Sub
+    ' Método interno para manejar la alerta en el hilo principal
+    Private Shared Sub MostrarAlertaInterno(alerta As FormAlerta)
+        SyncLock alertasLock
+            alerta.StartPosition = FormStartPosition.Manual
+            alerta.Location = New Point(Screen.PrimaryScreen.WorkingArea.Width - alerta.Width - 50, ObtenerPosicion())
+            alertasActivas.Add(alerta)
+        End SyncLock
+
+        alerta.Show()
+    End Sub
+    ' Calcula la próxima posición en la pantalla
+    Public Shared Function ObtenerPosicion() As Integer
+        Dim pantallaAlto As Integer = Screen.PrimaryScreen.WorkingArea.Height
+        Dim alertaAlto As Integer = 70
+        Dim margen As Integer = 10
+
+        ' Calcular la posición Y de la nueva alerta
+        Return pantallaAlto - ((alertaAlto + margen) * (alertasActivas.Count + 1))
+    End Function
+
+    ' Remueve la alerta de la lista y reorganiza las restantes
+    Public Shared Sub RemoverAlerta(alerta As FormAlerta)
+        SyncLock alertasLock
+            alertasActivas.Remove(alerta)
+            ReorganizarAlertas()
+        End SyncLock
+    End Sub
+
+    ' Reorganiza las posiciones de las alertas activas
+    Private Shared Sub ReorganizarAlertas()
+        SyncLock alertasLock
+            Dim alertaAlto As Integer = 70
+            Dim margen As Integer = 10
+            Dim pantallaAlto As Integer = Screen.PrimaryScreen.WorkingArea.Height
+
+            For i As Integer = 0 To alertasActivas.Count - 1
+                alertasActivas(i).Location = New Point(alertasActivas(i).Location.X, pantallaAlto - ((alertaAlto + margen) * (i + 1)))
+            Next
+        End SyncLock
+    End Sub
+End Class
+
+FormAlertaOk.vb
+Public Class FormAlertaOk
+    Private conteo As Integer
+    Private tiempo_ As Integer = 30  ' Valor por defecto de 30 segundos
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Public Sub New(Titulo As String, PColor As Color, Optional tiempo As Integer = 30, Optional Detalle As String = "Qué bueno verte nuevamente.")
+        InitializeComponent()
+        TituloAviso.Text = Titulo
+        icon_ok.ForeColor = PColor
+        FranjaAbajo.BackColor = PColor
+        DescripcionAviso.Text = Detalle
+        ' Asignar tiempo personalizado
+        tiempo_ = tiempo
+    End Sub
+
+    Private Sub FormAlertaOk_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Tiempo.Start()
+        ' Usar UtilidadesSVG para cargar el icono SVG
+        Dim utilSVG As New UtilidadesSVG()
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG("icono_checking_512.svg")
+
+        If Not String.IsNullOrEmpty(svgPath) Then
+            utilSVG.CargarIconoSVG(Me.icon_ok, svgPath)
+        Else
+            Debug.Print("⚠️ No se pudo encontrar la imagen SVG.")
+        End If
+    End Sub
+
+    Private Sub FormAlertaOk_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
+        Tiempo.Enabled = False ' Detener el tiempo
+    End Sub
+
+    Private Sub Tiempo_Tick(sender As Object, e As EventArgs) Handles Tiempo.Tick
+        conteo += 1
+        If conteo = tiempo_ Then
+            Me.Close()
+        End If
+    End Sub
+End Class
+
+FromAlerta.vb
+Imports System.Drawing
+Imports System.IO
+Imports System.Threading.Tasks
+
+Public Class FormAlerta
+    Private conteo As Integer
+    Private tiempo_ As Integer = 30 ' Tiempo en segundos
+    Private desplazamiento As Integer = 10 ' Velocidad de desplazamiento en píxeles
+    Private destinoY As Integer ' Coordenada final del formulario en Y
+    Private ReadOnly utilSVG As New UtilidadesSVG() ' Instancia de UtilidadesSVG
+
+    ''' <summary>
+    ''' Constructor que recibe un PictureBox y la ruta del archivo SVG.
+    ''' </summary>
+    ''' <param name="pictureBox">El PictureBox donde se mostrará el SVG.</param>
+    ''' <param name="svgPath">La ruta del archivo SVG.</param>
+    Public Sub New(pictureBox As PictureBox, svgPath As String)
+        InitializeComponent()
+        utilSVG.CargarIconoSVG(pictureBox, svgPath)
+    End Sub
+
+    ''' <summary>
+    ''' Constructor que recibe un mensaje, color y tipo de alerta.
+    ''' </summary>
+    ''' <param name="mensaje">Mensaje de la alerta.</param>
+    ''' <param name="color">Color de la alerta.</param>
+    ''' <param name="tipo">Tipo de alerta (1=OK, 2=Info, otro=Error).</param>
+    ''' <param name="tiempo">Tiempo de visualización (opcional).</param>
+    Public Sub New(mensaje As String, color As Color, tipo As Integer, Optional tiempo As Integer = 30)
+        InitializeComponent()
+        MSNAlerta.Text = mensaje
+        MSNAlerta.ForeColor = color
+        FranjaTop.BackColor = color
+        Me.BackColor = ColorTranslator.FromHtml("#fff3cd")
+
+        ' Asegurar que la alerta siempre esté en primer plano
+        Me.TopMost = True
+        Me.BringToFront()
+
+        ' Ocultar todos los iconos
+        icon_error.Visible = False
+        icon_ok.Visible = False
+        icon_info.Visible = False
+
+        ' Cargar el icono adecuado según el tipo de alerta
+        CargarIcono(tipo)
+
+        ' Asignar tiempo personalizado
+        tiempo_ = tiempo
+    End Sub
+
+    ''' <summary>
+    ''' Carga el icono correspondiente según el tipo de alerta.
+    ''' </summary>
+    ''' <param name="tipo">Tipo de alerta (1=OK, 2=Info, otro=Error).</param>
+    Private Sub CargarIcono(tipo As Integer)
+        Dim svgFileName As String
+
+        Select Case tipo
+            Case 1
+                icon_ok.Visible = True
+                svgFileName = "icono_check_512.svg"
+            Case 2
+                icon_info.Visible = True
+                svgFileName = "icono_info_512.svg"
+            Case Else
+                icon_error.Visible = True
+                svgFileName = "icono_error_512.svg"
+        End Select
+
+        ' Cargar el SVG en el PictureBox correspondiente
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG(svgFileName)
+        utilSVG.CargarIconoSVG(If(tipo = 1, icon_ok, If(tipo = 2, icon_info, icon_error)), svgPath)
+    End Sub
+
+    ''' <summary>
+    ''' Manejo de animación y cierre de la alerta.
+    ''' </summary>
+    Private Async Sub FormAlerta_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Posicionar la alerta fuera de la pantalla (abajo)
+        Me.Left = Screen.PrimaryScreen.WorkingArea.Width - Me.Width - 50
+        Me.Top = Screen.PrimaryScreen.WorkingArea.Height
+
+        ' Obtener la posición correcta
+        destinoY = AlertaManager.ObtenerPosicion()
+
+        ' Animación para desplazar la alerta hacia arriba
+        While Me.Top > destinoY
+            Me.Top -= desplazamiento
+            Await Task.Delay(10) ' Delay para suavizar la animación
+        End While
+
+        ' Esperar el tiempo de visualización antes de cerrar
+        Await Task.Delay(tiempo_ * 1000)
+
+        ' Desvanecer y cerrar
+        For i As Double = 1.0 To 0 Step -0.1
+            Me.Opacity = i
+            Await Task.Delay(50)
+        Next
+
+        ' Remover la alerta y reorganizar
+        Me.Close()
+        AlertaManager.RemoverAlerta(Me)
+    End Sub
+End Class
+
+FormAlertaMsnError.vb
+Public Class FormAlertaMsnError
+    Public Sub New(Titulo As String, Detalle As String, PColor As Color)
+        InitializeComponent()
+
+        icon_error.ForeColor = PColor
+        FranjaAbajo.BackColor = PColor
+        TituloAviso.Text = Titulo
+        DescripcionAviso.Text = Detalle
+    End Sub
+
+    Private Sub FormAlertaMsnError_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ' Usar UtilidadesSVG para cargar el icono SVG
+        Dim utilSVG As New UtilidadesSVG()
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG("icono_error_512.svg")
+        utilSVG.CargarIconoSVG(icon_error, svgPath)
+    End Sub
+
+    Private Sub BtnAceptar_Click(sender As Object, e As EventArgs) Handles BtnAceptar.Click
+        Me.Close()
+    End Sub
+End Class
+
+FormAviso.vb
+Public Class FormAviso
+    Private conteo As Integer
+    Private tiempo_ As Integer = 30  ' Valor por defecto de 30 segundos
+
+    Public Sub New()
+        InitializeComponent()
+    End Sub
+
+    Public Sub New(PMensaje As String, PColor As Color, Optional tiempo As Integer = 30)
+        InitializeComponent()
+        DescripcionAviso.Text = PMensaje
+        'DescripcionAviso.ForeColor = PColor
+        FranjaAbajo.BackColor = PColor
+        icon_error.Visible = False
+        ' Usar UtilidadesSVG para cargar el icono SVG
+        Dim utilSVG As New UtilidadesSVG()
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG("icono_error_512.svg")
+        utilSVG.CargarIconoSVG(icon_error, svgPath)
+        ' Asignar tiempo personalizado
+        tiempo_ = tiempo
+    End Sub
+
+    Private Sub FormAviso_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        tiempo.Start()
+        ' Usar UtilidadesSVG para cargar el icono SVG
+        Dim utilSVG As New UtilidadesSVG()
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG("icono_error_512")
+        utilSVG.CargarIconoSVG(icon_error, svgPath)
+    End Sub
+
+    Private Sub FormAviso_FormClosed(sender As Object, e As FormClosedEventArgs) Handles MyBase.FormClosed
+        tiempo.Enabled = False ' Detener el tiempo
+    End Sub
+
+    Private Sub Tiempo_Tick(sender As Object, e As EventArgs) Handles tiempo.Tick
+        conteo += 1
+        If conteo = tiempo_ Then
+            Me.Close()
+        End If
+    End Sub
+End Class
+
+FormConfirmacion.vb
+Imports System.Drawing.Drawing2D
+Imports System.IO
+
+Public Class FormConfirmacion
+    ' Constructor con parámetros PictureBox y ruta SVG
+    Public Sub New(pictureBox As PictureBox, svgPath As String)
+        InitializeComponent()
+    End Sub
+    Private Sub FormConfirmacion_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Dim utilSVG As New UtilidadesSVG()
+        Dim svgPath As String = utilSVG.ObtenerRutaSVG("icono_exclamation_512.svg")
+
+        If Not String.IsNullOrEmpty(svgPath) Then
+            utilSVG.CargarIconoSVG(Me.pictureBox1, svgPath)
+        Else
+            Debug.Print("⚠️ No se pudo encontrar la imagen SVG.")
+        End If
+    End Sub
+
+    Public Sub New(titulo As String, PColor As Color, mensaje As String, Optional m_aceptar As String = "Sí, Editar", Optional m_cancelar As String = "No, Cancelar")
+        InitializeComponent()
+
+        ' Aplicar estilos
+        EstiloBoton(btnAceptar, "#3085d6", "#FFFFFF", "#2b77c0")
+        EstiloBoton(btnCancelar, "#dd3333", "#FFFFFF", "#c72e2e")
+        TituloAviso.Text = titulo
+        DescripcionAviso.Text = mensaje
+        btnAceptar.Text = m_aceptar
+        btnCancelar.Text = m_cancelar
+
+        AplicarEstilos()
+    End Sub
+
+    ' Método para aplicar estilos
+    Private Sub AplicarEstilos()
+        ' 🔹 Aplicar degradado al fondo
+        AddHandler Me.Paint, Sub(sender, e)
+                                 Using brush As New LinearGradientBrush(Me.ClientRectangle, Color.White, Color.FromArgb(230, 230, 230), LinearGradientMode.Vertical)
+                                     e.Graphics.FillRectangle(brush, Me.ClientRectangle)
+                                 End Using
+                             End Sub
+
+        ' 🔹 Aplicar estilos a los botones
+        EstiloBoton(btnAceptar, "#3085d6", "#FFFFFF", "#1f6ac1")
+        EstiloBoton(btnCancelar, "#dd3333", "#FFFFFF", "#b52b2b")
+
+        ' 🔹 Aplicar estilos a los textos
+        TituloAviso.ForeColor = Color.Black
+        DescripcionAviso.ForeColor = Color.FromArgb(100, 100, 100)
+
+        ' 🔹 Bordes redondeados
+        Me.FormBorderStyle = FormBorderStyle.None
+        Me.BackColor = Color.White
+        Me.Region = System.Drawing.Region.FromHrgn(CreateRoundRectRgn(0, 0, Width, Height, 20, 20))
+    End Sub
+
+    ' Método para dar estilo a los botones
+    Private Sub EstiloBoton(btn As Button, colorFondo As String, colorTexto As String, colorHover As String)
+        btn.BackColor = ColorTranslator.FromHtml(colorFondo)
+        btn.ForeColor = ColorTranslator.FromHtml(colorTexto)
+        btn.FlatStyle = FlatStyle.Flat
+        btn.FlatAppearance.BorderSize = 0
+        btn.FlatAppearance.MouseOverBackColor = ColorTranslator.FromHtml(colorHover)
+        btn.Font = New Font("Microsoft Sans Serif", 12.0F, FontStyle.Bold, GraphicsUnit.Point, CType(0, Byte))
+        btn.Cursor = Cursors.Hand
+    End Sub
+
+    ' 🔹 Método para crear bordes redondeados
+    <System.Runtime.InteropServices.DllImport("Gdi32.dll", EntryPoint:="CreateRoundRectRgn")>
+    Private Shared Function CreateRoundRectRgn(left As Integer, top As Integer, [right] As Integer, bottom As Integer, width As Integer, height As Integer) As IntPtr
+    End Function
+
+    Private Sub BtnAceptar_Click(sender As Object, e As EventArgs) Handles btnAceptar.Click
+        Me.DialogResult = DialogResult.OK
+        Me.Close()
+    End Sub
+
+    Private Sub BtnCancelar_Click(sender As Object, e As EventArgs) Handles btnCancelar.Click
+        Me.DialogResult = DialogResult.Cancel
+        Me.Close()
+    End Sub
+End Class
+convertir los achivos a c# y adaptar los tipos de mensajes revisando el link de fromLecto.txt
