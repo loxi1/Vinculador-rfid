@@ -1,61 +1,258 @@
-﻿Public Class AlertaManager
-    Private Shared alertasActivas As New List(Of FormAlerta)()
-    Private Shared ReadOnly alertasLock As New Object() ' Bloqueo para evitar concurrencia
+Perfecto. Te dejo una versión base de FormAlerta.cs en C# para que ya puedas usar AlertaManager.MostrarAlerta(...).
+Es una alerta flotante simple, sin bloquear la UI, alineada con lo que hacías en VB.
+FormAlerta.cs
+C#
+using System;
+using System.Drawing;
+using System.Windows.Forms;
 
-    ' Muestra una nueva alerta sin bloquear la UI
-    Public Shared Sub MostrarAlerta(mensaje As String, color As Color, Optional tipo As Integer = 3, Optional tiempo As Integer = 5)
-        Dim nuevaAlerta As New FormAlerta(mensaje, color, tipo, tiempo)
+namespace DS9908R_App
+{
+    public partial class FormAlerta : Form
+    {
+        private readonly Timer _timer;
+        private int _segundosRestantes;
 
-        ' Asegurar ejecución en la UI
-        If Application.OpenForms.Count > 0 Then
-            Dim form As Form = Application.OpenForms(0)
-            If form.InvokeRequired Then
-                form.Invoke(New Action(Sub() MostrarAlertaInterno(nuevaAlerta)))
-            Else
-                MostrarAlertaInterno(nuevaAlerta)
-            End If
-        Else
-            MostrarAlertaInterno(nuevaAlerta)
-        End If
-    End Sub
-    ' Método interno para manejar la alerta en el hilo principal
-    Private Shared Sub MostrarAlertaInterno(alerta As FormAlerta)
-        SyncLock alertasLock
-            alerta.StartPosition = FormStartPosition.Manual
-            alerta.Location = New Point(Screen.PrimaryScreen.WorkingArea.Width - alerta.Width - 50, ObtenerPosicion())
-            alertasActivas.Add(alerta)
-        End SyncLock
+        public FormAlerta(string mensaje, Color color, int tipo = 3, int tiempo = 5)
+        {
+            InitializeComponent();
 
-        alerta.Show()
-    End Sub
-    ' Calcula la próxima posición en la pantalla
-    Public Shared Function ObtenerPosicion() As Integer
-        Dim pantallaAlto As Integer = Screen.PrimaryScreen.WorkingArea.Height
-        Dim alertaAlto As Integer = 70
-        Dim margen As Integer = 10
+            _segundosRestantes = tiempo;
 
-        ' Calcular la posición Y de la nueva alerta
-        Return pantallaAlto - ((alertaAlto + margen) * (alertasActivas.Count + 1))
-    End Function
+            this.FormBorderStyle = FormBorderStyle.None;
+            this.ShowInTaskbar = false;
+            this.TopMost = true;
+            this.StartPosition = FormStartPosition.Manual;
+            this.BackColor = color;
+            this.Width = 360;
+            this.Height = 70;
 
-    ' Remueve la alerta de la lista y reorganiza las restantes
-    Public Shared Sub RemoverAlerta(alerta As FormAlerta)
-        SyncLock alertasLock
-            alertasActivas.Remove(alerta)
-            ReorganizarAlertas()
-        End SyncLock
-    End Sub
+            lblMensaje.Text = mensaje;
+            lblMensaje.ForeColor = Color.White;
+            lblMensaje.BackColor = Color.Transparent;
 
-    ' Reorganiza las posiciones de las alertas activas
-    Private Shared Sub ReorganizarAlertas()
-        SyncLock alertasLock
-            Dim alertaAlto As Integer = 70
-            Dim margen As Integer = 10
-            Dim pantallaAlto As Integer = Screen.PrimaryScreen.WorkingArea.Height
+            // tipo:
+            // 1 = ok
+            // 3 = error
+            if (tipo == 1)
+            {
+                picIcono.Image = SystemIcons.Information.ToBitmap();
+            }
+            else
+            {
+                picIcono.Image = SystemIcons.Error.ToBitmap();
+            }
 
-            For i As Integer = 0 To alertasActivas.Count - 1
-                alertasActivas(i).Location = New Point(alertasActivas(i).Location.X, pantallaAlto - ((alertaAlto + margen) * (i + 1)))
-            Next
-        End SyncLock
-    End Sub
-End Class
+            _timer = new Timer();
+            _timer.Interval = 1000;
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
+
+            this.FormClosed += FormAlerta_FormClosed;
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            _segundosRestantes--;
+
+            if (_segundosRestantes <= 0)
+            {
+                _timer.Stop();
+                this.Close();
+            }
+        }
+
+        private void FormAlerta_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            _timer.Stop();
+            _timer.Dispose();
+            AlertaManager.RemoverAlerta(this);
+        }
+
+        private Label lblMensaje;
+        private PictureBox picIcono;
+
+        private void InitializeComponent()
+        {
+            this.lblMensaje = new System.Windows.Forms.Label();
+            this.picIcono = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.picIcono)).BeginInit();
+            this.SuspendLayout();
+            // 
+            // picIcono
+            // 
+            this.picIcono.Location = new System.Drawing.Point(12, 18);
+            this.picIcono.Name = "picIcono";
+            this.picIcono.Size = new System.Drawing.Size(32, 32);
+            this.picIcono.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picIcono.TabIndex = 0;
+            this.picIcono.TabStop = false;
+            // 
+            // lblMensaje
+            // 
+            this.lblMensaje.Location = new System.Drawing.Point(55, 10);
+            this.lblMensaje.Name = "lblMensaje";
+            this.lblMensaje.Size = new System.Drawing.Size(290, 50);
+            this.lblMensaje.TabIndex = 1;
+            this.lblMensaje.Text = "Mensaje";
+            this.lblMensaje.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.lblMensaje.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            // 
+            // FormAlerta
+            // 
+            this.ClientSize = new System.Drawing.Size(360, 70);
+            this.Controls.Add(this.lblMensaje);
+            this.Controls.Add(this.picIcono);
+            this.Name = "FormAlerta";
+            this.Opacity = 0.95D;
+            ((System.ComponentModel.ISupportInitialize)(this.picIcono)).EndInit();
+            this.ResumeLayout(false);
+        }
+    }
+}
+AlertaManager.cs
+Te lo dejo también completo para que tengas ambos juntos.
+C#
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
+
+namespace DS9908R_App
+{
+    public static class AlertaManager
+    {
+        private static readonly List<FormAlerta> alertasActivas = new List<FormAlerta>();
+        private static readonly object alertasLock = new object();
+
+        public static void MostrarAlerta(string mensaje, Color color, int tipo = 3, int tiempo = 5)
+        {
+            var nuevaAlerta = new FormAlerta(mensaje, color, tipo, tiempo);
+
+            if (Application.OpenForms.Count > 0)
+            {
+                Form form = Application.OpenForms[0];
+                if (form.InvokeRequired)
+                {
+                    form.Invoke(new Action(() => MostrarAlertaInterno(nuevaAlerta)));
+                }
+                else
+                {
+                    MostrarAlertaInterno(nuevaAlerta);
+                }
+            }
+            else
+            {
+                MostrarAlertaInterno(nuevaAlerta);
+            }
+        }
+
+        private static void MostrarAlertaInterno(FormAlerta alerta)
+        {
+            lock (alertasLock)
+            {
+                alerta.StartPosition = FormStartPosition.Manual;
+                alerta.Location = new Point(
+                    Screen.PrimaryScreen.WorkingArea.Width - alerta.Width - 50,
+                    ObtenerPosicion()
+                );
+                alertasActivas.Add(alerta);
+            }
+
+            alerta.Show();
+        }
+
+        public static int ObtenerPosicion()
+        {
+            int pantallaAlto = Screen.PrimaryScreen.WorkingArea.Height;
+            int alertaAlto = 70;
+            int margen = 10;
+
+            return pantallaAlto - ((alertaAlto + margen) * (alertasActivas.Count + 1));
+        }
+
+        public static void RemoverAlerta(FormAlerta alerta)
+        {
+            lock (alertasLock)
+            {
+                alertasActivas.Remove(alerta);
+                ReorganizarAlertas();
+            }
+        }
+
+        private static void ReorganizarAlertas()
+        {
+            lock (alertasLock)
+            {
+                int alertaAlto = 70;
+                int margen = 10;
+                int pantallaAlto = Screen.PrimaryScreen.WorkingArea.Height;
+
+                for (int i = 0; i < alertasActivas.Count; i++)
+                {
+                    alertasActivas[i].Location = new Point(
+                        alertasActivas[i].Location.X,
+                        pantallaAlto - ((alertaAlto + margen) * (i + 1))
+                    );
+                }
+            }
+        }
+    }
+}
+Cómo usarlo en frmLector.cs
+Error
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+        return;
+    }
+
+    SetEstado(msg, Color.LightCoral);
+    ReproducirError();
+    AlertaManager.MostrarAlerta(msg, Color.FromArgb(217, 83, 79), 3, 5);
+
+    CodBarras.Clear();
+    CodBarras.Focus();
+}
+Éxito
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    if (data.ContainsKey("op"))
+        nroOP.Text = Convert.ToString(data["op"]);
+
+    if (data.ContainsKey("hoja_marcacion"))
+        nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
+    ReproducirOk();
+    AlertaManager.MostrarAlerta("Registrado Ok", Color.FromArgb(92, 184, 92), 1, 5);
+
+    LimpiarTodo();
+    SetEstado("OK", Color.LightGreen);
+}
+También necesitas agregar los archivos al .csproj
+Dentro de tu <ItemGroup> de Compile Include, agrega:
+XML
+<Compile Include="AlertaManager.cs" />
+<Compile Include="FormAlerta.cs">
+  <SubType>Form</SubType>
+</Compile>
+No necesitas .Designer.cs si usas el InitializeComponent() manual que te dejé dentro del mismo archivo.
+Recomendación práctica
+Primero haz esto:
+crear AlertaManager.cs
+crear FormAlerta.cs
+agregarlos al .csproj
+actualizar Vinculador_OnError
+actualizar Vinculador_OnInsertadoOk
+Y vuelve a probar el guardado. Ahí ya deberías ver el mensaje real de Sybase como alerta flotante, que es lo que más te interesa ahora para diagnosticar por qué no registra.
+Si quieres, después seguimos con BDPrenda.SaveRFID(...) para capturar el mensaje exacto del AseException.
