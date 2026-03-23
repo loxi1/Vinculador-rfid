@@ -1,3 +1,236 @@
+Vamos producción.
+Te propongo 4 mejoras prácticas para que se sienta más estable en planta.
+1. Estados visuales claros
+Usa 3 estados en la barra:
+verde: listo / guardado ok
+naranja: esperando código o procesando
+rojo: error / múltiples RFID
+Crea esto en frmLector.cs:
+C#
+private void SetEstado(string mensaje, Color color)
+{
+    toolStripStatusLbl.Text = mensaje;
+    toolStripStatusLbl.BackColor = color;
+}
+Y úsalo así:
+C#
+SetEstado("Listo para leer", Color.LightGreen);
+SetEstado("Procesando...", Color.Khaki);
+SetEstado("ERROR: múltiples RFID detectados", Color.LightCoral);
+Si toolStripStatusLbl no pinta bien el fondo, usa además un Label visible en la parte superior del tab.
+2. Flujo robusto de lectura
+RFID
+agrega al grid
+actualiza cantidad
+si hay más de uno, bloquea guardado
+C#
+private void SetRfid(string epc)
+{
+    BeginInvoke(new Action(() =>
+    {
+        epc = (epc ?? "").Trim().ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(epc))
+            return;
+
+        if (_rfidPendientes.Contains(epc))
+        {
+            SetEstado("RFID repetido", Color.LightCoral);
+            return;
+        }
+
+        _rfidPendientes.Add(epc);
+        _ultimoRfid = epc;
+
+        if (dgvTagList.Columns.Count == 0)
+            ConfigurarGridRfid();
+
+        dgvTagList.Rows.Insert(0, epc);
+        cantidadRfid.Text = _rfidPendientes.Count.ToString();
+
+        if (_rfidPendientes.Count > 1)
+        {
+            SetEstado("ERROR: más de un RFID detectado. Limpie.", Color.LightCoral);
+        }
+        else
+        {
+            SetEstado("RFID leído correctamente", Color.LightGreen);
+        }
+    }));
+}
+Código de barras
+Deja que Enter sea el disparador oficial:
+C#
+private void CodBarras_KeyDown(object sender, KeyEventArgs e)
+{
+    if (e.KeyCode != Keys.Enter)
+        return;
+
+    e.SuppressKeyPress = true;
+    e.Handled = true;
+
+    string codigo = (CodBarras.Text ?? "").Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo) || codigo == "Codigo de Barras...")
+    {
+        SetEstado("Código de barras vacío", Color.LightCoral);
+        return;
+    }
+
+    _ultimoCodigoBarra = codigo;
+    IntentarVincular();
+}
+3. Guardado con validación fuerte
+C#
+private void IntentarVincular()
+{
+    string codigo = (_ultimoCodigoBarra ?? "").Trim();
+    string hojaMarcacion = (nroHM.Text ?? "").Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo))
+        return;
+
+    if (_rfidPendientes.Count > 1)
+    {
+        SetEstado("ERROR: múltiples RFID detectados. Use Limpiar.", Color.LightCoral);
+        return;
+    }
+
+    string rfid = _rfidPendientes.Count == 1 ? _rfidPendientes[0] : "";
+
+    var request = new VinculacionRequest
+    {
+        CodigoBarras = codigo,
+        Rfid = rfid,
+        HojaMarcacion = hojaMarcacion,
+        CodTrabajador = mCodTrabajador,
+        Empresa = mEmpresa,
+        UsarRfid = !string.IsNullOrWhiteSpace(rfid)
+    };
+
+    SetEstado("Procesando registro...", Color.Khaki);
+    _vinculador.Enqueue(request);
+}
+4. Limpieza industrial
+Haz un solo método de reset y úsalo en ambos botones.
+C#
+private void LimpiarLecturaActual()
+{
+    _rfidPendientes.Clear();
+    _ultimoRfid = "";
+    _ultimoCodigoBarra = "";
+
+    dgvTagList.Rows.Clear();
+    cantidadRfid.Text = "0";
+    CodBarras.Clear();
+
+    SetEstado("Listo para nueva lectura", Color.LightGreen);
+    CodBarras.Focus();
+}
+C#
+private void btnClear_Click(object sender, EventArgs e)
+{
+    LimpiarLecturaActual();
+}
+
+private void btnLimpiar_Click(object sender, EventArgs e)
+{
+    LimpiarLecturaActual();
+}
+5. Éxito y error del servicio
+OK
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    if (data.ContainsKey("op"))
+        nroOP.Text = Convert.ToString(data["op"]);
+
+    if (data.ContainsKey("hoja_marcacion"))
+        nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
+    SetEstado("Prenda registrada correctamente", Color.LightGreen);
+    LimpiarLecturaActual();
+}
+Error
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+        return;
+    }
+
+    SetEstado(msg, Color.LightCoral);
+    CodBarras.Focus();
+}
+Info
+C#
+private void Vinculador_OnInfo(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
+        return;
+    }
+
+    SetEstado(msg, Color.Khaki);
+}
+6. Prepararlo para clientes sin RFID
+Tu VinculadorService ya debe respetar esto:
+si UsarRfid = false, no exigir RFID
+si UsarRfid = true, validar RFID y duplicado
+Eso ya lo dejamos encaminado.
+Entonces el flujo queda:
+si no hubo RFID, igual guarda con solo código
+si hubo 1 RFID, guarda con RFID
+si hubo más de 1, bloquea
+7. Sonidos
+En WinForms puedes usar sonidos simples del sistema.
+OK
+C#
+System.Media.SystemSounds.Asterisk.Play();
+Error
+C#
+System.Media.SystemSounds.Hand.Play();
+Ponlos así:
+C#
+private void ReproducirOk()
+{
+    System.Media.SystemSounds.Asterisk.Play();
+}
+
+private void ReproducirError()
+{
+    System.Media.SystemSounds.Hand.Play();
+}
+Y llama:
+ReproducirOk(); en Vinculador_OnInsertadoOk
+ReproducirError(); en Vinculador_OnError
+8. Recomendación de UI
+En producción, yo dejaría visible siempre:
+CodBarras
+cantidadRfid
+dgvTagList
+nroOP
+nroHM
+btnClear
+Y ocultaría tabs secundarios si el operario no los necesita.
+9. Regla operativa final
+La regla de planta quedaría así:
+leer RFID primero
+si cantidad RFID > 1, limpiar
+luego leer código de barras
+Enter automático del lector dispara el guardado
+Eso es estable y entendible para el usuario.
+El siguiente paso ideal es dejar un “modo operador” donde solo se vea tabVinculador y el resto quede oculto.
+
 Perfecto, ya con todo el contexto que has construido (y lo que describiste del repo), te hago un análisis completo tipo auditoría + ajustes concretos para que te quede sólido como en .NET original 👇
 🔍 1. Flujo correcto (cómo debería funcionar)
 Tu sistema debe comportarse así:
