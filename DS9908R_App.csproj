@@ -429,6 +429,7 @@
     <None Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="AlertaManager.txt" />
     <Content Include="form.ico" />
     <Content Include="MySQLconexion.txt" />
     <Content Include="prueba.txt" />

@@ -37,11 +37,8 @@ namespace DS9908R_App
         private int m_nTotalScanners = 0;
         private DiscoverScanner discoverScanner;
         private ScanToConnect scanToConnect;
-        private bool[] m_arSelectedTypes;
         private List<string> claimlist = new List<string>();
-        private bool m_bSuccessOpen;
         private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
-        private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         Color pinturaBlanca = Color.White; // #FFFFFF
         Color pinturaBlancoHumo = Color.WhiteSmoke;
@@ -94,174 +91,52 @@ namespace DS9908R_App
         {
             InitializeComponent();
 
-            // Asignar valores a propiedades privadas
             mCodTrabajador = codTrabajador;
             mUsuTrabajador = datoUsuario;
             mTurnoTrabajador = turno;
 
-            // Configurar el título del formulario con los datos recibidos
             this.Text = $"Vincular - Usuario: {mUsuTrabajador} - Trabajador: {mCodTrabajador}";
         }
 
         private void frmLector_Load(object sender, EventArgs e)
         {
-            ConfigurarGridRfid();
-
-            _vinculador = new VinculadorService();
-            _vinculador.OnInfo += Vinculador_OnInfo;
-            _vinculador.OnError += Vinculador_OnError;
-            _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
-
-            CodBarras.Focus();
-        }
-
-        private void performGetScannerFrmLector()
-        {
-            m_arSelectedTypes = scanToConnect.GetSelectedTypes();
-
-            MakeConnectCtrlFrmLector();
-            registerForEventsFrmLector();
-            ShowScannersFrmLector();
-        }
-
-        private void MakeConnectCtrlFrmLector()
-        {
-            if (!m_bSuccessOpen)
-            {
-                ConnectFrmLector();
-            }
-            else
-            {
-                DisconnectFrmLector();
-                ConnectFrmLector();
-            }
-        }
-
-        private void ConnectFrmLector()
-        {
             try
             {
-                short[] scannerTypes = new short[1];
-                scannerTypes[0] = 1;
+                ConfigurarGridRfid();
 
-                int status;
-                m_pCoreScanner.Open(0, scannerTypes, 1, out status);
+                _vinculador = new VinculadorService();
+                _vinculador.OnInfo += Vinculador_OnInfo;
+                _vinculador.OnError += Vinculador_OnError;
+                _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
 
-                if (status == 0)
-                {
-                    m_bSuccessOpen = true;
-                    toolStripStatusLbl.Text = "OPEN correcto";
-                }
-                else
-                {
-                    m_bSuccessOpen = false;
-                    toolStripStatusLbl.Text = "OPEN error: " + status;
-                }
+                m_pCoreScanner = new CCoreScannerClass();
+                discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+                scanToConnect = ScanToConnect.GetInstance();
+
+                m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+                m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
+
+                m_arScanners = new Scanner[255];
+                for (int i = 0; i < m_arScanners.Length; i++)
+                    m_arScanners[i] = new Scanner();
+
+                m_bScannerOpen = false;
+
+                ActualizarEstadoConexion("LISTO PARA CONECTAR", Color.DarkOrange);
+                HabilitarTabsTrabajo(false);
+
+                CodBarras.Focus();
             }
             catch (Exception ex)
             {
-                m_bSuccessOpen = false;
-                toolStripStatusLbl.Text = "OPEN excepción: " + ex.Message;
-            }
-        }
+                MessageBox.Show(
+                    "Error inicializando CoreScanner: " + ex.Message,
+                    "CoreScanner",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
 
-        private void DisconnectFrmLector()
-        {
-            try
-            {
-                int status;
-                m_pCoreScanner.Close(0, out status);
-                m_bSuccessOpen = false;
-            }
-            catch
-            {
-                m_bSuccessOpen = false;
-            }
-        }
-
-        private void registerForEventsFrmLector()
-        {
-            if (!m_bSuccessOpen) return;
-
-            try
-            {
-                int nEvents = 0;
-                string strEvtIDs = scanToConnect.GetRegUnRegisterIDs(out nEvents);
-                string inXml = scanToConnect.GenerateInitXML(nEvents, strEvtIDs);
-
-                int opCode = 1001; // REGISTER_FOR_EVENTS
-                string outXml = "";
-                int status = -1;
-
-                m_pCoreScanner.ExecCommand(opCode, ref inXml, out outXml, out status);
-
-                toolStripStatusLbl.Text = "REGISTER_FOR_EVENTS status: " + status;
-            }
-            catch (Exception ex)
-            {
-                toolStripStatusLbl.Text = "Error register events: " + ex.Message;
-            }
-        }
-
-        private void ShowScannersFrmLector()
-        {
-            cmbScanners.Items.Clear();
-            _scanners.Clear();
-
-            if (!m_bSuccessOpen)
-            {
-                ActualizarEstadoConexion("NO ABIERTO", Color.Firebrick);
-                return;
-            }
-
-            short numOfScanners = 0;
-            string outXML = "";
-            int status = -1;
-
-            try
-            {
-                m_arScanners = discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist);
-
-                toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
-
-                if (status == 0 && numOfScanners > 0)
-                {
-                    m_nTotalScanners = numOfScanners;
-
-                    for (int i = 0; i < numOfScanners; i++)
-                    {
-                        Scanner scn = m_arScanners[i];
-                        if (scn == null) continue;
-
-                        var item = new ScannerInfoItem
-                        {
-                            ScannerId = scn.SCANNERID,
-                            DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
-                        };
-
-                        _scanners.Add(item);
-                        cmbScanners.Items.Add(item);
-                    }
-
-                    if (cmbScanners.Items.Count > 0)
-                    {
-                        cmbScanners.SelectedIndex = 0;
-                        ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-                    }
-                    else
-                    {
-                        ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                    }
-                }
-                else
-                {
-                    ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                }
-            }
-            catch (Exception ex)
-            {
-                ActualizarEstadoConexion("ERROR GET_SCANNERS", Color.Firebrick);
-                toolStripStatusLbl.Text = ex.Message;
+                ActualizarEstadoConexion("ERROR INICIALIZANDO", Color.Firebrick);
             }
         }
 
@@ -272,7 +147,7 @@ namespace DS9908R_App
 
         private void btnLimpiarRFID_Click(object sender, EventArgs e)
         {
-            LimpiarLecturaActual();
+            LimpiarSoloRfid();
         }
         
         private void ActualizarEstadoConexion(string texto, Color color)
@@ -297,6 +172,13 @@ namespace DS9908R_App
         {
             try
             {
+                if (m_pCoreScanner == null)
+                {
+                    ActualizarEstadoConexion("CORESCANNER NULO", Color.Firebrick);
+                    MessageBox.Show("m_pCoreScanner está nulo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
                 ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
 
                 if (!m_bScannerOpen)
@@ -327,11 +209,13 @@ namespace DS9908R_App
                 }
                 else
                 {
+                    HabilitarTabsTrabajo(false);
                     ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
                 }
             }
             catch (Exception ex)
             {
+                HabilitarTabsTrabajo(false);
                 ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -411,7 +295,6 @@ namespace DS9908R_App
 
                 string raw = nodo.InnerText.Trim();
 
-                // Convierte "0x45 0x32 ..." a texto si viene así
                 if (raw.Contains("0x"))
                     return HexTokensATexto(raw);
 
@@ -430,11 +313,7 @@ namespace DS9908R_App
 
             valor = valor.Trim().Replace(" ", "");
 
-            // EPC típico: hex puro, longitud 24 o más
-            if (valor.Length >= 24 && Regex.IsMatch(valor, "^[0-9A-Fa-f]+$"))
-                return true;
-
-            return false;
+            return valor.Length >= 24 && Regex.IsMatch(valor, "^[0-9A-Fa-f]+$");
         }
 
         private void SetCodigoBarras(string codigo)
@@ -442,45 +321,6 @@ namespace DS9908R_App
             BeginInvoke(new Action(() =>
             {
                 CodBarras.Text = (codigo ?? "").Trim();
-
-                // Si el scanner de barras envía Enter físico, KeyDown hará el guardado.
-                // Si no lo envía, descomenta estas dos líneas:
-                // _ultimoCodigoBarra = CodBarras.Text.Trim();
-                // IntentarVincular();
-            }));
-        }
-
-        private void AgregarRfid(string epc)
-        {
-            BeginInvoke(new Action(() =>
-            {
-                epc = (epc ?? "").Trim().ToUpperInvariant();
-
-                if (string.IsNullOrWhiteSpace(epc))
-                    return;
-
-                if (_rfidLeidos.Contains(epc))
-                {
-                    toolStripStatusLbl.Text = "RFID repetido: " + epc;
-                    return;
-                }
-
-                _rfidLeidos.Add(epc);
-                _ultimoRfid = epc;
-
-                // Si el grid no tiene columnas, crea una sola
-                if (dgvTagList.Columns.Count == 0)
-                {
-                    dgvTagList.Columns.Add("RFID", "RFID");
-                }
-
-                // Inserta arriba
-                dgvTagList.Rows.Insert(0, epc);
-
-                toolStripStatusLbl.Text = "RFID leído: " + epc;
-
-                // Si luego ya tienes código de barras, intenta vincular
-                IntentarVincular();
             }));
         }
 
@@ -499,7 +339,6 @@ namespace DS9908R_App
             dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             dgvTagList.Columns.Add("RFID", "RFID");
-
             ActualizarCantidadRfid();
         }
 
@@ -514,59 +353,19 @@ namespace DS9908R_App
             var bytes = new List<byte>();
 
             foreach (Match m in matches)
-            {
                 bytes.Add(Convert.ToByte(m.Groups[1].Value, 16));
-            }
 
             return Encoding.ASCII.GetString(bytes.ToArray()).Trim('\r', '\n', '\0').Trim();
         }
 
-        private void CargarScannersEnCombo()
-        {
-            cmbScanners.Items.Clear();
-            _scanners.Clear();
-
-            int status;
-            string outXml = "";
-            string inXml =
-                "<inArgs>" +
-                "<cmdArgs><arg-int>0</arg-int></cmdArgs>" +
-                "</inArgs>";
-
-            m_pCoreScanner.ExecCommand(5000, ref inXml, out outXml, out status);
-
-            if (status != 0 || string.IsNullOrWhiteSpace(outXml))
-                return;
-
-            var doc = new System.Xml.XmlDocument();
-            doc.LoadXml(outXml);
-
-            var nodos = doc.SelectNodes("//scanner");
-            if (nodos == null) return;
-
-            foreach (System.Xml.XmlNode n in nodos)
-            {
-                string id = n["scannerID"]?.InnerText ?? "";
-                string modelo = n["modelnumber"]?.InnerText ?? "";
-                string tipo = n.Attributes?["type"]?.Value ?? "";
-
-                var item = new ScannerInfoItem
-                {
-                    ScannerId = id,
-                    DisplayText = $"{id} - {modelo} - {tipo}"
-                };
-
-                _scanners.Add(item);
-                cmbScanners.Items.Add(item);
-            }
-        }
-
         private void RegistrarEventos()
         {
+            if (m_pCoreScanner == null || !m_bScannerOpen)
+                return;
+
             int status;
             string outXml = "";
 
-            // Barcode + PNP
             string inXml =
                 "<inArgs>" +
                 "<cmdArgs>" +
@@ -576,6 +375,8 @@ namespace DS9908R_App
                 "</inArgs>";
 
             m_pCoreScanner.ExecCommand(1001, ref inXml, out outXml, out status);
+
+            toolStripStatusLbl.Text = "REGISTER_FOR_EVENTS status: " + status;
         }
 
         private void OnPnpEventLector(short eventType, ref string pnpData)
@@ -588,7 +389,7 @@ namespace DS9908R_App
 
                     try
                     {
-                        CargarScannersEnCombo();
+                        CargarScannersEnComboDesdeSDK();
 
                         if (cmbScanners.Items.Count > 0)
                         {
@@ -624,13 +425,15 @@ namespace DS9908R_App
             if (e.KeyCode != Keys.Enter)
                 return;
 
+            e.SuppressKeyPress = true;
+            e.Handled = true;
+
             string codigo = CodBarras.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(codigo))
                 return;
 
             _ultimoCodigoBarra = codigo;
-
             IntentarVincular();
         }
 
@@ -645,35 +448,31 @@ namespace DS9908R_App
 
                 if (_rfidPendientes.Contains(epc))
                 {
-                    toolStripStatusLbl.Text = "RFID repetido";
+                    SetEstado("RFID repetido", Color.LightCoral);
+                    ReproducirError();
                     return;
                 }
 
                 _rfidPendientes.Add(epc);
                 _ultimoRfid = epc;
 
-                cantidadRFID.Text = _rfidPendientes.Count.ToString();
+                if (dgvTagList.Columns.Count == 0)
+                    ConfigurarGridRfid();
 
                 dgvTagList.Rows.Insert(0, epc);
+                cantidadRFID.Text = _rfidPendientes.Count.ToString();
 
                 if (_rfidPendientes.Count > 1)
                 {
-                    toolStripStatusLbl.Text = "ERROR: Más de un RFID detectado";
+                    SetEstado("ERROR: Más de un RFID detectado", Color.LightCoral);
+                    ReproducirError();
                 }
                 else
                 {
-                    toolStripStatusLbl.Text = "RFID OK";
+                    SetEstado("RFID OK", Color.LightGreen);
+                    ReproducirOk();
                 }
             }));
-        }
-
-        private void AgregarRfidAlGrid(string rfid)
-        {
-            if (string.IsNullOrWhiteSpace(rfid))
-                return;
-
-            rfid = rfid.Trim().ToUpperInvariant();
-            dgvTagList.Rows.Insert(0, rfid);
         }
 
         private void IntentarVincular()
@@ -684,16 +483,14 @@ namespace DS9908R_App
             if (string.IsNullOrWhiteSpace(codigo))
                 return;
 
-            // 🔴 VALIDACIÓN CRÍTICA
             if (_rfidPendientes.Count > 1)
             {
-                toolStripStatusLbl.Text = "ERROR: múltiples RFID detectados. Limpie.";
+                SetEstado("ERROR: múltiples RFID detectados. Limpie.", Color.LightCoral);
+                ReproducirError();
                 return;
             }
 
-            string rfid = _rfidPendientes.Count == 1
-                ? _rfidPendientes[0]
-                : "";
+            string rfid = _rfidPendientes.Count == 1 ? _rfidPendientes[0] : "";
 
             var request = new VinculacionRequest
             {
@@ -705,8 +502,7 @@ namespace DS9908R_App
                 UsarRfid = !string.IsNullOrWhiteSpace(rfid)
             };
 
-            toolStripStatusLbl.Text = "Procesando...";
-
+            SetEstado("Procesando...", Color.Khaki);
             _vinculador.Enqueue(request);
         }
 
@@ -744,6 +540,7 @@ namespace DS9908R_App
             }
 
             SetEstado(msg, Color.LightCoral);
+            ReproducirError();
             CodBarras.Focus();
         }
 
@@ -755,24 +552,15 @@ namespace DS9908R_App
                 return;
             }
 
-            toolStripStatusLbl.Text = "OK";
-
-            // 🔥 LIMPIAR TODO
-            CodBarras.Clear();
-            _ultimoCodigoBarra = "";
-            _ultimoRfid = "";
-            _rfidPendientes.Clear();
-
-            dgvTagList.Rows.Clear();
-            cantidadRFID.Text = "0";
-
             if (data.ContainsKey("op"))
                 nroOP.Text = Convert.ToString(data["op"]);
 
             if (data.ContainsKey("hoja_marcacion"))
                 nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
 
-            CodBarras.Focus();
+            ReproducirOk();
+            LimpiarTodo();
+            SetEstado("OK", Color.LightGreen);
         }
 
         private void CargarScannersEnComboDesdeSDK()
@@ -826,11 +614,7 @@ namespace DS9908R_App
 
         private void btnClear_Click(object sender, EventArgs e)
         {
-            _rfidPendientes.Clear();
-            dgvTagList.Rows.Clear();
-            cantidadRFID.Text = "0";
-
-            toolStripStatusLbl.Text = "RFID limpiados";
+            LimpiarTodo();
         }
 
         private void CodBarras_Leave(object sender, EventArgs e)
@@ -864,6 +648,37 @@ namespace DS9908R_App
         private void ReproducirError()
         {
             System.Media.SystemSounds.Hand.Play();
+        }
+
+        private void LimpiarSoloRfid()
+        {
+            dgvTagList.Rows.Clear();
+            _rfidPendientes.Clear();
+            _rfidLeidos.Clear();
+            _ultimoRfid = "";
+
+            cantidadRFID.Text = "0";
+            CodBarras.Clear();
+            CodBarras.Focus();
+
+            SetEstado("RFID limpiados", Color.Khaki);
+        }
+
+        private void LimpiarTodo()
+        {
+            LimpiarSoloRfid();
+
+            _ultimoCodigoBarra = "";
+            nroOP.Text = "";
+            nroHM.Text = "";
+            _hojaMarcacionActual = "";
+
+            toolStripStatusLbl.Text = "Formulario limpiado";
+            CodBarras.Focus();
+
+            // Aquí luego puedes agregar:
+            // LimpiarGridConsolidado();
+            // NuevoTimbrado();
         }
     }
 }
