@@ -1,516 +1,89 @@
-creo que no me estas dando bien los nombres de los input por favor revisar este repo yo copie el UI copy & page asi que conservo los mismos nombre pero tu me diste nombre que no tengo en sus respectivas vistas por favor por ahora revisa FormAlerta.vb, FormAlertaError.vb, FormAlertaOk.vb, FormAviso.vb, FormAlertaMsnError.vb, FormAviso.vb, FormConfirmacion.vb y AlertaManager.vb
-Sí, tienes razón: en frmLecto.txt no hay un solo tipo de alerta. Hay al menos estas familias:
-alerta modal de error con FormAlertaError, bloqueante y con control alertaAbierta
-alerta toast/no bloqueante con FormAlerta y AlertaManager
-alerta modal OK con FormAlertaOk
-y en el flujo original se usan distinto según el caso; por ejemplo, conexión exitosa usa AlertaOk(...). �
+Sí, aquí el ajuste era mío: te propuse una versión simplificada, pero en tu repo el sistema de alertas no es uno solo. Según frmLecto.txt, para conexión exitosa se usa AlertaOk("Conexion", ...), no un toast genérico, y además conviven alertas modales de error, alertas toast y alertas OK. �
 GitHub
-Entonces no conviene reemplazar todo por una sola alerta. Lo correcto es portar esa misma idea a C#.
-Qué te recomiendo usar en frmLector.cs
-Usa esta regla:
-errores de validación o negocio: FormAlertaError modal
-éxitos rápidos: FormAlerta tipo toast o FormAlertaOk
-mensajes de barra: seguir con toolStripStatusLbl
-errores repetidos de RFID / múltiples RFID: mejor modal o toast rojo según severidad
-1) AlertaManager.cs en C#
-C#
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace DS9908R_App
-{
-    public static class AlertaManager
-    {
-        private static readonly List<FormAlerta> alertasActivas = new List<FormAlerta>();
-        private static readonly object alertasLock = new object();
-
-        public static void MostrarAlerta(string mensaje, Color color, int tipo = 3, int tiempo = 5)
-        {
-            var nuevaAlerta = new FormAlerta(mensaje, color, tipo, tiempo);
-
-            if (Application.OpenForms.Count > 0)
-            {
-                Form form = Application.OpenForms[0];
-                if (form.InvokeRequired)
-                {
-                    form.Invoke(new Action(() => MostrarAlertaInterno(nuevaAlerta)));
-                }
-                else
-                {
-                    MostrarAlertaInterno(nuevaAlerta);
-                }
-            }
-            else
-            {
-                MostrarAlertaInterno(nuevaAlerta);
-            }
-        }
-
-        private static void MostrarAlertaInterno(FormAlerta alerta)
-        {
-            lock (alertasLock)
-            {
-                alerta.StartPosition = FormStartPosition.Manual;
-                alerta.Location = new Point(
-                    Screen.PrimaryScreen.WorkingArea.Width - alerta.Width - 50,
-                    ObtenerPosicion()
-                );
-                alertasActivas.Add(alerta);
-            }
-
-            alerta.Show();
-        }
-
-        public static int ObtenerPosicion()
-        {
-            int pantallaAlto = Screen.PrimaryScreen.WorkingArea.Height;
-            int alertaAlto = 70;
-            int margen = 10;
-
-            return pantallaAlto - ((alertaAlto + margen) * (alertasActivas.Count + 1));
-        }
-
-        public static void RemoverAlerta(FormAlerta alerta)
-        {
-            lock (alertasLock)
-            {
-                alertasActivas.Remove(alerta);
-                ReorganizarAlertas();
-            }
-        }
-
-        private static void ReorganizarAlertas()
-        {
-            lock (alertasLock)
-            {
-                int alertaAlto = 70;
-                int margen = 10;
-                int pantallaAlto = Screen.PrimaryScreen.WorkingArea.Height;
-
-                for (int i = 0; i < alertasActivas.Count; i++)
-                {
-                    alertasActivas[i].Location = new Point(
-                        alertasActivas[i].Location.X,
-                        pantallaAlto - ((alertaAlto + margen) * (i + 1))
-                    );
-                }
-            }
-        }
-    }
-}
-2) FormAlertaError.cs en C#
-Esta es la importante para errores bloqueantes, con callback y control de ventana única, como tu VB.
-C#
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace DS9908R_App
-{
-    public class FormAlertaError : Form
-    {
-        public static bool alertaAbierta = false;
-
-        private readonly Action _callback;
-        private Label lblTitulo;
-        private Label lblDetalle;
-        private Panel franjaAbajo;
-        private Button btnAceptar;
-        private PictureBox iconError;
-
-        public FormAlertaError(string titulo, string detalle, Color color, Action callback = null)
-        {
-            _callback = callback;
-            InitializeComponent();
-
-            lblTitulo.Text = titulo;
-            lblDetalle.Text = detalle;
-            franjaAbajo.BackColor = color;
-            iconError.Image = SystemIcons.Error.ToBitmap();
-        }
-
-        private void InitializeComponent()
-        {
-            this.lblTitulo = new Label();
-            this.lblDetalle = new Label();
-            this.franjaAbajo = new Panel();
-            this.btnAceptar = new Button();
-            this.iconError = new PictureBox();
-
-            ((System.ComponentModel.ISupportInitialize)(this.iconError)).BeginInit();
-            this.SuspendLayout();
-
-            this.Text = "Error";
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.Manual;
-            this.ClientSize = new Size(460, 220);
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-            this.TopMost = true;
-            this.ShowInTaskbar = false;
-
-            iconError.Location = new Point(20, 20);
-            iconError.Size = new Size(48, 48);
-            iconError.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            lblTitulo.Location = new Point(85, 20);
-            lblTitulo.Size = new Size(340, 28);
-            lblTitulo.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-
-            lblDetalle.Location = new Point(25, 80);
-            lblDetalle.Size = new Size(400, 70);
-            lblDetalle.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-
-            btnAceptar.Text = "Aceptar";
-            btnAceptar.Location = new Point(170, 165);
-            btnAceptar.Size = new Size(110, 32);
-            btnAceptar.Click += BtnAceptar_Click;
-
-            franjaAbajo.Dock = DockStyle.Bottom;
-            franjaAbajo.Height = 10;
-
-            this.Controls.Add(iconError);
-            this.Controls.Add(lblTitulo);
-            this.Controls.Add(lblDetalle);
-            this.Controls.Add(btnAceptar);
-            this.Controls.Add(franjaAbajo);
-
-            this.Load += FormAlertaError_Load;
-            this.FormClosed += FormAlertaError_FormClosed;
-
-            ((System.ComponentModel.ISupportInitialize)(this.iconError)).EndInit();
-            this.ResumeLayout(false);
-        }
-
-        private void FormAlertaError_Load(object sender, EventArgs e)
-        {
-            if (alertaAbierta)
-            {
-                this.Close();
-                return;
-            }
-
-            alertaAbierta = true;
-
-            this.Location = new Point(
-                (Screen.PrimaryScreen.WorkingArea.Width - this.Width) / 2,
-                (Screen.PrimaryScreen.WorkingArea.Height - this.Height) / 2
-            );
-        }
-
-        private void BtnAceptar_Click(object sender, EventArgs e)
-        {
-            alertaAbierta = false;
-            this.Close();
-
-            _callback?.Invoke();
-        }
-
-        private void FormAlertaError_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            alertaAbierta = false;
-        }
-    }
-}
-3) FormAlertaOk.cs en C#
-C#
-using System;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace DS9908R_App
-{
-    public class FormAlertaOk : Form
-    {
-        private readonly Timer _timer;
-        private int _conteo = 0;
-        private readonly int _tiempo;
-        private Label lblTitulo;
-        private Label lblDetalle;
-        private Panel franjaAbajo;
-        private PictureBox iconOk;
-
-        public FormAlertaOk(string titulo, Color color, int tiempo = 30, string detalle = "Qué bueno verte nuevamente.")
-        {
-            _tiempo = tiempo;
-            InitializeComponent();
-
-            lblTitulo.Text = titulo;
-            lblDetalle.Text = detalle;
-            franjaAbajo.BackColor = color;
-            iconOk.Image = SystemIcons.Information.ToBitmap();
-
-            _timer = new Timer();
-            _timer.Interval = 1000;
-            _timer.Tick += Timer_Tick;
-        }
-
-        private void InitializeComponent()
-        {
-            this.lblTitulo = new Label();
-            this.lblDetalle = new Label();
-            this.franjaAbajo = new Panel();
-            this.iconOk = new PictureBox();
-
-            ((System.ComponentModel.ISupportInitialize)(this.iconOk)).BeginInit();
-            this.SuspendLayout();
-
-            this.Text = "OK";
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.StartPosition = FormStartPosition.CenterScreen;
-            this.ClientSize = new Size(440, 200);
-            this.TopMost = true;
-            this.ShowInTaskbar = false;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
-
-            iconOk.Location = new Point(20, 20);
-            iconOk.Size = new Size(48, 48);
-            iconOk.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            lblTitulo.Location = new Point(85, 20);
-            lblTitulo.Size = new Size(320, 28);
-            lblTitulo.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-
-            lblDetalle.Location = new Point(25, 80);
-            lblDetalle.Size = new Size(380, 60);
-            lblDetalle.Font = new Font("Segoe UI", 10F);
-
-            franjaAbajo.Dock = DockStyle.Bottom;
-            franjaAbajo.Height = 10;
-
-            this.Controls.Add(iconOk);
-            this.Controls.Add(lblTitulo);
-            this.Controls.Add(lblDetalle);
-            this.Controls.Add(franjaAbajo);
-
-            this.Load += FormAlertaOk_Load;
-            this.FormClosed += FormAlertaOk_FormClosed;
-
-            ((System.ComponentModel.ISupportInitialize)(this.iconOk)).EndInit();
-            this.ResumeLayout(false);
-        }
-
-        private void FormAlertaOk_Load(object sender, EventArgs e)
-        {
-            _timer.Start();
-        }
-
-        private void FormAlertaOk_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            _timer.Stop();
-        }
-
-        private void Timer_Tick(object sender, EventArgs e)
-        {
-            _conteo++;
-            if (_conteo >= _tiempo)
-            {
-                this.Close();
-            }
-        }
-    }
-}
-4) FormAlerta.cs toast/no bloqueante
-C#
-using System;
-using System.Drawing;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-
-namespace DS9908R_App
-{
-    public class FormAlerta : Form
-    {
-        private int _tiempo = 30;
-        private int _desplazamiento = 10;
-        private int _destinoY;
-
-        private Label lblMensaje;
-        private Panel franjaTop;
-        private PictureBox iconError;
-        private PictureBox iconOk;
-        private PictureBox iconInfo;
-
-        public FormAlerta(string mensaje, Color color, int tipo, int tiempo = 30)
-        {
-            _tiempo = tiempo;
-            InitializeComponent();
-
-            lblMensaje.Text = mensaje;
-            lblMensaje.ForeColor = color;
-            franjaTop.BackColor = color;
-            this.BackColor = ColorTranslator.FromHtml("#fff3cd");
-            this.TopMost = true;
-
-            iconError.Visible = false;
-            iconOk.Visible = false;
-            iconInfo.Visible = false;
-
-            switch (tipo)
-            {
-                case 1:
-                    iconOk.Visible = true;
-                    iconOk.Image = SystemIcons.Information.ToBitmap();
-                    break;
-                case 2:
-                    iconInfo.Visible = true;
-                    iconInfo.Image = SystemIcons.Question.ToBitmap();
-                    break;
-                default:
-                    iconError.Visible = true;
-                    iconError.Image = SystemIcons.Error.ToBitmap();
-                    break;
-            }
-
-            this.Load += FormAlerta_Load;
-        }
-
-        private void InitializeComponent()
-        {
-            lblMensaje = new Label();
-            franjaTop = new Panel();
-            iconError = new PictureBox();
-            iconOk = new PictureBox();
-            iconInfo = new PictureBox();
-
-            ((System.ComponentModel.ISupportInitialize)(iconError)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(iconOk)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(iconInfo)).BeginInit();
-
-            this.SuspendLayout();
-
-            this.FormBorderStyle = FormBorderStyle.None;
-            this.ShowInTaskbar = false;
-            this.ClientSize = new Size(380, 80);
-            this.Opacity = 0.97;
-
-            franjaTop.Dock = DockStyle.Top;
-            franjaTop.Height = 8;
-
-            iconError.Location = new Point(15, 24);
-            iconError.Size = new Size(32, 32);
-            iconError.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            iconOk.Location = new Point(15, 24);
-            iconOk.Size = new Size(32, 32);
-            iconOk.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            iconInfo.Location = new Point(15, 24);
-            iconInfo.Size = new Size(32, 32);
-            iconInfo.SizeMode = PictureBoxSizeMode.StretchImage;
-
-            lblMensaje.Location = new Point(60, 18);
-            lblMensaje.Size = new Size(300, 42);
-            lblMensaje.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-
-            this.Controls.Add(franjaTop);
-            this.Controls.Add(iconError);
-            this.Controls.Add(iconOk);
-            this.Controls.Add(iconInfo);
-            this.Controls.Add(lblMensaje);
-
-            ((System.ComponentModel.ISupportInitialize)(iconError)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(iconOk)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(iconInfo)).EndInit();
-
-            this.ResumeLayout(false);
-        }
-
-        private async void FormAlerta_Load(object sender, EventArgs e)
-        {
-            this.Left = Screen.PrimaryScreen.WorkingArea.Width - this.Width - 50;
-            this.Top = Screen.PrimaryScreen.WorkingArea.Height;
-
-            _destinoY = AlertaManager.ObtenerPosicion();
-
-            while (this.Top > _destinoY)
-            {
-                this.Top -= _desplazamiento;
-                await Task.Delay(10);
-            }
-
-            await Task.Delay(_tiempo * 1000);
-
-            for (double i = 1.0; i >= 0; i -= 0.1)
-            {
-                this.Opacity = i;
-                await Task.Delay(50);
-            }
-
-            this.Close();
-            AlertaManager.RemoverAlerta(this);
-        }
-    }
-}
-5) Métodos en frmLector.cs para respetar tu flujo VB
-Esto es lo más importante. En vez de usar una sola alerta, agrega estos helpers:
+Los archivos que sí debes conservar y portar tal como están conceptualmente son estos, con sus mismos nombres:
+AlertaManager
+FormAlerta
+FormAlertaError
+FormAlertaOk
+FormAlertaMsnError
+FormAviso
+FormConfirmacion
+Y en frmLector.cs no debes inventar nombres nuevos de controles para esas vistas; hay que adaptar la lógica a los nombres reales que ya copiaste del UI.
+Qué cambios sí te recomiendo, pero usando tus archivos reales
+1. No reemplazar todo por AlertaManager
+Tu repo usa al menos tres patrones distintos:
+MostrarAlerta(...) / AlertaManager.MostrarAlerta(...) para alertas flotantes.
+AlertaError(...) / AlertaErrorMsn(...) con FormAlertaError para errores modales.
+AlertaOk(...) con FormAlertaOk para éxito modal de conexión.
+Esto se ve también en el flujo de conexión del lector, donde se usa AlertaOk("Conexion", pinturaVerdeMarMedio, 30, "Exitosa al reader."). �
+GitHub
+2. En frmLector.cs, agrega wrappers con esos nombres lógicos
+No cambies tus controles; agrega métodos helper que llamen a tus formularios reales.
+Deberías tener algo así:
 C#
 private void AlertaErrorMsn(string mensaje, Color color)
 {
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string, Color>(AlertaErrorMsn), mensaje, color);
-        return;
-    }
-
     toolStripStatusLbl.Text = mensaje;
-
-    using (var alertaError = new FormAlertaError("Error", mensaje, color))
+    using (var alerta = new FormAlertaError("Error", mensaje, color))
     {
-        alertaError.ShowDialog();
+        alerta.ShowDialog();
     }
 }
 
-private void MostrarAlertaErrorBloqueante(string mensaje, Action callback = null)
+private void MostrarAlerta(string mensaje, Action callback = null)
 {
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string, Action>(MostrarAlertaErrorBloqueante), mensaje, callback);
-        return;
-    }
-
     toolStripStatusLbl.Text = mensaje;
 
     if (FormAlertaError.alertaAbierta)
         return;
 
-    using (var alertaError = new FormAlertaError("Error", mensaje, Color.Firebrick, callback))
+    using (var alerta = new FormAlertaError("Error", mensaje, pinturaRojoLadrillo, callback))
     {
-        alertaError.ShowDialog();
+        alerta.ShowDialog();
     }
 }
 
-private void MostrarAlertaToast(string mensaje, Color color, int tipo = 3, int tiempo = 5)
+private void Alerta(string mensaje, Color color, int tipo, int tiempo = 10)
 {
-    if (InvokeRequired)
+    using (var alerta = new FormAlerta(mensaje, color, tipo, tiempo))
     {
-        BeginInvoke(new Action<string, Color, int, int>(MostrarAlertaToast), mensaje, color, tipo, tiempo);
-        return;
+        alerta.ShowDialog();
     }
-
-    toolStripStatusLbl.Text = mensaje;
-    AlertaManager.MostrarAlerta(mensaje, color, tipo, tiempo);
 }
 
-private void MostrarAlertaOkModal(string titulo, Color color, int tiempo, string descripcion)
+private void AlertaOk(string titulo, Color color, int tiempo, string descripcion)
 {
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string, Color, int, string>(MostrarAlertaOkModal), titulo, color, tiempo, descripcion);
-        return;
-    }
-
     using (var alerta = new FormAlertaOk(titulo, color, tiempo, descripcion))
     {
         alerta.ShowDialog();
     }
 }
-6) Cómo mapear cada tipo
-Error de negocio de SaveRFID
-Usa modal bloqueante:
+Eso respeta exactamente la idea del VB que pegaste.
+3. Mapeo correcto de uso en frmLector.cs
+Usa este criterio:
+error de negocio de SaveRFID → MostrarAlerta(...) o AlertaErrorMsn(...)
+registro correcto → AlertaManager.MostrarAlerta("Registrado Ok", ...)
+conexión correcta del reader → AlertaOk("Conexion", ...)
+mensajes de barra → toolStripStatusLbl
+Dónde te estaba dando mal los nombres
+Tienes razón en esto: yo te di nombres genéricos como dgvRegistros o variantes de labels que no necesariamente existen en tu diseñador actual. Con tu repo, por ahora hay que trabajar solo con los nombres que ya mencionaste y vienes usando en frmLector.cs, por ejemplo:
+CodBarras
+dgvTagList
+cantidadRFID
+nroOP
+nroHM
+lblEstadoConexion
+toolStripStatusLbl
+No conviene inventar más nombres hasta revisar el .Designer.cs.
+Qué archivo tocaría ahora
+Yo haría esto en este orden:
+No tocar aún FormAlerta.vb, FormAlertaError.vb, FormAlertaOk.vb, FormAviso.vb, FormAlertaMsnError.vb, FormConfirmacion.vb si ya existen y están bien visualmente.
+Portar primero AlertaManager.vb a AlertaManager.cs.
+En frmLector.cs, agregar los wrappers AlertaErrorMsn, MostrarAlerta, Alerta, AlertaOk.
+Reemplazar en Vinculador_OnError y Vinculador_OnInsertadoOk las llamadas simples por esas alertas reales.
+Ajuste directo para tu caso actual
+Error al guardar
+En Vinculador_OnError:
 C#
 private void Vinculador_OnError(string msg)
 {
@@ -520,15 +93,15 @@ private void Vinculador_OnError(string msg)
         return;
     }
 
-    SetEstado(msg, Color.LightCoral);
+    toolStripStatusLbl.Text = msg;
     ReproducirError();
     CodBarras.Clear();
     CodBarras.Focus();
 
-    MostrarAlertaErrorBloqueante(msg);
+    MostrarAlerta(msg);
 }
-Éxito de registro
-Usa toast verde:
+Éxito al guardar
+En Vinculador_OnInsertadoOk:
 C#
 private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
 {
@@ -545,29 +118,17 @@ private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
         nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
 
     ReproducirOk();
-    MostrarAlertaToast("Registrado Ok", Color.FromArgb(92, 184, 92), 1, 5);
+    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerdeMedio, 1, 5);
 
     LimpiarTodo();
-    SetEstado("OK", Color.LightGreen);
+    toolStripStatusLbl.Text = "OK";
 }
-Conexión exitosa
-Como en tu VB, úsalo modal OK; el flujo original usa AlertaOk("Conexion", ...). �
-GitHub
+Conexión correcta del reader
+Cuando conecte bien:
 C#
-MostrarAlertaOkModal("Conexión", Color.SeaGreen, 10, "Exitosa al reader.");
-7) Agrega estos archivos al .csproj
-XML
-<Compile Include="AlertaManager.cs" />
-<Compile Include="FormAlerta.cs">
-  <SubType>Form</SubType>
-</Compile>
-<Compile Include="FormAlertaError.cs">
-  <SubType>Form</SubType>
-</Compile>
-<Compile Include="FormAlertaOk.cs">
-  <SubType>Form</SubType>
-</Compile>
-8) Conclusión
-Tu repo original usa varios tipos de alerta, no una sola, y sí conviene portarlo así. Los fragmentos que pegaste muestran claramente esa separación entre FormAlertaError, FormAlerta, FormAlertaOk y AlertaManager, y también que la conexión exitosa se comunica con AlertaOk(...). �
+AlertaOk("Conexion", pinturaVerdeMarMedio, 30, "Exitosa al reader.");
+Eso sí coincide con tu flujo VB. �
 GitHub
-El siguiente paso útil es adaptar BDPrenda.SaveRFID(...) para que el mensaje exacto de Sybase llegue intacto a MostrarAlertaErrorBloqueante(...).
+Conclusión
+Sí, corrijo eso: no debes unificar todo en una sola alerta, ni cambiar nombres de inputs que ya existen en tu UI. En tu repo hay varios tipos de mensaje y hay que respetarlos.
+El siguiente paso correcto es que me pegues frmLector.Designer.cs o al menos la parte de controles del formulario, y con eso te devuelvo los métodos de alerta ajustados a tus nombres reales, sin inventar ninguno.
