@@ -1,999 +1,354 @@
-Por ahora todo frmLector.cs
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using CoreScanner;
-using Scanner_SDK_Sample_Application;
-using STC;
-
-namespace DS9908R_App
+Sí, ya vi el error principal y también dónde está desordenado frmLector.cs.
+El error de producción
+El log dice:
+m_pCoreScanner was null
+Y en tu frmLector_Load actual no estás creando m_pCoreScanner.
+Ahora mismo tienes esto:
+C#
+private void frmLector_Load(object sender, EventArgs e)
 {
-    public partial class frmLector : Form
+    ConfigurarGridRfid();
+
+    _vinculador = new VinculadorService();
+    _vinculador.OnInfo += Vinculador_OnInfo;
+    _vinculador.OnError += Vinculador_OnError;
+    _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+    CodBarras.Focus();
+}
+Ahí falta esto:
+m_pCoreScanner = new CCoreScannerClass();
+discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+scanToConnect = ScanToConnect.GetInstance();
+registrar eventos BarcodeEvent y PNPEvent
+inicializar m_arScanners
+Qué está mal en frmLector.cs
+1. Falta inicializar CoreScanner
+Ese es el error que te bloquea producción.
+2. Tienes lógica duplicada
+Tienes dos caminos distintos para conectar scanners:
+performGetScannerFrmLector() + MakeConnectCtrlFrmLector() + ShowScannersFrmLector()
+btnBuscarScanners_Click() + RegistrarEventos() + CargarScannersEnComboDesdeSDK()
+Debes quedarte con uno solo.
+3. Tienes dos flags para lo mismo
+Tienes:
+m_bScannerOpen
+m_bSuccessOpen
+Eso te puede desordenar el estado. Quédate con uno.
+4. Tienes dos métodos para RFID
+Tienes:
+AgregarRfid(...)
+SetRfid(...)
+Quédate con SetRfid(...).
+5. btnClear y btnLimpiarRFID no hacen lo mismo
+Y en tu .NET original sí tenían objetivos distintos.
+Cómo debe quedar
+frmLector_Load corregido
+Reemplázalo por este:
+C#
+private void frmLector_Load(object sender, EventArgs e)
+{
+    try
     {
-        private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        private readonly List<string> _rfidPendientes = new List<string>();
-
-        private VinculadorService _vinculador;
-        private string _ultimoCodigoBarra = "";
-        private string _ultimoRfid = "";
-        private string _hojaMarcacionActual = "";
-
-        private string mEmpresa = "COFACO";
-        private string mCodTrabajador;
-        private string mUsuTrabajador;
-        private string mTurnoTrabajador;
-
-        private CCoreScannerClass m_pCoreScanner;
-        private bool m_bScannerOpen = false;
-        private Scanner[] m_arScanners;
-        private int m_nTotalScanners = 0;
-        private DiscoverScanner discoverScanner;
-        private ScanToConnect scanToConnect;
-        private bool[] m_arSelectedTypes;
-        private List<string> claimlist = new List<string>();
-        private bool m_bSuccessOpen;
-        private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
-        private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        Color pinturaBlanca = Color.White; // #FFFFFF
-        Color pinturaBlancoHumo = Color.WhiteSmoke;
-
-        Color pinturaNegra = Color.Black; // #000000
-
-        Color pinturaRoja = Color.Red;
-        Color pinturaRojoIndio = Color.IndianRed; // #d9534f
-        Color pinturaRojoLadrillo = Color.Firebrick; // #c9302c
-        Color pinturaRojoCarmesi = Color.FromArgb(201, 48, 44); // #c9302c
-        Color pinturaRojoCoral = Color.FromArgb(217, 83, 79); // #d9534f
-
-        Color pinturaVerde = Color.Green;
-        Color pinturaVerdeOscuro = Color.DarkGreen; // #0d5934 / #218838
-        Color pinturaVerdeMarMedio = Color.MediumSeaGreen; // #3BA873 / #5cb85c
-        Color pinturaVerdeBosque = Color.FromArgb(13, 89, 52);
-        Color pinturaVerdeClaro = Color.LightGreen;
-        Color pinturaVerdeAzulado = Color.Teal;
-        Color pinturaVerdeTurquesa = Color.FromArgb(59, 168, 115); // #3BA873
-        Color pinturaVerdeFuerte = Color.FromArgb(13, 89, 52); // #0d5934
-        Color pinturaVerdeMedio = Color.FromArgb(92, 184, 92); // #5cb85c
-
-        Color pinturaGris = Color.Gray;
-        Color pinturaGrisClaro = Color.LightGray; // #E0E0E0
-        Color pinturaGrisOscuro = Color.DimGray; // #303030
-
-        Color pinturaNaranja = Color.Orange;
-        Color pinturaPlata = Color.Silver; // #BDBDBD
-
-        Color pinturaAzulClaro = Color.LightBlue;
-
-        public frmLector()
-        {
-            InitializeComponent();
-        }
-
-        private class ScannerInfoItem
-        {
-            public string ScannerId { get; set; }
-            public string DisplayText { get; set; }
-
-            public override string ToString()
-            {
-                return DisplayText;
-            }
-        }
-
-        // Constructor con parámetros
-        public frmLector(string codTrabajador, string datoUsuario, string turno)
-        {
-            InitializeComponent();
-
-            // Asignar valores a propiedades privadas
-            mCodTrabajador = codTrabajador;
-            mUsuTrabajador = datoUsuario;
-            mTurnoTrabajador = turno;
-
-            // Configurar el título del formulario con los datos recibidos
-            this.Text = $"Vincular - Usuario: {mUsuTrabajador} - Trabajador: {mCodTrabajador}";
-        }
-
-        private void frmLector_Load(object sender, EventArgs e)
-        {
-            ConfigurarGridRfid();
-
-            _vinculador = new VinculadorService();
-            _vinculador.OnInfo += Vinculador_OnInfo;
-            _vinculador.OnError += Vinculador_OnError;
-            _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
-
-            CodBarras.Focus();
-        }
-
-        private void performGetScannerFrmLector()
-        {
-            m_arSelectedTypes = scanToConnect.GetSelectedTypes();
-
-            MakeConnectCtrlFrmLector();
-            registerForEventsFrmLector();
-            ShowScannersFrmLector();
-        }
-
-        private void MakeConnectCtrlFrmLector()
-        {
-            if (!m_bSuccessOpen)
-            {
-                ConnectFrmLector();
-            }
-            else
-            {
-                DisconnectFrmLector();
-                ConnectFrmLector();
-            }
-        }
-
-        private void ConnectFrmLector()
-        {
-            try
-            {
-                short[] scannerTypes = new short[1];
-                scannerTypes[0] = 1;
-
-                int status;
-                m_pCoreScanner.Open(0, scannerTypes, 1, out status);
-
-                if (status == 0)
-                {
-                    m_bSuccessOpen = true;
-                    toolStripStatusLbl.Text = "OPEN correcto";
-                }
-                else
-                {
-                    m_bSuccessOpen = false;
-                    toolStripStatusLbl.Text = "OPEN error: " + status;
-                }
-            }
-            catch (Exception ex)
-            {
-                m_bSuccessOpen = false;
-                toolStripStatusLbl.Text = "OPEN excepción: " + ex.Message;
-            }
-        }
-
-        private void DisconnectFrmLector()
-        {
-            try
-            {
-                int status;
-                m_pCoreScanner.Close(0, out status);
-                m_bSuccessOpen = false;
-            }
-            catch
-            {
-                m_bSuccessOpen = false;
-            }
-        }
-
-        private void registerForEventsFrmLector()
-        {
-            if (!m_bSuccessOpen) return;
-
-            try
-            {
-                int nEvents = 0;
-                string strEvtIDs = scanToConnect.GetRegUnRegisterIDs(out nEvents);
-                string inXml = scanToConnect.GenerateInitXML(nEvents, strEvtIDs);
-
-                int opCode = 1001; // REGISTER_FOR_EVENTS
-                string outXml = "";
-                int status = -1;
-
-                m_pCoreScanner.ExecCommand(opCode, ref inXml, out outXml, out status);
-
-                toolStripStatusLbl.Text = "REGISTER_FOR_EVENTS status: " + status;
-            }
-            catch (Exception ex)
-            {
-                toolStripStatusLbl.Text = "Error register events: " + ex.Message;
-            }
-        }
-
-        private void ShowScannersFrmLector()
-        {
-            cmbScanners.Items.Clear();
-            _scanners.Clear();
-
-            if (!m_bSuccessOpen)
-            {
-                ActualizarEstadoConexion("NO ABIERTO", Color.Firebrick);
-                return;
-            }
-
-            short numOfScanners = 0;
-            string outXML = "";
-            int status = -1;
-
-            try
-            {
-                m_arScanners = discoverScanner.GetScanners(ref numOfScanners, ref outXML, ref status, claimlist);
-
-                toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
-
-                if (status == 0 && numOfScanners > 0)
-                {
-                    m_nTotalScanners = numOfScanners;
-
-                    for (int i = 0; i < numOfScanners; i++)
-                    {
-                        Scanner scn = m_arScanners[i];
-                        if (scn == null) continue;
-
-                        var item = new ScannerInfoItem
-                        {
-                            ScannerId = scn.SCANNERID,
-                            DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
-                        };
-
-                        _scanners.Add(item);
-                        cmbScanners.Items.Add(item);
-                    }
-
-                    if (cmbScanners.Items.Count > 0)
-                    {
-                        cmbScanners.SelectedIndex = 0;
-                        ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-                    }
-                    else
-                    {
-                        ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                    }
-                }
-                else
-                {
-                    ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                }
-            }
-            catch (Exception ex)
-            {
-                ActualizarEstadoConexion("ERROR GET_SCANNERS", Color.Firebrick);
-                toolStripStatusLbl.Text = ex.Message;
-            }
-        }
-
-        private void frmLector_KeyDown(object sender, KeyEventArgs e)
-        {
-
-        }
-
-        private void btnLimpiarRFID_Click(object sender, EventArgs e)
-        {
-            LimpiarLecturaActual();
-        }
-        
-        private void ActualizarEstadoConexion(string texto, Color color)
-        {
-            lblEstadoConexion.Text = texto;
-            lblEstadoConexion.BackColor = color;
-            lblEstadoConexion.ForeColor = Color.White;
-            lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
-
-            if (toolStripStatusLbl != null)
-                toolStripStatusLbl.Text = texto;
-        }
-
-        private void HabilitarTabsTrabajo(bool habilitar)
-        {
-            if (tabVinculador != null) tabVinculador.Enabled = habilitar;
-            if (tablaBuscarPrenda != null) tablaBuscarPrenda.Enabled = habilitar;
-            if (tabHojaMarcacion != null) tabHojaMarcacion.Enabled = habilitar;
-        }
-
-        private void btnBuscarScanners_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
-
-                if (!m_bScannerOpen)
-                {
-                    short[] types = new short[1];
-                    types[0] = 1;
-
-                    int status;
-                    m_pCoreScanner.Open(0, types, 1, out status);
-
-                    if (status != 0)
-                    {
-                        ActualizarEstadoConexion("ERROR OPEN: " + status, Color.Firebrick);
-                        return;
-                    }
-
-                    m_bScannerOpen = true;
-                }
-
-                RegistrarEventos();
-                CargarScannersEnComboDesdeSDK();
-
-                if (cmbScanners.Items.Count > 0)
-                {
-                    cmbScanners.SelectedIndex = 0;
-                    HabilitarTabsTrabajo(true);
-                    ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-                }
-                else
-                {
-                    ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                }
-            }
-            catch (Exception ex)
-            {
-                ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void cmbScanners_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                if (cmbScanners.SelectedItem == null)
-                {
-                    HabilitarTabsTrabajo(false);
-                    ActualizarEstadoConexion("SIN SELECCIÓN", Color.Firebrick);
-                    return;
-                }
-
-                var scanner = cmbScanners.SelectedItem as ScannerInfoItem;
-                if (scanner == null)
-                {
-                    HabilitarTabsTrabajo(false);
-                    ActualizarEstadoConexion("SCANNER INVÁLIDO", Color.Firebrick);
-                    return;
-                }
-
-                ActualizarEstadoConexion("CONECTADO: " + scanner.DisplayText, Color.SeaGreen);
-                HabilitarTabsTrabajo(true);
-            }
-            catch (Exception ex)
-            {
-                HabilitarTabsTrabajo(false);
-                ActualizarEstadoConexion("ERROR DE SELECCIÓN", Color.Firebrick);
-
-                MessageBox.Show("Error al seleccionar scanner: " + ex.Message,
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void OnBarcodeEventLector(short eventType, ref string scanData)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(scanData))
-                    return;
-
-                string valor = ExtraerDatoLeido(scanData);
-
-                if (string.IsNullOrWhiteSpace(valor))
-                    return;
-
-                if (PareceRfid(valor))
-                {
-                    SetRfid(valor);
-                }
-                else
-                {
-                    SetCodigoBarras(valor);
-                }
-            }
-            catch (Exception ex)
-            {
-                BeginInvoke(new Action(() =>
-                {
-                    toolStripStatusLbl.Text = "Error lectura: " + ex.Message;
-                }));
-            }
-        }
-
-        private string ExtraerDatoLeido(string xml)
-        {
-            try
-            {
-                var doc = new System.Xml.XmlDocument();
-                doc.LoadXml(xml);
-
-                var nodo = doc.SelectSingleNode("//datalabel");
-                if (nodo == null) return string.Empty;
-
-                string raw = nodo.InnerText.Trim();
-
-                // Convierte "0x45 0x32 ..." a texto si viene así
-                if (raw.Contains("0x"))
-                    return HexTokensATexto(raw);
-
-                return raw;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-        }
-
-        private bool PareceRfid(string valor)
-        {
-            if (string.IsNullOrWhiteSpace(valor))
-                return false;
-
-            valor = valor.Trim().Replace(" ", "");
-
-            // EPC típico: hex puro, longitud 24 o más
-            if (valor.Length >= 24 && Regex.IsMatch(valor, "^[0-9A-Fa-f]+$"))
-                return true;
-
-            return false;
-        }
-
-        private void SetCodigoBarras(string codigo)
-        {
-            BeginInvoke(new Action(() =>
-            {
-                CodBarras.Text = (codigo ?? "").Trim();
-
-                // Si el scanner de barras envía Enter físico, KeyDown hará el guardado.
-                // Si no lo envía, descomenta estas dos líneas:
-                // _ultimoCodigoBarra = CodBarras.Text.Trim();
-                // IntentarVincular();
-            }));
-        }
-
-        private void AgregarRfid(string epc)
-        {
-            BeginInvoke(new Action(() =>
-            {
-                epc = (epc ?? "").Trim().ToUpperInvariant();
-
-                if (string.IsNullOrWhiteSpace(epc))
-                    return;
-
-                if (_rfidLeidos.Contains(epc))
-                {
-                    toolStripStatusLbl.Text = "RFID repetido: " + epc;
-                    return;
-                }
-
-                _rfidLeidos.Add(epc);
-                _ultimoRfid = epc;
-
-                // Si el grid no tiene columnas, crea una sola
-                if (dgvTagList.Columns.Count == 0)
-                {
-                    dgvTagList.Columns.Add("RFID", "RFID");
-                }
-
-                // Inserta arriba
-                dgvTagList.Rows.Insert(0, epc);
-
-                toolStripStatusLbl.Text = "RFID leído: " + epc;
-
-                // Si luego ya tienes código de barras, intenta vincular
-                IntentarVincular();
-            }));
-        }
-
-        private void ConfigurarGridRfid()
-        {
-            dgvTagList.Columns.Clear();
-            dgvTagList.Rows.Clear();
-
-            dgvTagList.AllowUserToAddRows = false;
-            dgvTagList.AllowUserToDeleteRows = false;
-            dgvTagList.AllowUserToResizeRows = false;
-            dgvTagList.MultiSelect = false;
-            dgvTagList.ReadOnly = true;
-            dgvTagList.RowHeadersVisible = false;
-            dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-            dgvTagList.Columns.Add("RFID", "RFID");
-
-            ActualizarCantidadRfid();
-        }
-
-        private void ActualizarCantidadRfid()
-        {
-            cantidadRFID.Text = _rfidPendientes.Count.ToString();
-        }
-
-        private string HexTokensATexto(string entrada)
-        {
-            var matches = Regex.Matches(entrada, @"0x([0-9A-Fa-f]{2})");
-            var bytes = new List<byte>();
-
-            foreach (Match m in matches)
-            {
-                bytes.Add(Convert.ToByte(m.Groups[1].Value, 16));
-            }
-
-            return Encoding.ASCII.GetString(bytes.ToArray()).Trim('\r', '\n', '\0').Trim();
-        }
-
-        private void CargarScannersEnCombo()
-        {
-            cmbScanners.Items.Clear();
-            _scanners.Clear();
-
-            int status;
-            string outXml = "";
-            string inXml =
-                "<inArgs>" +
-                "<cmdArgs><arg-int>0</arg-int></cmdArgs>" +
-                "</inArgs>";
-
-            m_pCoreScanner.ExecCommand(5000, ref inXml, out outXml, out status);
-
-            if (status != 0 || string.IsNullOrWhiteSpace(outXml))
-                return;
-
-            var doc = new System.Xml.XmlDocument();
-            doc.LoadXml(outXml);
-
-            var nodos = doc.SelectNodes("//scanner");
-            if (nodos == null) return;
-
-            foreach (System.Xml.XmlNode n in nodos)
-            {
-                string id = n["scannerID"]?.InnerText ?? "";
-                string modelo = n["modelnumber"]?.InnerText ?? "";
-                string tipo = n.Attributes?["type"]?.Value ?? "";
-
-                var item = new ScannerInfoItem
-                {
-                    ScannerId = id,
-                    DisplayText = $"{id} - {modelo} - {tipo}"
-                };
-
-                _scanners.Add(item);
-                cmbScanners.Items.Add(item);
-            }
-        }
-
-        private void RegistrarEventos()
-        {
-            int status;
-            string outXml = "";
-
-            // Barcode + PNP
-            string inXml =
-                "<inArgs>" +
-                "<cmdArgs>" +
-                "<arg-int>2</arg-int>" +
-                "<arg-int>1,2</arg-int>" +
-                "</cmdArgs>" +
-                "</inArgs>";
-
-            m_pCoreScanner.ExecCommand(1001, ref inXml, out outXml, out status);
-        }
-
-        private void OnPnpEventLector(short eventType, ref string pnpData)
-        {
-            try
-            {
-                BeginInvoke(new Action(() =>
-                {
-                    toolStripStatusLbl.Text = "Evento PNP: " + eventType;
-
-                    try
-                    {
-                        CargarScannersEnCombo();
-
-                        if (cmbScanners.Items.Count > 0)
-                        {
-                            if (cmbScanners.SelectedIndex < 0)
-                                cmbScanners.SelectedIndex = 0;
-
-                            ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-                            HabilitarTabsTrabajo(true);
-                        }
-                        else
-                        {
-                            ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                            HabilitarTabsTrabajo(false);
-                        }
-                    }
-                    catch (Exception ex2)
-                    {
-                        toolStripStatusLbl.Text = "Error refrescando scanners: " + ex2.Message;
-                    }
-                }));
-            }
-            catch (Exception ex)
-            {
-                BeginInvoke(new Action(() =>
-                {
-                    toolStripStatusLbl.Text = "Error PNP: " + ex.Message;
-                }));
-            }
-        }
-
-        private void CodBarras_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode != Keys.Enter)
-                return;
-
-            string codigo = CodBarras.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(codigo))
-                return;
-
-            _ultimoCodigoBarra = codigo;
-
-            IntentarVincular();
-        }
-
-        private void SetRfid(string epc)
-        {
-            BeginInvoke(new Action(() =>
-            {
-                epc = (epc ?? "").Trim().ToUpperInvariant();
-
-                if (string.IsNullOrWhiteSpace(epc))
-                    return;
-
-                if (_rfidPendientes.Contains(epc))
-                {
-                    toolStripStatusLbl.Text = "RFID repetido";
-                    return;
-                }
-
-                _rfidPendientes.Add(epc);
-                _ultimoRfid = epc;
-
-                cantidadRFID.Text = _rfidPendientes.Count.ToString();
-
-                dgvTagList.Rows.Insert(0, epc);
-
-                if (_rfidPendientes.Count > 1)
-                {
-                    toolStripStatusLbl.Text = "ERROR: Más de un RFID detectado";
-                }
-                else
-                {
-                    toolStripStatusLbl.Text = "RFID OK";
-                }
-            }));
-        }
-
-        private void AgregarRfidAlGrid(string rfid)
-        {
-            if (string.IsNullOrWhiteSpace(rfid))
-                return;
-
-            rfid = rfid.Trim().ToUpperInvariant();
-            dgvTagList.Rows.Insert(0, rfid);
-        }
-
-        private void IntentarVincular()
-        {
-            string codigo = (_ultimoCodigoBarra ?? "").Trim();
-            string hojaMarcacion = (nroHM.Text ?? "").Trim();
-
-            if (string.IsNullOrWhiteSpace(codigo))
-                return;
-
-            // 🔴 VALIDACIÓN CRÍTICA
-            if (_rfidPendientes.Count > 1)
-            {
-                toolStripStatusLbl.Text = "ERROR: múltiples RFID detectados. Limpie.";
-                return;
-            }
-
-            string rfid = _rfidPendientes.Count == 1
-                ? _rfidPendientes[0]
-                : "";
-
-            var request = new VinculacionRequest
-            {
-                CodigoBarras = codigo,
-                Rfid = rfid,
-                HojaMarcacion = hojaMarcacion,
-                CodTrabajador = mCodTrabajador,
-                Empresa = mEmpresa,
-                UsarRfid = !string.IsNullOrWhiteSpace(rfid)
-            };
-
-            toolStripStatusLbl.Text = "Procesando...";
-
-            _vinculador.Enqueue(request);
-        }
-
-        private void LimpiarLecturaActual()
-        {
-            _rfidPendientes.Clear();
-            _ultimoRfid = "";
-            _ultimoCodigoBarra = "";
-
-            dgvTagList.Rows.Clear();
-            cantidadRFID.Text = "0";
-            CodBarras.Clear();
-
-            SetEstado("Listo para nueva lectura", Color.LightGreen);
-            CodBarras.Focus();
-        }
-
-        private void Vinculador_OnInfo(string msg)
-        {
-            if (InvokeRequired)
-            {
-                BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
-                return;
-            }
-
-            SetEstado(msg, Color.Khaki);
-        }
-
-        private void Vinculador_OnError(string msg)
-        {
-            if (InvokeRequired)
-            {
-                BeginInvoke(new Action<string>(Vinculador_OnError), msg);
-                return;
-            }
-
-            SetEstado(msg, Color.LightCoral);
-            CodBarras.Focus();
-        }
-
-        private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
-        {
-            if (InvokeRequired)
-            {
-                BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
-                return;
-            }
-
-            toolStripStatusLbl.Text = "OK";
-
-            // 🔥 LIMPIAR TODO
-            CodBarras.Clear();
-            _ultimoCodigoBarra = "";
-            _ultimoRfid = "";
-            _rfidPendientes.Clear();
-
-            dgvTagList.Rows.Clear();
-            cantidadRFID.Text = "0";
-
-            if (data.ContainsKey("op"))
-                nroOP.Text = Convert.ToString(data["op"]);
-
-            if (data.ContainsKey("hoja_marcacion"))
-                nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
-
-            CodBarras.Focus();
-        }
-
-        private void CargarScannersEnComboDesdeSDK()
-        {
-            cmbScanners.Items.Clear();
-            _scanners.Clear();
-
-            if (!m_bScannerOpen)
-                return;
-
-            int status = -1;
-            short numOfScanners = 0;
-            string outXML = "";
-
-            try
-            {
-                m_arScanners = discoverScanner.GetScanners(
-                    ref numOfScanners,
-                    ref outXML,
-                    ref status,
-                    claimlist
-                );
-
-                toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
-
-                if (status != 0 || numOfScanners <= 0 || m_arScanners == null)
-                    return;
-
-                m_nTotalScanners = numOfScanners;
-
-                for (int i = 0; i < numOfScanners; i++)
-                {
-                    Scanner scn = m_arScanners[i];
-                    if (scn == null) continue;
-
-                    var item = new ScannerInfoItem
-                    {
-                        ScannerId = scn.SCANNERID,
-                        DisplayText = $"{scn.SCANNERID} - {scn.MODELNO} - {scn.SCANNERTYPE}"
-                    };
-
-                    _scanners.Add(item);
-                    cmbScanners.Items.Add(item);
-                }
-            }
-            catch (Exception ex)
-            {
-                toolStripStatusLbl.Text = "Error GET_SCANNERS: " + ex.Message;
-            }
-        }
-
-        private void btnClear_Click(object sender, EventArgs e)
-        {
-            _rfidPendientes.Clear();
-            dgvTagList.Rows.Clear();
-            cantidadRFID.Text = "0";
-
-            toolStripStatusLbl.Text = "RFID limpiados";
-        }
-
-        private void CodBarras_Leave(object sender, EventArgs e)
-        {
-            if (CodBarras.Text == "Codigo de Barras...")
-            {
-                CodBarras.Text = "";
-
-            }
-        }
-
-        private void CodBarras_Enter(object sender, EventArgs e)
-        {
-            if (CodBarras.Text == "Codigo de Barras...")
-            {
-                CodBarras.Text = "";
-                CodBarras.ForeColor = pinturaNegra;
-            }
-        }
-        private void SetEstado(string mensaje, Color color)
-        {
-            toolStripStatusLbl.Text = mensaje;
-            toolStripStatusLbl.BackColor = color;
-        }
-
-        private void ReproducirOk()
-        {
-            System.Media.SystemSounds.Asterisk.Play();
-        }
-
-        private void ReproducirError()
-        {
-            System.Media.SystemSounds.Hand.Play();
-        }
+        ConfigurarGridRfid();
+
+        _vinculador = new VinculadorService();
+        _vinculador.OnInfo += Vinculador_OnInfo;
+        _vinculador.OnError += Vinculador_OnError;
+        _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+        m_pCoreScanner = new CCoreScannerClass();
+        discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+        scanToConnect = ScanToConnect.GetInstance();
+
+        m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+        m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
+
+        m_arScanners = new Scanner[255];
+        for (int i = 0; i < m_arScanners.Length; i++)
+            m_arScanners[i] = new Scanner();
+
+        m_bScannerOpen = false;
+        ActualizarEstadoConexion("LISTO PARA CONECTAR", Color.DarkOrange);
+        HabilitarTabsTrabajo(false);
+
+        CodBarras.Focus();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(
+            "Error inicializando CoreScanner: " + ex.Message,
+            "CoreScanner",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error
+        );
+
+        ActualizarEstadoConexion("ERROR INICIALIZANDO", Color.Firebrick);
     }
 }
-
-habia un direncia entre el btnClear y btnLimpiar te muestro el codigo en .net
-Private _tagList As List(Of String)
-
-Private Sub BtnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
-        Try
-            ' Limpiar la lista de tags y contar etiquetas
-            ClearTagListView()
-            CountTags()
-
-            BtnLimpiarRFID_Click(Nothing, EventArgs.Empty) ' Simula el clic en BtnLimpiarRFID
-            BtnLimpiarOPHM_Click(Nothing, EventArgs.Empty)
-
-            ' Limpiar mensaje de estado y caja de texto
-            MsnVincular.Text = ""
-            CodBarras.Text = ""
-            CodBarras.Focus()
-
-            DataGridView1.Rows.Clear()
-
-            LimpiarGridConsolidado()
-
-            NuevoTimbrado()
-
-        Catch ex As Exception
-            Console.WriteLine($"Error al limpiar la tabla DataGridView1: {ex.Message}")
-            'MostrarAlerta("Error al limpiar la tabla. Consulte con el administrador.", pinturaRoja, 3, 5)
-        End Try
-    End Sub
-
-Private Sub BtnLimpiarRFID_Click(sender As Object, e As EventArgs) Handles btnLimpiarRFID.Click
-        ClearTagListView()
-        CodBarras.Text = ""
-    End Sub
-
-Private Sub ClearTagListView()
-        Console.WriteLine("Ejecutando ClearTagListView()...")
-        dgvTagList.Rows.Clear()
-        _tagList.Clear()
-        ActualizarCantidadRFID()
-        CodBarras.Focus()
-    End Sub
-
-Private Sub ActualizarCantidadRFID()
-        Dim totalRFID As Integer = If(dgvTagList.AllowUserToAddRows, dgvTagList.Rows.Count - 1, dgvTagList.Rows.Count)
-        cantidadRFID.Text = $"{totalRFID}"
-    End Sub
-
-Private Sub CountTags()
-    lblTotalCount.Text = _tagList.Count
-End Sub
-
-Private Sub NuevoTimbrado()
-        Dim whereParameters As New Dictionary(Of String, Object) From {
-            {"fotocheck", mCodTrabajador}
+btnBuscarScanners_Click corregido
+Usa solo este flujo:
+C#
+private void btnBuscarScanners_Click(object sender, EventArgs e)
+{
+    try
+    {
+        if (m_pCoreScanner == null)
+        {
+            ActualizarEstadoConexion("CORESCANNER NULO", Color.Firebrick);
+            MessageBox.Show("m_pCoreScanner está nulo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            return;
         }
-        ' Llamar al método para actualizar la base de datos
-        Dim lsResult = m_BDPrenda.NuevoTimbrado(whereParameters)
 
-        If lsResult > 0 Then
-            AlertaManager.MostrarAlerta("Nuevo timbrado OK.", pinturaVerde, 1, 5)
-        Else
-            AlertaManager.MostrarAlerta("Error.", pinturaRoja, 3, 5)
-        End If
+        ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
 
-    End Sub
-estos fragmentos lo saque de frmLecto.txt para ello tambien considerar para los menajes de alrterta AlertaManager.txt
-Public Class AlertaManager
-    Private Shared alertasActivas As New List(Of FormAlerta)()
-    Private Shared ReadOnly alertasLock As New Object() ' Bloqueo para evitar concurrencia
+        if (!m_bScannerOpen)
+        {
+            short[] types = new short[1];
+            types[0] = 1;
 
-    ' Muestra una nueva alerta sin bloquear la UI
-    Public Shared Sub MostrarAlerta(mensaje As String, color As Color, Optional tipo As Integer = 3, Optional tiempo As Integer = 5)
-        Dim nuevaAlerta As New FormAlerta(mensaje, color, tipo, tiempo)
+            int status;
+            m_pCoreScanner.Open(0, types, 1, out status);
 
-        ' Asegurar ejecución en la UI
-        If Application.OpenForms.Count > 0 Then
-            Dim form As Form = Application.OpenForms(0)
-            If form.InvokeRequired Then
-                form.Invoke(New Action(Sub() MostrarAlertaInterno(nuevaAlerta)))
-            Else
-                MostrarAlertaInterno(nuevaAlerta)
-            End If
-        Else
-            MostrarAlertaInterno(nuevaAlerta)
-        End If
-    End Sub
-    ' Método interno para manejar la alerta en el hilo principal
-    Private Shared Sub MostrarAlertaInterno(alerta As FormAlerta)
-        SyncLock alertasLock
-            alerta.StartPosition = FormStartPosition.Manual
-            alerta.Location = New Point(Screen.PrimaryScreen.WorkingArea.Width - alerta.Width - 50, ObtenerPosicion())
-            alertasActivas.Add(alerta)
-        End SyncLock
+            if (status != 0)
+            {
+                ActualizarEstadoConexion("ERROR OPEN: " + status, Color.Firebrick);
+                return;
+            }
 
-        alerta.Show()
-    End Sub
-    ' Calcula la próxima posición en la pantalla
-    Public Shared Function ObtenerPosicion() As Integer
-        Dim pantallaAlto As Integer = Screen.PrimaryScreen.WorkingArea.Height
-        Dim alertaAlto As Integer = 70
-        Dim margen As Integer = 10
+            m_bScannerOpen = true;
+        }
 
-        ' Calcular la posición Y de la nueva alerta
-        Return pantallaAlto - ((alertaAlto + margen) * (alertasActivas.Count + 1))
-    End Function
+        RegistrarEventos();
+        CargarScannersEnComboDesdeSDK();
 
-    ' Remueve la alerta de la lista y reorganiza las restantes
-    Public Shared Sub RemoverAlerta(alerta As FormAlerta)
-        SyncLock alertasLock
-            alertasActivas.Remove(alerta)
-            ReorganizarAlertas()
-        End SyncLock
-    End Sub
+        if (cmbScanners.Items.Count > 0)
+        {
+            cmbScanners.SelectedIndex = 0;
+            HabilitarTabsTrabajo(true);
+            ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
+        }
+        else
+        {
+            HabilitarTabsTrabajo(false);
+            ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
+        }
+    }
+    catch (Exception ex)
+    {
+        HabilitarTabsTrabajo(false);
+        ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
+        MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    }
+}
+RegistrarEventos mejorado
+Agrega validación:
+C#
+private void RegistrarEventos()
+{
+    if (m_pCoreScanner == null || !m_bScannerOpen)
+        return;
 
-    ' Reorganiza las posiciones de las alertas activas
-    Private Shared Sub ReorganizarAlertas()
-        SyncLock alertasLock
-            Dim alertaAlto As Integer = 70
-            Dim margen As Integer = 10
-            Dim pantallaAlto As Integer = Screen.PrimaryScreen.WorkingArea.Height
+    int status;
+    string outXml = "";
 
-            For i As Integer = 0 To alertasActivas.Count - 1
-                alertasActivas(i).Location = New Point(alertasActivas(i).Location.X, pantallaAlto - ((alertaAlto + margen) * (i + 1)))
-            Next
-        End SyncLock
-    End Sub
-End Class
+    string inXml =
+        "<inArgs>" +
+        "<cmdArgs>" +
+        "<arg-int>2</arg-int>" +
+        "<arg-int>1,2</arg-int>" +
+        "</cmdArgs>" +
+        "</inArgs>";
 
+    m_pCoreScanner.ExecCommand(1001, ref inXml, out outXml, out status);
+
+    toolStripStatusLbl.Text = "REGISTER_FOR_EVENTS status: " + status;
+}
+Qué debes eliminar o dejar de usar
+Deja de usar estos métodos
+Porque te duplican lógica:
+performGetScannerFrmLector()
+MakeConnectCtrlFrmLector()
+ConnectFrmLector()
+DisconnectFrmLector()
+registerForEventsFrmLector()
+ShowScannersFrmLector()
+CargarScannersEnCombo()
+AgregarRfid()
+AgregarRfidAlGrid()
+No necesariamente borres hoy, pero ya no los uses.
+Diferencia real entre btnClear y btnLimpiarRFID
+Tu .NET original distingue bien:
+btnLimpiarRFID
+Solo limpia:
+grid RFID
+lista de tags
+textbox de barras
+btnClear
+Hace limpieza total:
+RFID
+OP/HM
+mensajes
+tabla consolidado
+nuevo timbrado
+Eso está bien y conviene respetarlo.
+Adaptación correcta en C#
+Método base: limpiar RFID
+C#
+private void LimpiarSoloRfid()
+{
+    dgvTagList.Rows.Clear();
+    _rfidPendientes.Clear();
+    _rfidLeidos.Clear();
+    _ultimoRfid = "";
+
+    cantidadRFID.Text = "0";
+    CodBarras.Clear();
+    CodBarras.Focus();
+
+    toolStripStatusLbl.Text = "RFID limpiados";
+}
+Método limpiar total
+C#
+private void LimpiarTodo()
+{
+    LimpiarSoloRfid();
+
+    _ultimoCodigoBarra = "";
+    nroOP.Text = "";
+    nroHM.Text = "";
+    _hojaMarcacionActual = "";
+
+    toolStripStatusLbl.Text = "Formulario limpiado";
+    CodBarras.Focus();
+
+    // Aquí luego puedes agregar:
+    // LimpiarGridConsolidado();
+    // NuevoTimbrado();
+}
+Botones
+C#
+private void btnLimpiarRFID_Click(object sender, EventArgs e)
+{
+    LimpiarSoloRfid();
+}
+
+private void btnClear_Click(object sender, EventArgs e)
+{
+    LimpiarTodo();
+}
+SetRfid corregido
+Tu SetRfid está casi bien. Déjalo así:
+C#
+private void SetRfid(string epc)
+{
+    BeginInvoke(new Action(() =>
+    {
+        epc = (epc ?? "").Trim().ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(epc))
+            return;
+
+        if (_rfidPendientes.Contains(epc))
+        {
+            SetEstado("RFID repetido", Color.LightCoral);
+            ReproducirError();
+            return;
+        }
+
+        _rfidPendientes.Add(epc);
+        _ultimoRfid = epc;
+
+        if (dgvTagList.Columns.Count == 0)
+            ConfigurarGridRfid();
+
+        dgvTagList.Rows.Insert(0, epc);
+        cantidadRFID.Text = _rfidPendientes.Count.ToString();
+
+        if (_rfidPendientes.Count > 1)
+        {
+            SetEstado("ERROR: Más de un RFID detectado", Color.LightCoral);
+            ReproducirError();
+        }
+        else
+        {
+            SetEstado("RFID OK", Color.LightGreen);
+            ReproducirOk();
+        }
+    }));
+}
+CodBarras_KeyDown mejorado
+C#
+private void CodBarras_KeyDown(object sender, KeyEventArgs e)
+{
+    if (e.KeyCode != Keys.Enter)
+        return;
+
+    e.SuppressKeyPress = true;
+    e.Handled = true;
+
+    string codigo = CodBarras.Text.Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo))
+        return;
+
+    _ultimoCodigoBarra = codigo;
+
+    IntentarVincular();
+}
+IntentarVincular está bien encaminado
+Solo le pondría estado visual:
+C#
+private void IntentarVincular()
+{
+    string codigo = (_ultimoCodigoBarra ?? "").Trim();
+    string hojaMarcacion = (nroHM.Text ?? "").Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo))
+        return;
+
+    if (_rfidPendientes.Count > 1)
+    {
+        SetEstado("ERROR: múltiples RFID detectados. Limpie.", Color.LightCoral);
+        ReproducirError();
+        return;
+    }
+
+    string rfid = _rfidPendientes.Count == 1 ? _rfidPendientes[0] : "";
+
+    var request = new VinculacionRequest
+    {
+        CodigoBarras = codigo,
+        Rfid = rfid,
+        HojaMarcacion = hojaMarcacion,
+        CodTrabajador = mCodTrabajador,
+        Empresa = mEmpresa,
+        UsarRfid = !string.IsNullOrWhiteSpace(rfid)
+    };
+
+    SetEstado("Procesando...", Color.Khaki);
+    _vinculador.Enqueue(request);
+}
+Sobre AlertaManager
+Sí vale la pena adaptarlo después, pero no es la prioridad ahora.
+Primero debes dejar estable:
+login
+conexión scanner
+lectura RFID
+Enter código barras
+guardado
+Luego sí puedes migrar AlertaManager para mostrar toast flotantes como en .NET.
+Resumen claro de tu error principal
+Error crítico actual
+m_pCoreScanner nunca se instancia en frmLector_Load
+Errores estructurales
+lógica duplicada de conexión
+dos flags para el mismo estado
+dos métodos RFID
+limpieza parcial inconsistente
+Qué haría yo ahora mismo
+corregir frmLector_Load
+usar solo btnBuscarScanners_Click + RegistrarEventos + CargarScannersEnComboDesdeSDK
+separar LimpiarSoloRfid() y LimpiarTodo()
+dejar SetRfid() como único método RFID
+Si quieres, en el siguiente mensaje te devuelvo tu frmLector.cs ya recortado y ordenado, quitando lo duplicado y dejando una versión limpia lista para pegar.
