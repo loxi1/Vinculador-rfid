@@ -41,6 +41,36 @@ namespace DS9908R_App
         private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
         private readonly HashSet<string> _rfidLeidosGrid = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        Color pinturaBlanca = Color.White; // #FFFFFF
+        Color pinturaBlancoHumo = Color.WhiteSmoke;
+
+        Color pinturaNegra = Color.Black; // #000000
+
+        Color pinturaRoja = Color.Red;
+        Color pinturaRojoIndio = Color.IndianRed; // #d9534f
+        Color pinturaRojoLadrillo = Color.Firebrick; // #c9302c
+        Color pinturaRojoCarmesi = Color.FromArgb(201, 48, 44); // #c9302c
+        Color pinturaRojoCoral = Color.FromArgb(217, 83, 79); // #d9534f
+
+        Color pinturaVerde = Color.Green;
+        Color pinturaVerdeOscuro = Color.DarkGreen; // #0d5934 / #218838
+        Color pinturaVerdeMarMedio = Color.MediumSeaGreen; // #3BA873 / #5cb85c
+        Color pinturaVerdeBosque = Color.FromArgb(13, 89, 52);
+        Color pinturaVerdeClaro = Color.LightGreen;
+        Color pinturaVerdeAzulado = Color.Teal;
+        Color pinturaVerdeTurquesa = Color.FromArgb(59, 168, 115); // #3BA873
+        Color pinturaVerdeFuerte = Color.FromArgb(13, 89, 52); // #0d5934
+        Color pinturaVerdeMedio = Color.FromArgb(92, 184, 92); // #5cb85c
+
+        Color pinturaGris = Color.Gray;
+        Color pinturaGrisClaro = Color.LightGray; // #E0E0E0
+        Color pinturaGrisOscuro = Color.DimGray; // #303030
+
+        Color pinturaNaranja = Color.Orange;
+        Color pinturaPlata = Color.Silver; // #BDBDBD
+
+        Color pinturaAzulClaro = Color.LightBlue;
+
         public frmLector()
         {
             InitializeComponent();
@@ -442,17 +472,51 @@ namespace DS9908R_App
         {
             BeginInvoke(new Action(() =>
             {
-                epc = epc.Trim().ToUpperInvariant();
+                epc = (epc ?? "").Trim().ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(epc))
+                    return;
 
                 if (_rfidLeidos.Contains(epc))
                 {
-                    toolStripStatusLbl.Text = "RFID repetido";
+                    toolStripStatusLbl.Text = "RFID repetido: " + epc;
                     return;
                 }
 
                 _rfidLeidos.Add(epc);
-                toolStripStatusLbl.Text = "RFID leído";
+                _ultimoRfid = epc;
+
+                // Si el grid no tiene columnas, crea una sola
+                if (dgvTagList.Columns.Count == 0)
+                {
+                    dgvTagList.Columns.Add("RFID", "RFID");
+                }
+
+                // Inserta arriba
+                dgvTagList.Rows.Insert(0, epc);
+
+                toolStripStatusLbl.Text = "RFID leído: " + epc;
+
+                // Si luego ya tienes código de barras, intenta vincular
+                IntentarVincular();
             }));
+        }
+
+        private void ConfigurarGridRfid()
+        {
+            dgvTagList.Columns.Clear();
+            dgvTagList.Rows.Clear();
+
+            dgvTagList.AllowUserToAddRows = false;
+            dgvTagList.AllowUserToDeleteRows = false;
+            dgvTagList.AllowUserToResizeRows = false;
+            dgvTagList.MultiSelect = false;
+            dgvTagList.ReadOnly = true;
+            dgvTagList.RowHeadersVisible = false;
+            dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvTagList.Columns.Add("RFID", "RFID");
         }
 
         private string HexTokensATexto(string entrada)
@@ -654,22 +718,21 @@ namespace DS9908R_App
                 return;
             }
 
-            dgvTagList.Rows.Insert(0,
-                data.ContainsKey("id_rfid") ? data["id_rfid"] : "",
-                data.ContainsKey("op") ? data["op"] : "",
-                data.ContainsKey("hoja_marcacion") ? data["hoja_marcacion"] : ""
-            );
+            toolStripStatusLbl.Text = "OK";
 
             CodBarras.Clear();
             _ultimoCodigoBarra = "";
             _ultimoRfid = "";
 
-            if (data.ContainsKey("op")) nroOP.Text = Convert.ToString(data["op"]);
-            if (data.ContainsKey("hoja_marcacion")) nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+            if (data.ContainsKey("op"))
+                nroOP.Text = Convert.ToString(data["op"]);
 
-            toolStripStatusLbl.Text = "OK";
+            if (data.ContainsKey("hoja_marcacion"))
+                nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
             CodBarras.Focus();
         }
+
         private void CargarScannersEnComboDesdeSDK()
         {
             cmbScanners.Items.Clear();
@@ -730,6 +793,33 @@ namespace DS9908R_App
             toolStripStatusLbl.Text = "Lista RFID limpiada";
             CodBarras.Clear();
             CodBarras.Focus();
+        }
+
+        private void CodBarras_Leave(object sender, EventArgs e)
+        {
+            if (CodBarras.Text == "Codigo de Barras...")
+            {
+                CodBarras.Text = "";
+
+            }
+        }
+
+        private void CodBarras_Enter(object sender, EventArgs e)
+        {
+            if (CodBarras.Text == "Codigo de Barras...")
+            {
+                CodBarras.Text = "";
+                CodBarras.ForeColor = pinturaNegra;
+                BuscarPrenda();
+            }
+        }
+
+        private void BuscarPrenda()
+        {
+            string CodBarras = BuscarCodBarras.Text;
+            string op, corte, subcorte, talla, idtalla;
+            object ultimoValor = null;
+
         }
     }
 }
