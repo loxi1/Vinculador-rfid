@@ -1,3 +1,102 @@
+aca me ayudas hay mensajes que se muestran quizas es un mensaje de error:
+Private Sub SaveCodigoRFID(cadena As String)
+        Dim partes() As String = cadena.Split("~"c) ' Divide la cadena por el símbolo ~
+        Dim mCodBarra As String = partes(0)
+        Dim sCodigoRFID As String = partes(1)
+        Dim hm As String = partes(2)
+        sCodigoRFID = sCodigoRFID.Trim().Replace(" ", "")
+        sCodigoRFID = If(sCodigoRFID.Length > 24, sCodigoRFID.Substring(sCodigoRFID.Length - 24), sCodigoRFID)
+
+        Dim M_S_N As String = ""
+
+        Dim cantLeidas As Integer = CantidadFilasLeidas()
+        ' Evitar consulta si ya sabemos que este RFID está registrado
+        If cacheRFID.ContainsKey(sCodigoRFID) Then
+            SafeUpdateLabel(MsnVincular, "")
+            SafeUpdateTextBox(CodBarras, "")
+            AlertaManager.MostrarAlerta($"Error: El RFID ya existe. Verifique.", pinturaRoja, 3, 5)
+            'MostrarAlerta($"Error: El RFID ya existe. Verifique.")
+            Exit Sub
+        End If
+
+        'Prueba
+        'sCodigoRFID = GenerarCadenaAleatoria(24)
+
+        'Console.WriteLine($"Código de Barras: {mCodBarra}, Código RFID: {sCodigoRFID}")
+
+        'Se intertan los valores al procedimento almacenado USP_SAL_EMB_CON_RFID
+        'El procediento valida y muestra msn con codigo de error lugo se actualiza la taba ordenacabadostallasmov y inserta en tmp_etiq_timbradas
+        Console.WriteLine($"Se envia este valor de :{sCodigoRFID}:")
+        Dim lsResult = m_BDPrenda.SaveRFID(mCodBarra, mEmpresa, mCodTrabajador, sCodigoRFID, hm)
+        ' Actualizar el control 'MsnVincular' de forma segura
+        SafeUpdateLabel(MsnVincular, lsResult.Item2)
+        If lsResult.Item1 <> 0 Then
+            If lsResult.Item1 = 3 And sCodigoRFID.Length > 0 Then
+                cacheRFID(sCodigoRFID) = True
+            End If
+            AlertaManager.MostrarAlerta($"{lsResult.Item2}", pinturaRoja, 3, 5)
+            SafeUpdateLabel(MsnVincular, lsResult.Item2)
+            SafeUpdateTextBox(CodBarras, "")
+            Exit Sub
+        End If
+
+        If sCodigoRFID.Length > 0 Then
+            ' Guardar el RFID en caché después de una inserción exitosa
+            cacheRFID(sCodigoRFID) = True
+        End If
+
+        Try
+            Dim dataTimbrado = m_BDPrenda.GetTimbradasByWorkerAndEtiqueta(mCodTrabajador, mCodBarra)
+            If dataTimbrado.Rows.Count = 0 Then
+                M_S_N = "No se registraron datos en la tabla timbrada. Verifique con el administrador."
+                MostrarAlerta(M_S_N)
+                Exit Sub
+            End If
+
+            Dim row As DataRow = dataTimbrado.Rows(0)
+            Dim insertData As New Dictionary(Of String, Object) From {
+                {"id_rfid", sCodigoRFID},
+                {"id_barras", row("etiqueta")},
+                {"op", row("op")},
+                {"corte", row("corte")},
+                {"subcorte", row("sub_corte")},
+                {"cod_talla", row("cod_talla")},
+                {"id_talla", row("id_talla")},
+                {"talla", row("talla")},
+                {"cod_combinacion", row("cod_comb")},
+                {"color", row("color")},
+                {"cod_trabajador", row("fotocheck")},
+                {"hoja_marcacion", hm}
+            }
+            Console.WriteLine($"sCodigoRFID-->{sCodigoRFID}")
+
+            Dim llReturn = m_BDPrendaScm.Insert(insertData)
+            If llReturn <> 1 Then
+                M_S_N = Msn(llReturn)
+                MostrarAlerta(M_S_N)
+                Exit Sub
+            Else
+                SafeUpdateLabel(MsnVincular, "Prenda registrada exitosamente.")
+                ' Eliminar el elemento "id_barras" del diccionario insertData
+                insertData("fecha") = DateTime.Now
+                If insertData.ContainsKey("id_barras") Then
+                    insertData.Remove("id_barras")
+                    insertData.Remove("cod_combinacion")
+                    insertData.Remove("cod_trabajador")
+                End If
+                insertData.Add("linea", row("linea"))
+                'LlenarDataGridView(DataGridView1, insertData)
+                LlenarPrimeraFila(DataGridView1, insertData)
+                CantidadFilas()
+                SafeUpdateTextBox(CodBarras, "")
+                AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5)
+            End If
+        Catch ex As Exception
+            Console.WriteLine($"Error en el flujo de registro: {ex.Message}")
+            SafeUpdateLabel(MsnVincular, "Error inesperado al registrar la prenda. Consulte con el administrador.")
+        End Try
+    End Sub
+es aqui donde ya podemos implementar los mensajes que me dices y si vez hay mas logica se mustra alerta, se agrean registros a DataGridView1 por favor revisar frmLect.txt y las funciones vinculadas a los archivos *.txt
 Bien: scanner OK, RFID OK, código de barras OK.
 El fallo ya está en la capa de base de datos, casi seguro en SaveRFID(...) o en la consulta posterior a Sybase.
 Qué significa ese error
