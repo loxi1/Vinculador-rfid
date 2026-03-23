@@ -1,932 +1,156 @@
-Los nombre de las alertas estan aca y son los mismos que en en c#
-
-fromLector.Designer.cs como en el repo no se ve te ayude y cree un archivo llamado: formLector.Designer.txt
-FormAlerta.Designer.vb
-namespace DS9908R_App
+Sí, ahora sí ya se ve claro el mapa real de tus formularios de alerta y sus nombres exactos. Con lo que pegaste, los controles correctos son estos:
+FormAlerta: MSNAlerta, FranjaTop, icon_info, icon_error, icon_ok, tiempo
+FormAlertaError: icon_error, TituloAviso, DescripcionAviso, BtnAceptar, FranjaAbajo
+FormAlertaMsnError: icon_error, TituloAviso, DescripcionAviso, BtnAceptar, FranjaAbajo
+FormAlertaOk: icon_ok, TituloAviso, DescripcionAviso, FranjaAbajo, Tiempo
+FormConfirmacion: pictureBox1, TituloAviso, DescripcionAviso, FranjaAbajo, btnAceptar, btnCancelar
+Y sí: no debo inventarte otros nombres.
+Qué archivos sí involucran alertas
+Por lo que muestras, los archivos que debes portar o ajustar en C# son:
+AlertaManager.cs
+FormAlerta.cs
+FormAlertaError.cs
+FormAlertaMsnError.cs
+FormAlertaOk.cs
+FormConfirmacion.cs
+FormAviso puede quedar para después, porque no parece crítico para el flujo principal de lector.
+Cambios concretos que te recomiendo
+1) AlertaManager.cs
+Ese sí debes tenerlo en C# casi igual al VB. Ese archivo sí es necesario para FormAlerta.
+2) FormAlerta.cs
+Debe respetar:
+MSNAlerta.Text
+MSNAlerta.ForeColor
+FranjaTop.BackColor
+visibilidad de icon_ok, icon_info, icon_error
+animación desde abajo
+cierre con fade
+llamar AlertaManager.RemoverAlerta(this)
+3) FormAlertaError.cs
+Debe respetar:
+public static bool alertaAbierta
+TituloAviso.Text
+DescripcionAviso.Text
+FranjaAbajo.BackColor
+botón BtnAceptar
+callback opcional
+ShowDialog()
+Ese es el que usarías para errores fuertes de negocio, por ejemplo cuando SaveRFID devuelve mensaje de Sybase.
+4) FormAlertaMsnError.cs
+Es muy parecido a FormAlertaError, pero por nombre parece orientado a solo mostrar mensaje.
+Puedes reutilizar la misma lógica, cambiando solo el nombre de la clase.
+5) FormAlertaOk.cs
+Debe respetar:
+TituloAviso
+DescripcionAviso
+FranjaAbajo
+Tiempo.Tick
+ShowDialog()
+Ese te sirve muy bien para el caso de conexión exitosa al scanner.
+6) FormConfirmacion.cs
+Debe devolver DialogResult.OK o DialogResult.Cancel, igual que en VB.
+Lo importante para frmLector.cs
+Con estas clases reales, en frmLector.cs solo necesitas wrappers con los nombres funcionales del VB, no nombres de controles nuevos.
+Métodos helper
+Pon estos en frmLector.cs:
+C#
+private void AlertaErrorMsn(string mensaje, Color color)
 {
-    partial class FormAlerta
+    toolStripStatusLbl.Text = mensaje;
+
+    using (var alertaError = new FormAlertaError("Error", mensaje, color))
     {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FormAlerta));
-            this.MSNAlerta = new System.Windows.Forms.Label();
-            this.FranjaTop = new System.Windows.Forms.Panel();
-            this.tiempo = new System.Windows.Forms.Timer(this.components);
-            this.icon_info = new System.Windows.Forms.PictureBox();
-            this.icon_error = new System.Windows.Forms.PictureBox();
-            this.icon_ok = new System.Windows.Forms.PictureBox();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_info)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_error)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_ok)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // MSNAlerta
-            // 
-            this.MSNAlerta.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.MSNAlerta.ForeColor = System.Drawing.Color.DarkOrange;
-            this.MSNAlerta.Location = new System.Drawing.Point(86, 14);
-            this.MSNAlerta.Name = "MSNAlerta";
-            this.MSNAlerta.Size = new System.Drawing.Size(220, 48);
-            this.MSNAlerta.TabIndex = 14;
-            this.MSNAlerta.Text = "label1";
-            // 
-            // FranjaTop
-            // 
-            this.FranjaTop.Dock = System.Windows.Forms.DockStyle.Top;
-            this.FranjaTop.Location = new System.Drawing.Point(0, 0);
-            this.FranjaTop.Name = "FranjaTop";
-            this.FranjaTop.Size = new System.Drawing.Size(311, 8);
-            this.FranjaTop.TabIndex = 10;
-            // 
-            // icon_info
-            // 
-            this.icon_info.Image = ((System.Drawing.Image)(resources.GetObject("icon_info.Image")));
-            this.icon_info.Location = new System.Drawing.Point(10, 10);
-            this.icon_info.Name = "icon_info";
-            this.icon_info.Size = new System.Drawing.Size(60, 60);
-            this.icon_info.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_info.TabIndex = 13;
-            this.icon_info.TabStop = false;
-            // 
-            // icon_error
-            // 
-            this.icon_error.Image = ((System.Drawing.Image)(resources.GetObject("icon_error.Image")));
-            this.icon_error.Location = new System.Drawing.Point(10, 10);
-            this.icon_error.Name = "icon_error";
-            this.icon_error.Size = new System.Drawing.Size(60, 60);
-            this.icon_error.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_error.TabIndex = 12;
-            this.icon_error.TabStop = false;
-            // 
-            // icon_ok
-            // 
-            this.icon_ok.Image = ((System.Drawing.Image)(resources.GetObject("icon_ok.Image")));
-            this.icon_ok.Location = new System.Drawing.Point(10, 10);
-            this.icon_ok.Name = "icon_ok";
-            this.icon_ok.Size = new System.Drawing.Size(60, 60);
-            this.icon_ok.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_ok.TabIndex = 11;
-            this.icon_ok.TabStop = false;
-            // 
-            // FormAlerta
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(311, 71);
-            this.Controls.Add(this.MSNAlerta);
-            this.Controls.Add(this.FranjaTop);
-            this.Controls.Add(this.icon_info);
-            this.Controls.Add(this.icon_error);
-            this.Controls.Add(this.icon_ok);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormAlerta";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormAlerta";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormAlerta_FormClosed);
-            this.Load += new System.EventHandler(this.FormAlerta_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.icon_info)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_error)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_ok)).EndInit();
-            this.ResumeLayout(false);
-
-        }
-
-        #endregion
-
-        private System.Windows.Forms.Label MSNAlerta;
-        private System.Windows.Forms.Panel FranjaTop;
-        private System.Windows.Forms.Timer tiempo;
-        private System.Windows.Forms.PictureBox icon_info;
-        private System.Windows.Forms.PictureBox icon_error;
-        private System.Windows.Forms.PictureBox icon_ok;
-    }
-}
-namespace DS9908R_App
-{
-    partial class FormAlertaError
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.icon_error = new System.Windows.Forms.PictureBox();
-            this.TituloAviso = new System.Windows.Forms.Label();
-            this.DescripcionAviso = new System.Windows.Forms.Label();
-            this.BtnAceptar = new System.Windows.Forms.Button();
-            this.FranjaAbajo = new System.Windows.Forms.TableLayoutPanel();
-            this.TableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_error)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // TableLayoutPanel1
-            // 
-            this.TableLayoutPanel1.ColumnCount = 1;
-            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TableLayoutPanel1.Controls.Add(this.icon_error, 0, 0);
-            this.TableLayoutPanel1.Controls.Add(this.TituloAviso, 0, 1);
-            this.TableLayoutPanel1.Controls.Add(this.DescripcionAviso, 0, 2);
-            this.TableLayoutPanel1.Controls.Add(this.BtnAceptar, 0, 3);
-            this.TableLayoutPanel1.Controls.Add(this.FranjaAbajo, 0, 4);
-            this.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.TableLayoutPanel1.Name = "TableLayoutPanel1";
-            this.TableLayoutPanel1.RowCount = 5;
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 48F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 17F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 18F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 2F));
-            this.TableLayoutPanel1.Size = new System.Drawing.Size(468, 302);
-            this.TableLayoutPanel1.TabIndex = 2;
-            // 
-            // icon_error
-            // 
-            this.icon_error.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.icon_error.Image = global::DS9908R_App.Properties.Resources.eliminar_90;
-            this.icon_error.Location = new System.Drawing.Point(189, 27);
-            this.icon_error.Margin = new System.Windows.Forms.Padding(0);
-            this.icon_error.Name = "icon_error";
-            this.icon_error.Size = new System.Drawing.Size(90, 90);
-            this.icon_error.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_error.TabIndex = 0;
-            this.icon_error.TabStop = false;
-            // 
-            // TituloAviso
-            // 
-            this.TituloAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TituloAviso.AutoSize = true;
-            this.TituloAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TituloAviso.Location = new System.Drawing.Point(187, 151);
-            this.TituloAviso.Name = "TituloAviso";
-            this.TituloAviso.Size = new System.Drawing.Size(93, 31);
-            this.TituloAviso.TabIndex = 1;
-            this.TituloAviso.Text = "Ups...";
-            this.TituloAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // DescripcionAviso
-            // 
-            this.DescripcionAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.DescripcionAviso.AutoSize = true;
-            this.DescripcionAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DescripcionAviso.Location = new System.Drawing.Point(167, 203);
-            this.DescripcionAviso.Name = "DescripcionAviso";
-            this.DescripcionAviso.Size = new System.Drawing.Size(134, 22);
-            this.DescripcionAviso.TabIndex = 2;
-            this.DescripcionAviso.Text = "¡Algo Salio Mal!";
-            this.DescripcionAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // BtnAceptar
-            // 
-            this.BtnAceptar.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.BtnAceptar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(84)))), ((int)(((byte)(104)))), ((int)(((byte)(255)))));
-            this.BtnAceptar.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnAceptar.ForeColor = System.Drawing.Color.White;
-            this.BtnAceptar.Location = new System.Drawing.Point(178, 243);
-            this.BtnAceptar.Name = "BtnAceptar";
-            this.BtnAceptar.Size = new System.Drawing.Size(112, 48);
-            this.BtnAceptar.TabIndex = 3;
-            this.BtnAceptar.Text = "Aceptar";
-            this.BtnAceptar.UseVisualStyleBackColor = false;
-            this.BtnAceptar.Click += new System.EventHandler(this.BtnAceptar_Click);
-            // 
-            // FranjaAbajo
-            // 
-            this.FranjaAbajo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.FranjaAbajo.ColumnCount = 1;
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.FranjaAbajo.Location = new System.Drawing.Point(0, 294);
-            this.FranjaAbajo.Margin = new System.Windows.Forms.Padding(0);
-            this.FranjaAbajo.Name = "FranjaAbajo";
-            this.FranjaAbajo.RowCount = 1;
-            this.FranjaAbajo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.Size = new System.Drawing.Size(468, 8);
-            this.FranjaAbajo.TabIndex = 4;
-            // 
-            // FormAlertaError
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(468, 302);
-            this.Controls.Add(this.TableLayoutPanel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormAlertaError";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormAlertaError";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormAlertaError_FormClosed);
-            this.Load += new System.EventHandler(this.FormAlertaError_Load);
-            this.TableLayoutPanel1.ResumeLayout(false);
-            this.TableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_error)).EndInit();
-            this.ResumeLayout(false);
-
-        }
-
-        #endregion
-
-        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel1;
-        internal System.Windows.Forms.PictureBox icon_error;
-        internal System.Windows.Forms.Label TituloAviso;
-        internal System.Windows.Forms.Label DescripcionAviso;
-        internal System.Windows.Forms.Button BtnAceptar;
-        internal System.Windows.Forms.TableLayoutPanel FranjaAbajo;
-    }
-}
-FormAlertaMsnError.Designer.vb
-
-namespace DS9908R_App
-{
-    partial class FormAlertaMsnError
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.icon_error = new System.Windows.Forms.PictureBox();
-            this.TituloAviso = new System.Windows.Forms.Label();
-            this.DescripcionAviso = new System.Windows.Forms.Label();
-            this.BtnAceptar = new System.Windows.Forms.Button();
-            this.FranjaAbajo = new System.Windows.Forms.TableLayoutPanel();
-            this.TableLayoutPanel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_error)).BeginInit();
-            this.SuspendLayout();
-            // 
-            // TableLayoutPanel1
-            // 
-            this.TableLayoutPanel1.ColumnCount = 1;
-            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TableLayoutPanel1.Controls.Add(this.icon_error, 0, 0);
-            this.TableLayoutPanel1.Controls.Add(this.TituloAviso, 0, 1);
-            this.TableLayoutPanel1.Controls.Add(this.DescripcionAviso, 0, 2);
-            this.TableLayoutPanel1.Controls.Add(this.BtnAceptar, 0, 3);
-            this.TableLayoutPanel1.Controls.Add(this.FranjaAbajo, 0, 4);
-            this.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.TableLayoutPanel1.Name = "TableLayoutPanel1";
-            this.TableLayoutPanel1.RowCount = 5;
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 48F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 17F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 18F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 2F));
-            this.TableLayoutPanel1.Size = new System.Drawing.Size(468, 302);
-            this.TableLayoutPanel1.TabIndex = 3;
-            // 
-            // icon_error
-            // 
-            this.icon_error.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.icon_error.Image = global::DS9908R_App.Properties.Resources.eliminar_90;
-            this.icon_error.Location = new System.Drawing.Point(189, 27);
-            this.icon_error.Margin = new System.Windows.Forms.Padding(0);
-            this.icon_error.Name = "icon_error";
-            this.icon_error.Size = new System.Drawing.Size(90, 90);
-            this.icon_error.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_error.TabIndex = 0;
-            this.icon_error.TabStop = false;
-            // 
-            // TituloAviso
-            // 
-            this.TituloAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TituloAviso.AutoSize = true;
-            this.TituloAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TituloAviso.Location = new System.Drawing.Point(187, 151);
-            this.TituloAviso.Name = "TituloAviso";
-            this.TituloAviso.Size = new System.Drawing.Size(93, 31);
-            this.TituloAviso.TabIndex = 1;
-            this.TituloAviso.Text = "Ups...";
-            this.TituloAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // DescripcionAviso
-            // 
-            this.DescripcionAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.DescripcionAviso.AutoSize = true;
-            this.DescripcionAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DescripcionAviso.Location = new System.Drawing.Point(167, 203);
-            this.DescripcionAviso.Name = "DescripcionAviso";
-            this.DescripcionAviso.Size = new System.Drawing.Size(134, 22);
-            this.DescripcionAviso.TabIndex = 2;
-            this.DescripcionAviso.Text = "¡Algo Salio Mal!";
-            this.DescripcionAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // BtnAceptar
-            // 
-            this.BtnAceptar.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.BtnAceptar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(84)))), ((int)(((byte)(104)))), ((int)(((byte)(255)))));
-            this.BtnAceptar.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.BtnAceptar.ForeColor = System.Drawing.Color.White;
-            this.BtnAceptar.Location = new System.Drawing.Point(178, 243);
-            this.BtnAceptar.Name = "BtnAceptar";
-            this.BtnAceptar.Size = new System.Drawing.Size(112, 48);
-            this.BtnAceptar.TabIndex = 3;
-            this.BtnAceptar.Text = "Aceptar";
-            this.BtnAceptar.UseVisualStyleBackColor = false;
-            this.BtnAceptar.Click += new System.EventHandler(this.BtnAceptar_Click);
-            // 
-            // FranjaAbajo
-            // 
-            this.FranjaAbajo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.FranjaAbajo.ColumnCount = 1;
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.FranjaAbajo.Location = new System.Drawing.Point(0, 294);
-            this.FranjaAbajo.Margin = new System.Windows.Forms.Padding(0);
-            this.FranjaAbajo.Name = "FranjaAbajo";
-            this.FranjaAbajo.RowCount = 1;
-            this.FranjaAbajo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.Size = new System.Drawing.Size(468, 8);
-            this.FranjaAbajo.TabIndex = 4;
-            // 
-            // FormAlertaMsnError
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(468, 302);
-            this.Controls.Add(this.TableLayoutPanel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormAlertaMsnError";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormAlertaMsnError";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormAlertaMsnError_FormClosed);
-            this.Load += new System.EventHandler(this.FormAlertaMsnError_Load);
-            this.TableLayoutPanel1.ResumeLayout(false);
-            this.TableLayoutPanel1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.icon_error)).EndInit();
-            this.ResumeLayout(false);
-
-        }
-
-        #endregion
-
-        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel1;
-        internal System.Windows.Forms.PictureBox icon_error;
-        internal System.Windows.Forms.Label TituloAviso;
-        internal System.Windows.Forms.Label DescripcionAviso;
-        internal System.Windows.Forms.Button BtnAceptar;
-        internal System.Windows.Forms.TableLayoutPanel FranjaAbajo;
-    }
-}
-FormAlertaOk.Designer.vb
-
-namespace DS9908R_App
-{
-    partial class FormAlertaOk
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.components = new System.ComponentModel.Container();
-            this.icon_ok = new System.Windows.Forms.PictureBox();
-            this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.TituloAviso = new System.Windows.Forms.Label();
-            this.DescripcionAviso = new System.Windows.Forms.Label();
-            this.FranjaAbajo = new System.Windows.Forms.TableLayoutPanel();
-            this.Tiempo = new System.Windows.Forms.Timer(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.icon_ok)).BeginInit();
-            this.TableLayoutPanel1.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // icon_ok
-            // 
-            this.icon_ok.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.icon_ok.Image = global::DS9908R_App.Properties.Resources.ok_90;
-            this.icon_ok.Location = new System.Drawing.Point(189, 28);
-            this.icon_ok.Margin = new System.Windows.Forms.Padding(0);
-            this.icon_ok.Name = "icon_ok";
-            this.icon_ok.Size = new System.Drawing.Size(90, 90);
-            this.icon_ok.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_ok.TabIndex = 0;
-            this.icon_ok.TabStop = false;
-            // 
-            // TableLayoutPanel1
-            // 
-            this.TableLayoutPanel1.ColumnCount = 1;
-            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TableLayoutPanel1.Controls.Add(this.icon_ok, 0, 0);
-            this.TableLayoutPanel1.Controls.Add(this.TituloAviso, 0, 1);
-            this.TableLayoutPanel1.Controls.Add(this.DescripcionAviso, 0, 2);
-            this.TableLayoutPanel1.Controls.Add(this.FranjaAbajo, 0, 3);
-            this.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.TableLayoutPanel1.Name = "TableLayoutPanel1";
-            this.TableLayoutPanel1.RowCount = 4;
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 58F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 19F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 21F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 2F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.TableLayoutPanel1.Size = new System.Drawing.Size(468, 252);
-            this.TableLayoutPanel1.TabIndex = 3;
-            // 
-            // TituloAviso
-            // 
-            this.TituloAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TituloAviso.AutoSize = true;
-            this.TituloAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TituloAviso.Location = new System.Drawing.Point(145, 154);
-            this.TituloAviso.Name = "TituloAviso";
-            this.TituloAviso.Size = new System.Drawing.Size(177, 31);
-            this.TituloAviso.TabIndex = 1;
-            this.TituloAviso.Text = "¡Hola Loxi1! ";
-            this.TituloAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // DescripcionAviso
-            // 
-            this.DescripcionAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.DescripcionAviso.AutoSize = true;
-            this.DescripcionAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DescripcionAviso.Location = new System.Drawing.Point(108, 208);
-            this.DescripcionAviso.Name = "DescripcionAviso";
-            this.DescripcionAviso.Size = new System.Drawing.Size(252, 22);
-            this.DescripcionAviso.TabIndex = 2;
-            this.DescripcionAviso.Text = "Qué bueno verte nuevamente.";
-            this.DescripcionAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // FranjaAbajo
-            // 
-            this.FranjaAbajo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.FranjaAbajo.ColumnCount = 1;
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.FranjaAbajo.Location = new System.Drawing.Point(0, 245);
-            this.FranjaAbajo.Margin = new System.Windows.Forms.Padding(0);
-            this.FranjaAbajo.Name = "FranjaAbajo";
-            this.FranjaAbajo.RowCount = 1;
-            this.FranjaAbajo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.Size = new System.Drawing.Size(468, 7);
-            this.FranjaAbajo.TabIndex = 4;
-            // 
-            // Tiempo
-            // 
-            this.Tiempo.Tick += new System.EventHandler(this.Tiempo_Tick);
-            // 
-            // FormAlertaOk
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(468, 252);
-            this.Controls.Add(this.TableLayoutPanel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormAlertaOk";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormAlertaOk";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormAlertaOk_FormClosed);
-            this.Load += new System.EventHandler(this.FormAlertaOk_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.icon_ok)).EndInit();
-            this.TableLayoutPanel1.ResumeLayout(false);
-            this.TableLayoutPanel1.PerformLayout();
-            this.ResumeLayout(false);
-
-        }
-
-        #endregion
-
-        internal System.Windows.Forms.PictureBox icon_ok;
-        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel1;
-        internal System.Windows.Forms.Label TituloAviso;
-        internal System.Windows.Forms.Label DescripcionAviso;
-        internal System.Windows.Forms.TableLayoutPanel FranjaAbajo;
-        internal System.Windows.Forms.Timer Tiempo;
-    }
-}
-FormAviso.Designer.vb
-
-namespace DS9908R_App
-{
-    partial class FormAlertaOk
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.components = new System.ComponentModel.Container();
-            this.icon_ok = new System.Windows.Forms.PictureBox();
-            this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.TituloAviso = new System.Windows.Forms.Label();
-            this.DescripcionAviso = new System.Windows.Forms.Label();
-            this.FranjaAbajo = new System.Windows.Forms.TableLayoutPanel();
-            this.Tiempo = new System.Windows.Forms.Timer(this.components);
-            ((System.ComponentModel.ISupportInitialize)(this.icon_ok)).BeginInit();
-            this.TableLayoutPanel1.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // icon_ok
-            // 
-            this.icon_ok.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.icon_ok.Image = global::DS9908R_App.Properties.Resources.ok_90;
-            this.icon_ok.Location = new System.Drawing.Point(189, 28);
-            this.icon_ok.Margin = new System.Windows.Forms.Padding(0);
-            this.icon_ok.Name = "icon_ok";
-            this.icon_ok.Size = new System.Drawing.Size(90, 90);
-            this.icon_ok.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.icon_ok.TabIndex = 0;
-            this.icon_ok.TabStop = false;
-            // 
-            // TableLayoutPanel1
-            // 
-            this.TableLayoutPanel1.ColumnCount = 1;
-            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TableLayoutPanel1.Controls.Add(this.icon_ok, 0, 0);
-            this.TableLayoutPanel1.Controls.Add(this.TituloAviso, 0, 1);
-            this.TableLayoutPanel1.Controls.Add(this.DescripcionAviso, 0, 2);
-            this.TableLayoutPanel1.Controls.Add(this.FranjaAbajo, 0, 3);
-            this.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.TableLayoutPanel1.Name = "TableLayoutPanel1";
-            this.TableLayoutPanel1.RowCount = 4;
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 58F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 19F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 21F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 2F));
-            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.TableLayoutPanel1.Size = new System.Drawing.Size(468, 252);
-            this.TableLayoutPanel1.TabIndex = 3;
-            // 
-            // TituloAviso
-            // 
-            this.TituloAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TituloAviso.AutoSize = true;
-            this.TituloAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TituloAviso.Location = new System.Drawing.Point(145, 154);
-            this.TituloAviso.Name = "TituloAviso";
-            this.TituloAviso.Size = new System.Drawing.Size(177, 31);
-            this.TituloAviso.TabIndex = 1;
-            this.TituloAviso.Text = "¡Hola Loxi1! ";
-            this.TituloAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // DescripcionAviso
-            // 
-            this.DescripcionAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.DescripcionAviso.AutoSize = true;
-            this.DescripcionAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DescripcionAviso.Location = new System.Drawing.Point(108, 208);
-            this.DescripcionAviso.Name = "DescripcionAviso";
-            this.DescripcionAviso.Size = new System.Drawing.Size(252, 22);
-            this.DescripcionAviso.TabIndex = 2;
-            this.DescripcionAviso.Text = "Qué bueno verte nuevamente.";
-            this.DescripcionAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // FranjaAbajo
-            // 
-            this.FranjaAbajo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.FranjaAbajo.ColumnCount = 1;
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.FranjaAbajo.Location = new System.Drawing.Point(0, 245);
-            this.FranjaAbajo.Margin = new System.Windows.Forms.Padding(0);
-            this.FranjaAbajo.Name = "FranjaAbajo";
-            this.FranjaAbajo.RowCount = 1;
-            this.FranjaAbajo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.Size = new System.Drawing.Size(468, 7);
-            this.FranjaAbajo.TabIndex = 4;
-            // 
-            // Tiempo
-            // 
-            this.Tiempo.Tick += new System.EventHandler(this.Tiempo_Tick);
-            // 
-            // FormAlertaOk
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(468, 252);
-            this.Controls.Add(this.TableLayoutPanel1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormAlertaOk";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormAlertaOk";
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.FormAlertaOk_FormClosed);
-            this.Load += new System.EventHandler(this.FormAlertaOk_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.icon_ok)).EndInit();
-            this.TableLayoutPanel1.ResumeLayout(false);
-            this.TableLayoutPanel1.PerformLayout();
-            this.ResumeLayout(false);
-
-        }
-
-        #endregion
-
-        internal System.Windows.Forms.PictureBox icon_ok;
-        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel1;
-        internal System.Windows.Forms.Label TituloAviso;
-        internal System.Windows.Forms.Label DescripcionAviso;
-        internal System.Windows.Forms.TableLayoutPanel FranjaAbajo;
-        internal System.Windows.Forms.Timer Tiempo;
-    }
-}
-FormConfirmacion.Designer.vb
-
-namespace DS9908R_App
-{
-    partial class FormConfirmacion
-    {
-        /// <summary>
-        /// Required designer variable.
-        /// </summary>
-        private System.ComponentModel.IContainer components = null;
-
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
-        private void InitializeComponent()
-        {
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.tbContConfirmacion = new System.Windows.Forms.TableLayoutPanel();
-            this.TituloAviso = new System.Windows.Forms.Label();
-            this.DescripcionAviso = new System.Windows.Forms.Label();
-            this.FranjaAbajo = new System.Windows.Forms.TableLayoutPanel();
-            this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-            this.btnAceptar = new System.Windows.Forms.Button();
-            this.btnCancelar = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            this.tbContConfirmacion.SuspendLayout();
-            this.tableLayoutPanel2.SuspendLayout();
-            this.SuspendLayout();
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.pictureBox1.Image = global::DS9908R_App.Properties.Resources.advertencia_90;
-            this.pictureBox1.Location = new System.Drawing.Point(177, 25);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(100, 100);
-            this.pictureBox1.TabIndex = 6;
-            this.pictureBox1.TabStop = false;
-            // 
-            // tbContConfirmacion
-            // 
-            this.tbContConfirmacion.ColumnCount = 1;
-            this.tbContConfirmacion.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tbContConfirmacion.Controls.Add(this.TituloAviso, 0, 1);
-            this.tbContConfirmacion.Controls.Add(this.DescripcionAviso, 0, 2);
-            this.tbContConfirmacion.Controls.Add(this.FranjaAbajo, 0, 4);
-            this.tbContConfirmacion.Controls.Add(this.tableLayoutPanel2, 0, 3);
-            this.tbContConfirmacion.Controls.Add(this.pictureBox1, 0, 0);
-            this.tbContConfirmacion.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbContConfirmacion.Location = new System.Drawing.Point(0, 0);
-            this.tbContConfirmacion.Name = "tbContConfirmacion";
-            this.tbContConfirmacion.RowCount = 5;
-            this.tbContConfirmacion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.tbContConfirmacion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.tbContConfirmacion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 55F));
-            this.tbContConfirmacion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 50F));
-            this.tbContConfirmacion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 5F));
-            this.tbContConfirmacion.Size = new System.Drawing.Size(454, 310);
-            this.tbContConfirmacion.TabIndex = 5;
-            // 
-            // TituloAviso
-            // 
-            this.TituloAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.TituloAviso.AutoSize = true;
-            this.TituloAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TituloAviso.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
-            this.TituloAviso.Location = new System.Drawing.Point(126, 159);
-            this.TituloAviso.Name = "TituloAviso";
-            this.TituloAviso.Size = new System.Drawing.Size(202, 31);
-            this.TituloAviso.TabIndex = 1;
-            this.TituloAviso.Text = "¿Está seguro?";
-            this.TituloAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // DescripcionAviso
-            // 
-            this.DescripcionAviso.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.DescripcionAviso.AutoSize = true;
-            this.DescripcionAviso.Font = new System.Drawing.Font("Microsoft Sans Serif", 13F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DescripcionAviso.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(100)))), ((int)(((byte)(100)))), ((int)(((byte)(100)))));
-            this.DescripcionAviso.Location = new System.Drawing.Point(125, 216);
-            this.DescripcionAviso.Name = "DescripcionAviso";
-            this.DescripcionAviso.Size = new System.Drawing.Size(203, 22);
-            this.DescripcionAviso.TabIndex = 2;
-            this.DescripcionAviso.Text = "¡No podrás revertir esto!";
-            this.DescripcionAviso.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // FranjaAbajo
-            // 
-            this.FranjaAbajo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.FranjaAbajo.ColumnCount = 1;
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.FranjaAbajo.Location = new System.Drawing.Point(0, 305);
-            this.FranjaAbajo.Margin = new System.Windows.Forms.Padding(0);
-            this.FranjaAbajo.Name = "FranjaAbajo";
-            this.FranjaAbajo.RowCount = 1;
-            this.FranjaAbajo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.FranjaAbajo.Size = new System.Drawing.Size(454, 5);
-            this.FranjaAbajo.TabIndex = 4;
-            // 
-            // tableLayoutPanel2
-            // 
-            this.tableLayoutPanel2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tableLayoutPanel2.ColumnCount = 2;
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel2.Controls.Add(this.btnAceptar, 0, 0);
-            this.tableLayoutPanel2.Controls.Add(this.btnCancelar, 1, 0);
-            this.tableLayoutPanel2.Location = new System.Drawing.Point(0, 255);
-            this.tableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
-            this.tableLayoutPanel2.Name = "tableLayoutPanel2";
-            this.tableLayoutPanel2.RowCount = 1;
-            this.tableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel2.Size = new System.Drawing.Size(454, 50);
-            this.tableLayoutPanel2.TabIndex = 5;
-            // 
-            // btnAceptar
-            // 
-            this.btnAceptar.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.btnAceptar.AutoSize = true;
-            this.btnAceptar.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnAceptar.Location = new System.Drawing.Point(34, 5);
-            this.btnAceptar.Name = "btnAceptar";
-            this.btnAceptar.Padding = new System.Windows.Forms.Padding(10, 5, 10, 5);
-            this.btnAceptar.Size = new System.Drawing.Size(158, 40);
-            this.btnAceptar.TabIndex = 0;
-            this.btnAceptar.Text = "Si, Desvincular";
-            this.btnAceptar.UseVisualStyleBackColor = true;
-            this.btnAceptar.Click += new System.EventHandler(this.btnAceptar_Click);
-            // 
-            // btnCancelar
-            // 
-            this.btnCancelar.Anchor = System.Windows.Forms.AnchorStyles.None;
-            this.btnCancelar.AutoSize = true;
-            this.btnCancelar.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnCancelar.Location = new System.Drawing.Point(269, 5);
-            this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Padding = new System.Windows.Forms.Padding(10, 5, 10, 5);
-            this.btnCancelar.Size = new System.Drawing.Size(142, 40);
-            this.btnCancelar.TabIndex = 1;
-            this.btnCancelar.Text = "No, Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
-            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
-            // 
-            // FormConfirmacion
-            // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(454, 310);
-            this.Controls.Add(this.tbContConfirmacion);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "FormConfirmacion";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FormConfirmacion";
-            this.Load += new System.EventHandler(this.FormConfirmacion_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            this.tbContConfirmacion.ResumeLayout(false);
-            this.tbContConfirmacion.PerformLayout();
-            this.tableLayoutPanel2.ResumeLayout(false);
-            this.tableLayoutPanel2.PerformLayout();
-            this.ResumeLayout(false);
-
-        }
-
-        #endregion
-
-        private System.Windows.Forms.PictureBox pictureBox1;
-        internal System.Windows.Forms.TableLayoutPanel tbContConfirmacion;
-        internal System.Windows.Forms.Label TituloAviso;
-        internal System.Windows.Forms.Label DescripcionAviso;
-        internal System.Windows.Forms.TableLayoutPanel FranjaAbajo;
-        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel2;
-        private System.Windows.Forms.Button btnAceptar;
-        private System.Windows.Forms.Button btnCancelar;
+        alertaError.ShowDialog();
     }
 }
 
+private void MostrarAlerta(string mensaje, Action callback = null)
+{
+    toolStripStatusLbl.Text = mensaje;
 
+    if (FormAlertaError.alertaAbierta)
+        return;
 
+    using (var alertaError = new FormAlertaError("Error", mensaje, pinturaRojoLadrillo, callback))
+    {
+        alertaError.ShowDialog();
+    }
+}
+
+private void Alerta(string mensaje, Color color, int tipo, int tiempo = 10)
+{
+    using (var alerta = new FormAlerta(mensaje, color, tipo, tiempo))
+    {
+        alerta.ShowDialog();
+    }
+}
+
+private void AlertaOk(string titulo, Color color, int tiempo, string descripcion)
+{
+    using (var alerta = new FormAlertaOk(titulo, color, tiempo, descripcion))
+    {
+        alerta.ShowDialog();
+    }
+}
+Cómo usar cada una
+Error de SaveRFID
+En Vinculador_OnError:
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+        return;
+    }
+
+    SetEstado(msg, Color.LightCoral);
+    ReproducirError();
+
+    CodBarras.Clear();
+    CodBarras.Focus();
+
+    MostrarAlerta(msg);
+}
+Registro correcto
+En Vinculador_OnInsertadoOk:
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    if (data.ContainsKey("op"))
+        nroOP.Text = Convert.ToString(data["op"]);
+
+    if (data.ContainsKey("hoja_marcacion"))
+        nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
+    ReproducirOk();
+    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerdeMedio, 1, 5);
+
+    LimpiarTodo();
+    SetEstado("OK", Color.LightGreen);
+}
+Conexión exitosa al scanner
+Cuando se conecte bien:
+C#
+AlertaOk("Conexion", pinturaVerdeMarMedio, 30, "Exitosa al reader.");
+Eso sí coincide con tu flujo original.
+Lo que detecté en tu material
+Hay un detalle importante: en lo que pegaste, FormAviso.Designer.vb parece estar duplicado con el diseñador de FormAlertaOk, porque declara:
+C#
+partial class FormAlertaOk
+Eso se ve mal nombrado o copiado raro. Ahí revisaría si:
+FormAviso realmente existe como clase aparte
+o pegaste dos veces el diseñador de FormAlertaOk
+Ese punto sí lo corregiría antes de compilar.
+Qué sigue
+Lo más práctico ahora es que yo te deje el código C# de estas tres clases primero, usando exactamente tus controles del diseñador:
+FormAlerta.cs
+FormAlertaError.cs
+FormAlertaOk.cs
+Esas tres ya te resuelven casi todo el flujo del lector.
