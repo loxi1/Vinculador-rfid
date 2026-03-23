@@ -539,8 +539,9 @@ namespace DS9908R_App
                 return;
             }
 
-            toolStripStatusLbl.Text = msg;
+            SetEstado(msg, Color.LightCoral);
             ReproducirError();
+
             CodBarras.Clear();
             CodBarras.Focus();
 
@@ -565,7 +566,7 @@ namespace DS9908R_App
             AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerdeMedio, 1, 5);
 
             LimpiarTodo();
-            toolStripStatusLbl.Text = "OK";
+            SetEstado("OK", Color.LightGreen);
         }
 
         private void CargarScannersEnComboDesdeSDK()

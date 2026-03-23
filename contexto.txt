@@ -1,156 +1,579 @@
-Sí, ahora sí ya se ve claro el mapa real de tus formularios de alerta y sus nombres exactos. Con lo que pegaste, los controles correctos son estos:
-FormAlerta: MSNAlerta, FranjaTop, icon_info, icon_error, icon_ok, tiempo
-FormAlertaError: icon_error, TituloAviso, DescripcionAviso, BtnAceptar, FranjaAbajo
-FormAlertaMsnError: icon_error, TituloAviso, DescripcionAviso, BtnAceptar, FranjaAbajo
-FormAlertaOk: icon_ok, TituloAviso, DescripcionAviso, FranjaAbajo, Tiempo
-FormConfirmacion: pictureBox1, TituloAviso, DescripcionAviso, FranjaAbajo, btnAceptar, btnCancelar
-Y sí: no debo inventarte otros nombres.
-Qué archivos sí involucran alertas
-Por lo que muestras, los archivos que debes portar o ajustar en C# son:
-AlertaManager.cs
-FormAlerta.cs
-FormAlertaError.cs
-FormAlertaMsnError.cs
-FormAlertaOk.cs
-FormConfirmacion.cs
-FormAviso puede quedar para después, porque no parece crítico para el flujo principal de lector.
-Cambios concretos que te recomiendo
-1) AlertaManager.cs
-Ese sí debes tenerlo en C# casi igual al VB. Ese archivo sí es necesario para FormAlerta.
-2) FormAlerta.cs
-Debe respetar:
-MSNAlerta.Text
-MSNAlerta.ForeColor
-FranjaTop.BackColor
-visibilidad de icon_ok, icon_info, icon_error
-animación desde abajo
-cierre con fade
-llamar AlertaManager.RemoverAlerta(this)
-3) FormAlertaError.cs
-Debe respetar:
-public static bool alertaAbierta
-TituloAviso.Text
-DescripcionAviso.Text
-FranjaAbajo.BackColor
-botón BtnAceptar
-callback opcional
-ShowDialog()
-Ese es el que usarías para errores fuertes de negocio, por ejemplo cuando SaveRFID devuelve mensaje de Sybase.
-4) FormAlertaMsnError.cs
-Es muy parecido a FormAlertaError, pero por nombre parece orientado a solo mostrar mensaje.
-Puedes reutilizar la misma lógica, cambiando solo el nombre de la clase.
-5) FormAlertaOk.cs
-Debe respetar:
-TituloAviso
-DescripcionAviso
-FranjaAbajo
-Tiempo.Tick
-ShowDialog()
-Ese te sirve muy bien para el caso de conexión exitosa al scanner.
-6) FormConfirmacion.cs
-Debe devolver DialogResult.OK o DialogResult.Cancel, igual que en VB.
-Lo importante para frmLector.cs
-Con estas clases reales, en frmLector.cs solo necesitas wrappers con los nombres funcionales del VB, no nombres de controles nuevos.
-Métodos helper
-Pon estos en frmLector.cs:
-C#
-private void AlertaErrorMsn(string mensaje, Color color)
-{
-    toolStripStatusLbl.Text = mensaje;
+PUedes validar el diseño el codigo de: FormAlerta.cs, FormAlertaError.cs, FormAlertaOk.cs ya los puse en c# en en el repo por favor revisar tambien esta imagen -> https://i.ibb.co/5XKQmsrP/Screenshot-2.png 
+siendo el sp en sybase 12.5
 
-    using (var alertaError = new FormAlertaError("Error", mensaje, color))
-    {
-        alertaError.ShowDialog();
-    }
-}
+IF OBJECT_ID ('dbo.USP_SAL_EMB_CON_RFID') IS NOT NULL
+	DROP PROCEDURE dbo.USP_SAL_EMB_CON_RFID
+GO
 
-private void MostrarAlerta(string mensaje, Action callback = null)
-{
-    toolStripStatusLbl.Text = mensaje;
+CREATE PROCEDURE dbo.USP_SAL_EMB_CON_RFID
+(    
+    @etqt    Varchar(20),
+    @empresa Varchar(30),
+    @usr     Varchar(10),
+    @rfid    Varchar(200),
+    @nHoja   Varchar(10)
+)
+AS
 
-    if (FormAlertaError.alertaAbierta)
-        return;
+/* =======================
+   DECLARACIONES PRINCIPALES
+   ======================= */
+DECLARE @comp         VARCHAR(2)
+DECLARE @op           VARCHAR(10)
+DECLARE @corte        VARCHAR(6)
+DECLARE @scorte       Varchar(6)
+DECLARE @talla        VARCHAR(5)
+DECLARE @id           VARCHAR(5)
+DECLARE @ubicHab      Varchar(40)
+DECLARE @codProv      VARCHAR(10)
+DECLARE @codSuc       VARCHAR(2)
 
-    using (var alertaError = new FormAlertaError("Error", mensaje, pinturaRojoLadrillo, callback))
-    {
-        alertaError.ShowDialog();
-    }
-}
+DECLARE @vv_mensaje   VARCHAR(200)
+DECLARE @flg_error    INT
 
-private void Alerta(string mensaje, Color color, int tipo, int tiempo = 10)
-{
-    using (var alerta = new FormAlerta(mensaje, color, tipo, tiempo))
-    {
-        alerta.ShowDialog();
-    }
-}
+DECLARE @cantidad_    INT
+DECLARE @cantPrendHab INT
+DECLARE @fechDat1     DATETIME
 
-private void AlertaOk(string titulo, Color color, int tiempo, string descripcion)
-{
-    using (var alerta = new FormAlertaOk(titulo, color, tiempo, descripcion))
-    {
-        alerta.ShowDialog();
-    }
-}
-Cómo usar cada una
-Error de SaveRFID
-En Vinculador_OnError:
-C#
-private void Vinculador_OnError(string msg)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
-        return;
-    }
+SET @comp='02'
 
-    SetEstado(msg, Color.LightCoral);
-    ReproducirError();
+/* =======================
+   SALIDAS POR DEFECTO
+   ======================= */
+SET @vv_mensaje = 'OK'
+SET @flg_error  = 0
 
-    CodBarras.Clear();
-    CodBarras.Focus();
+/* =======================
+   DESCOMPONEMOS CODIGO PAQUETE
+   ======================= */
+SET @op    = substring(@etqt,1,10)
+SET @corte = substring(@etqt,11,4)
+SET @talla = substring(@etqt,15,2)
+SET @id    = substring(@etqt,17,4)
 
-    MostrarAlerta(msg);
-}
-Registro correcto
-En Vinculador_OnInsertadoOk:
-C#
-private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
-        return;
-    }
+/* =======================
+   OBTENEMOS SUBCORTE
+   ======================= */
+SELECT @cantPrendHab=count(*)
+FROM ordencortetallasid
+WHERE ccmpn=@comp
+  AND nnope=@op
+  AND NOrdenCorte=@corte
+  AND cod_talla=@talla
+  AND id_talla=@id
 
-    if (data.ContainsKey("op"))
-        nroOP.Text = Convert.ToString(data["op"]);
+IF @cantPrendHab=0
+BEGIN
+    SET @vv_mensaje  = 'SubCorte No Registrado.'
+    SET @flg_error   = 1
+    GOTO SALIR
+END
 
-    if (data.ContainsKey("hoja_marcacion"))
-        nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+SELECT @scorte=nordensubcorte,
+       @ubicHab=ubicacion,
+       @codProv=cod_prov,
+       @codSuc=cod_suc
+FROM ordencortetallasid
+WHERE ccmpn=@comp
+  AND nnope=@op
+  AND NOrdenCorte=@corte
+  AND cod_talla=@talla
+  AND id_talla=@id
 
-    ReproducirOk();
-    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerdeMedio, 1, 5);
+/* =======================
+   VALIDAR RFID REPETIDO
+   ======================= */
+IF @rfid IS NOT NULL AND LEN(LTRIM(RTRIM(@rfid))) > 0
+BEGIN
+    SELECT @cantidad_ = COUNT(nnope)
+    FROM ordenacabadostallasmov
+    WHERE codQR = @rfid
+      AND ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+      AND nordensubcorte=@scorte AND cod_talla=@talla AND id_talla=@id
 
-    LimpiarTodo();
-    SetEstado("OK", Color.LightGreen);
-}
-Conexión exitosa al scanner
-Cuando se conecte bien:
-C#
-AlertaOk("Conexion", pinturaVerdeMarMedio, 30, "Exitosa al reader.");
-Eso sí coincide con tu flujo original.
-Lo que detecté en tu material
-Hay un detalle importante: en lo que pegaste, FormAviso.Designer.vb parece estar duplicado con el diseñador de FormAlertaOk, porque declara:
-C#
-partial class FormAlertaOk
-Eso se ve mal nombrado o copiado raro. Ahí revisaría si:
-FormAviso realmente existe como clase aparte
-o pegaste dos veces el diseñador de FormAlertaOk
-Ese punto sí lo corregiría antes de compilar.
-Qué sigue
-Lo más práctico ahora es que yo te deje el código C# de estas tres clases primero, usando exactamente tus controles del diseñador:
-FormAlerta.cs
-FormAlertaError.cs
-FormAlertaOk.cs
-Esas tres ya te resuelven casi todo el flujo del lector.
+    IF @cantidad_ > 0
+    BEGIN
+        SET @vv_mensaje = 'Error: El RFID ya existe. Verifique.'
+        SET @flg_error  = 3
+        GOTO SALIR
+    END
+END
+
+/* =======================
+   DECLARACIONES (SEGUN TU SP)
+   ======================= */
+DECLARE @tipo         Varchar(40)
+DECLARE @cantTmpTimb  INT
+DECLARE @flgAcab      Varchar(50)
+DECLARE @empAcab      Varchar(30)
+DECLARE @lineaAcab    Varchar(8)
+DECLARE @flgServ      Varchar(50)
+DECLARE @empServ      Varchar(20)
+DECLARE @bolsaServ    Varchar(4)
+DECLARE @mensaje      Varchar(200)
+DECLARE @tipoCab      Varchar(40)
+DECLARE @tipoEtq      Varchar(40)
+DECLARE @linea        Varchar(8)
+DECLARE @empReg       Varchar(20)
+DECLARE @usuTrabAcab  Varchar(6)
+DECLARE @nombreUsu    Varchar(50)
+DECLARE @band         INT
+DECLARE @cantDatTim   INT
+DECLARE @cproto       Varchar(10)
+DECLARE @flgCierre    Varchar(2)
+DECLARE @flgCert      Varchar(1)
+DECLARE @ctpCert      Varchar(3)
+DECLARE @descCert     Varchar(4)
+DECLARE @nroCert      Varchar(100)
+DECLARE @nColor       VARCHAR(70)
+DECLARE @nomTall      VARCHAR(5)
+DECLARE @combinacion  VARCHAR(10)
+DECLARE @color        VARCHAR(10)
+DECLARE @maxVal       NUMERIC(20,0)
+DECLARE @nseclinea    VARCHAR(10)
+DECLARE @correl       NUMERIC(20,0)
+DECLARE @proto        VARCHAR(10)
+DECLARE @estilo       VARCHAR(60)
+DECLARE @fDesp        DATETIME
+DECLARE @cliente      VARCHAR(60)
+DECLARE @prog         VARCHAR(5)
+DECLARE @vi_num       NUMERIC(20,0)
+DECLARE @vi_total     NUMERIC(20,0)
+DECLARE @cant         INT
+DECLARE @nsec         INT
+DECLARE @cod_talla    VARCHAR(5)
+DECLARE @idDet        INT
+DECLARE @usringAcab   VARCHAR(12)
+DECLARE @lineaCost    VARCHAR(8)
+DECLARE @cantAcabTallas INT
+DECLARE @motivo       VARCHAR(12)
+
+DECLARE @vi_num1      INT
+DECLARE @vi_total1    INT
+DECLARE @maxVal1      INT
+DECLARE @nseclinea1   VARCHAR(10)
+DECLARE @correl1      INT
+DECLARE @idDet1       INT
+DECLARE @totTimb      INT
+DECLARE @cantMovDZ    INT
+
+DECLARE @vi_error     INT
+DECLARE @areaTim      VARCHAR(40)
+DECLARE @procSalArea  Varchar(30)
+
+DECLARE @fechDat      DATETIME
+DECLARE @fecha0       DATETIME
+DECLARE @fecha1       DATETIME
+
+SET @fechDat = GETDATE()
+
+/* ===== FECHA (ASE 12.5) =====
+   @fecha0 = hoy 00:00:00
+   @fecha1 = mañana 00:00:00
+*/
+SET @fecha0 = CONVERT(DATETIME, CONVERT(VARCHAR(8), @fechDat, 112))
+SET @fecha1 = DATEADD(day, 1, @fecha0)
+
+SET @motivo=''
+SET @areaTim='SALIDA EMBALAJE'
+SET @procSalArea='SALIDA EMBALAJE'
+
+DELETE FROM lista_tallas_tmp_web WHERE codTrab=@usr
+
+IF @empresa='CITITEX ACABADOS COFACO'
+BEGIN
+    SET @tipo='SALIDA EMBALAJE CITI COFACO'
+    SET @areaTim='SALIDA EMBALAJE CITI COFACO'
+END
+ELSE
+BEGIN
+    SET @tipo=@areaTim
+    SET @areaTim='SALIDA EMBALAJE'
+END
+
+SET @tipoCab=@tipo
+SET @tipoEtq=@tipo
+
+/* =======================
+   DATOS DE OrdenAcabadosTallasMov
+   ======================= */
+SET @flgAcab=''
+SET @usringAcab=''
+
+SELECT @flgAcab=flgestado,
+       @empAcab=empresa,
+       @lineaAcab=lacabado,
+       @usuTrabAcab=codtrabajador,
+       @usrIngAcab=usregingacab
+FROM ordenacabadostallasmov
+WHERE ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+  AND nordensubcorte=@scorte AND cod_talla=@talla AND id_talla=@id
+
+IF @flgAcab='' OR @flgAcab IS NULL
+    SET @flgAcab='NO EXISTE'
+
+IF @usrIngAcab='' OR @usrIngAcab IS NULL
+    SET @usrIngAcab='NO EXISTE'
+
+/* =======================
+   VALIDACIONES PRINCIPALES
+   ======================= */
+IF @areaTim='SALIDA EMBALAJE' OR @areaTim='SALIDA EMBALAJE CITI COFACO'
+BEGIN
+    /* Validamos misma empresa */
+    IF @empAcab<>@empresa
+    BEGIN
+        SET @vv_mensaje = 'No Se Registro Ya Que La Prenda Pertenece Acabados ' + @empAcab
+                        + ' Y El Usuario Timbrador Es De La Empresa ' + @empresa + '|' + @tipo
+        SET @flg_error=1
+        GOTO SALIR
+    END
+
+    IF @empresa='COFACO'
+    BEGIN
+        IF @flgAcab='INGRESO ACABADOS'
+           OR @flgAcab='SALIDA ACABADOS PRIM'
+           OR @flgAcab='INGRESO ACABADOS CITI COFACO'
+           OR @flgAcab='INGRESO EMBALAJE'
+        BEGIN
+            SET @band=2
+            SET @linea=@lineaAcab
+        END
+        ELSE IF @flgAcab='NO EXISTE'
+        BEGIN
+            SET @vv_mensaje='La Prenda No Fue Ingresada Acabados. !Verificar Banderita...!|' + @tipo
+            SET @flg_error = 1
+            INSERT INTO timb_error_web VALUES('Error_sweet',@vv_mensaje,@usr,'')
+            GOTO SALIR
+        END
+        ELSE IF @flgAcab=@tipo 
+        BEGIN
+            SET @vv_mensaje='La Prenda Ya Fue Timbrada Como ' + @flgAcab + '|' + @tipo
+            SET @flg_error = 1
+            INSERT INTO timb_error_web VALUES('Error_alertify',@vv_mensaje,@usr,'')
+            GOTO SALIR
+        END
+        ELSE
+        BEGIN
+            SET @vv_mensaje='La Prenda No Se Registro Ya Que Se Encuentra En: ' + @flgAcab + '|' + @tipo
+            SET @flg_error = 1
+            INSERT INTO timb_error_web VALUES('Error_sweet',@vv_mensaje,@usr,'')
+            GOTO SALIR
+        END
+    END
+    ELSE
+    BEGIN
+        IF @flgAcab='INGRESO EMBALAJE' OR @flgAcab='INGRESO EMBALAJE CITI COFACO'
+        BEGIN
+            SET @band=2
+            SET @linea=@lineaAcab
+        END
+        ELSE IF @flgAcab='NO EXISTE'
+        BEGIN
+            SET @vv_mensaje='La Prenda No Fue Ingresada Acabados. !Verificar Banderita...!|' + @tipo
+            SET @flg_error = 1
+            INSERT INTO timb_error_web VALUES('Error_sweet',@vv_mensaje,@usr,'')
+            GOTO SALIR
+        END
+        ELSE IF @flgAcab=@tipo 
+        BEGIN
+            SET @vv_mensaje='La Prenda Ya Fue Timbrada Como ' + @flgAcab + '|' + @tipo
+            SET @flg_error = 1
+            INSERT INTO timb_error_web VALUES('Error_alertify',@vv_mensaje,@usr,'')
+            GOTO SALIR
+        END
+        ELSE
+        BEGIN
+            SET @vv_mensaje='La Prenda No Se Registro Ya Que Se Encuentra En: ' + @flgAcab + '|' + @tipo
+            SET @flg_error = 1
+            INSERT INTO timb_error_web VALUES('Error_sweet',@vv_mensaje,@usr,'')
+            GOTO SALIR
+        END
+    END     
+END
+ELSE
+BEGIN
+    /* Parte externa (se mantiene tu lógica) */
+    IF @flgAcab='NO EXISTE' OR @flgAcab='RETORNO REQ. PROD. PRUEBAS' OR @flgAcab='RETORNO REQ. PROD. MUESTRAS'
+    BEGIN
+        SET @flgServ=''
+
+        SELECT @flgServ=flgestado,@empServ=destino,@bolsaServ=bolsa
+        FROM ordenserviciostallasmov
+        WHERE ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+          AND nordensubcorte=@scorte AND cod_talla=@talla AND id_talla=@id
+
+        IF @flgServ='' OR @flgServ IS NULL
+            SET @flgServ='NO EXISTE'
+
+        IF @flgServ='INGRESO A RECUPERACION EXTERNO'
+        BEGIN
+            IF @procSalArea='SALIDA DE RECUPERACION'
+            BEGIN
+                SET @tipoCab='INGRESO ACABADOS'
+                SET @tipoEtq='INGRESO ACABADOS'
+                SET @linea='-'
+                SET @empReg='COFACO'
+            END
+            ELSE IF @procSalArea='SALIDA DE RECUPERACION SEG'
+            BEGIN
+                SET @tipoCab='SALIDA RECUPERACION EXT SEG'
+                SET @tipoEtq='SALIDA ACABADOS SEG'
+                SET @linea='-'
+                SET @empReg='EXTERNO'
+            END
+            ELSE IF @procSalArea='SALIDA DE RECUPERACION TERC'
+            BEGIN
+                SET @tipoCab='SALIDA RECUPERACION EXT TERC'
+                SET @tipoEtq='SALIDA ACABADOS TERC'
+                SET @linea='-'
+                SET @empReg='EXTERNO'
+            END
+
+            SET @motivo='EXTERNA'
+            SET @band=2
+        END
+        ELSE
+        BEGIN
+            SET @vv_mensaje = 'La Prenda No Se Registro Ya Que Se Encuentra En: ' + @flgServ + '|' + @tipo
+            SET @flg_error=1
+            GOTO SALIR
+        END
+    END
+END
+
+/* =======================
+   MOVIMIENTOS
+   ======================= */
+IF @band=2
+BEGIN
+    SELECT @cantDatTim=COUNT(*)
+    FROM datos_timb_tmp
+    WHERE nnope=@op AND nordencorte=@corte AND cod_talla=@talla
+      AND area='ING AREA ACABADOS' AND codigo=@usr
+
+    IF @cantDatTim=0
+    BEGIN
+        SELECT @cproto=cproto,@flgCierre=flgcierreprod,@nroCert=nro_certificado
+        FROM altopc WHERE nnope=@op
+
+        SELECT @flgCert=flg_certificado,@ctpCert=ctp_certificado,@descCert=des_auxiliar
+        FROM avsolcs,fimcodgrl
+        WHERE avsolcs.ctp_certificado=fimcodgrl.cod_cgen
+          AND avsolcs.cproto=@cproto
+          AND fimcodgrl.ccmpn=@comp
+          AND fimcodgrl.cod_tgen='A0'
+          AND tde_cgen='FSC'
+
+        IF @flgCert IS NOT NULL
+        BEGIN
+            SET @mensaje=' !OP CERTIFICADA!       Num Certificado: ' + @nroCert + '|' + @tipo
+            INSERT INTO timb_error_web VALUES('OP Certificada',@mensaje,@usr,'')
+        END
+
+        SELECT @nomTall=tdscr FROM almcad WHERE ctpar='10' AND norden='6' AND ccrct=@talla
+
+        SELECT DISTINCT @nColor=tclrcl,@color=cod_color,@combinacion=cod_combinacion
+        FROM OrdenCorteTallas AS o
+        INNER JOIN altopd AS a ON o.nnope=a.nnope AND o.Cod_Combinacion=a.cclrcl
+        WHERE ccmpn=@comp AND o.nnope=@op AND nordencorte=@corte
+
+        INSERT INTO datos_timb_tmp
+        (codigo,nnope,nordencorte,cproto,flgcierre,flgcert,nrocert,cod_talla,tdscr,cod_combinacion,nomcolor,cod_color,area)
+        VALUES
+        (@usr,@op,@corte,@cproto,@flgCierre,@flgCert,@nroCert,@talla,@nomTall,@combinacion,@nColor,@color,'ING AREA ACABADOS')
+    END
+    ELSE
+    BEGIN
+        SELECT @cproto=cproto,@flgCierre=flgcierre,@flgCert=flgcert,@nomTall=tdscr,
+               @color=cod_color,@combinacion=cod_combinacion,@nroCert=nrocert,@nColor=nomcolor
+        FROM datos_timb_tmp
+        WHERE nnope=@op AND nordencorte=@corte AND cod_talla=@talla
+          AND area='ING AREA ACABADOS' AND codigo=@usr
+
+        IF @flgCert IS NOT NULL OR @flgCert=''
+        BEGIN
+            SET @mensaje=' !OP CERTIFICADA!       Num Certificado: ' + @nroCert + '|' + @tipo
+            INSERT INTO timb_error_web VALUES('OP Certificada',@mensaje,@usr,'')
+        END
+    END
+
+    IF @flgCierre='1'
+    BEGIN
+        SET @vv_mensaje = 'Orden De Pedido Cerrada. Regularizar Con PCP!!!|' + @tipo
+        SET @flg_error=1
+        GOTO SALIR
+    END
+
+    /* Cabecera del día (ASE 12.5: rango) */
+    SELECT @nseclinea=nseclinea
+    FROM acabadoscab
+    WHERE ccmpn=@comp AND nnope=@op AND lacabado=@linea AND tipo=@tipo
+      AND cod_combinaciones=@combinacion
+      AND fingreso >= @fecha0
+      AND fingreso <  @fecha1
+      AND codtrabajador=@usr
+
+    IF @nseclinea IS NULL
+    BEGIN
+        SELECT @maxVal=CONVERT(NUMERIC(20,0), max(nseclinea)) FROM acabadoscab
+
+        IF @maxVal IS NULL OR @maxVal=0
+            SET @correl = 1
+        ELSE
+            SET @correl = @maxVal + 1
+
+        SET @nseclinea = right('0000000000' + CONVERT(VARCHAR, @correl),10)
+
+        SELECT @proto=cproto,@estilo=cestilo,@fDesp=fprop,@prog=cod_secuencia,@cliente=ttrcr 
+        FROM OrdenCorte as o
+        INNER JOIN altopc as a ON a.nnope = o.nnope
+        INNER JOIN ptmtrc as p ON a.cclop = p.ctrcr 
+        WHERE o.ccmpn=@comp AND o.nnope=@op AND o.NOrdenCorte=@corte
+
+        INSERT INTO acabadoscab
+        (nseclinea,ccmpn,nnope,lacabado,tipo,fingreso,estilo,proto,ciente,despacho,codtrabajador,estado,nro_documento,tip_documento,empresa,bolsa,contador,cod_color,est_bolsa,cod_secuencia,cod_combinaciones,est_envio,motivo)
+        VALUES
+        (@nseclinea,@comp,@op,@linea,@tipo,@fechDat,@estilo,@proto,@cliente,@fDesp,@usr,'','','',@empresa,'',0,'','',@prog,@combinacion,'',@motivo)
+
+        INSERT INTO lista_tallas_tmp_web(nsecprog,cod_talla,codTrab)
+        SELECT nsecprog,cod_talla,@usr
+        FROM OrdenCorteTallas as o
+        INNER JOIN almcad as a ON o.cod_talla=a.ccrct
+        WHERE ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+          AND ctpar='10' AND norden='6'
+
+        SELECT @vi_num  = (SELECT MIN(idlistatmp) FROM lista_tallas_tmp_web WHERE codTrab=@usr)
+        SELECT @vi_total= (SELECT COUNT(*) FROM lista_tallas_tmp_web WHERE codTrab=@usr) + @vi_num
+
+        WHILE(@vi_num <= @vi_total)
+        BEGIN
+            SELECT @cod_talla=cod_talla,@nsec=nsecprog
+            FROM lista_tallas_tmp_web WHERE idlistatmp=@vi_num
+
+            IF @talla=@cod_talla
+                SET @cant=1
+            ELSE
+                SET @cant=0
+
+            INSERT INTO acabadosdet
+            (nseclinea,ccmpn,nnope,lacabado,tipo,cod_color,cod_combinacion,cod_talla,cantidad,fecha,salida,zurcido,desmanche,compostura,recuperacion,codproveedor,codtrabajador,confeccion,otros,contador,vale,cod_secuencia)
+            VALUES
+            (@nseclinea,@comp,@op,@linea,@tipo,@color,@combinacion,@cod_talla,@cant,@fechDat,0,0,0,0,0,'',@usr,0,0,@nsec,'NO',@prog)
+
+            SET @vi_num = @vi_num + 1
+        END
+
+        INSERT INTO detalle_acab_tmp
+        SELECT DISTINCT nsegprog,nseclinea,cod_talla,@usr
+        FROM acabadosdet
+        WHERE nseclinea=@nseclinea AND ccmpn=@comp AND nnope=@op AND tipo=@tipo
+    END
+    ELSE
+    BEGIN
+        SELECT @idDet=nsegprog FROM detalle_acab_tmp WHERE nseclinea=@nseclinea AND cod_talla=@talla
+
+        IF @idDet IS NULL OR @idDet=0
+        BEGIN
+            INSERT INTO detalle_acab_tmp
+            SELECT DISTINCT nsegprog,nseclinea,cod_talla,@usr
+            FROM acabadosdet
+            WHERE nseclinea=@nseclinea AND ccmpn=@comp AND nnope=@op AND tipo=@tipo
+
+            SELECT @idDet=nsegprog FROM detalle_acab_tmp WHERE nseclinea=@nseclinea AND cod_talla=@talla
+        END
+
+        UPDATE acabadosdet SET cantidad=cantidad + 1 WHERE nsegprog=@idDet
+    END
+
+    /* Updates a OrdenAcabadosTallas (igual que tu SP) */
+    IF @empresa='COFACO'
+    BEGIN
+        IF @flgAcab='INGRESO EMBALAJE'
+            UPDATE ordenacabadostallas
+               SET salidaemb=isnull(salidaemb,0) + 1
+             WHERE ccmpn=@comp AND nnope=@op AND lacabado=@linea
+               AND cod_combinacion=@combinacion AND cod_talla=@talla
+        ELSE
+            UPDATE ordenacabadostallas
+               SET salidaemb=isnull(salidaemb,0) + 1,
+                   salidaacab=isnull(salidaacab,0) + 1,
+                   ingresoemb=isnull(ingresoemb,0) + 1
+             WHERE ccmpn=@comp AND nnope=@op AND lacabado=@linea
+               AND cod_combinacion=@combinacion AND cod_talla=@talla
+    END
+    ELSE IF @empresa='CITITEX ESTANOS'
+        UPDATE ordenacabadostallas SET SalEmbC1=isnull(SalEmbC1,0) + 1
+        WHERE ccmpn=@comp AND nnope=@op AND lacabado=@linea AND cod_combinacion=@combinacion AND cod_talla=@talla
+    ELSE IF @empresa='CITITEX SANTA ANITA'
+        UPDATE ordenacabadostallas SET SalEmbC2=isnull(SalEmbC2,0) + 1
+        WHERE ccmpn=@comp AND nnope=@op AND lacabado=@linea AND cod_combinacion=@combinacion AND cod_talla=@talla
+    ELSE IF @empresa='CITITEX ACABADOS COFACO'
+        UPDATE ordenacabadostallas SET salembest=isnull(salembest,0) + 1
+        WHERE ccmpn=@comp AND nnope=@op AND lacabado=@linea AND cod_combinacion=@combinacion AND cod_talla=@talla
+
+    /* Updates a OrdenAcabadosTallasMov (igual que tu SP) */
+    IF @empresa='COFACO'
+    BEGIN
+        IF @flgAcab='INGRESO EMBALAJE'
+        BEGIN
+            UPDATE ordenacabadostallasmov
+               SET flgestado=@tipo,
+                   usregsalemb=@usr,
+                   fsalemb=@fechDat,
+                   codQR=@rfid,
+                   nhoja=@nHoja
+             WHERE ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+               AND nordensubcorte=@scorte AND cod_talla=@talla AND id_talla=@id
+        END
+        ELSE
+        BEGIN
+            SET @fechDat1 = DATEADD(minute, 1, @fechDat)
+
+            UPDATE ordenacabadostallasmov
+               SET flgestado=@tipo,
+                   usregsalemb=@usr,
+                   fsalemb=@fechDat1,
+                   usregingembalje=@usr,
+                   fingembalje=@fechDat,
+                   codQR=@rfid,
+                   nhoja=@nHoja
+             WHERE ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+               AND nordensubcorte=@scorte AND cod_talla=@talla AND id_talla=@id
+        END
+    END
+    ELSE
+    BEGIN
+        UPDATE ordenacabadostallasmov
+           SET flgestado=@tipo,
+               usregsalemb=@usr,
+               fsalemb=@fechDat,
+               codQR=@rfid,
+               nhoja=@nHoja
+         WHERE ccmpn=@comp AND nnope=@op AND NOrdenCorte=@corte
+           AND nordensubcorte=@scorte AND cod_talla=@talla AND id_talla=@id
+    END
+
+    INSERT INTO tmp_etiq_timbradas
+    (etiqueta,op,corte,sub_corte,cod_talla,id_talla,talla,estado,sesion_id,fotocheck,linea,fecha,color,cod_comb,rfid,nhoja)
+    VALUES
+    (@etqt,@op,@corte,@scorte,@talla,@id,@nomTall,@tipo,'-',@usr,@linea,@fechDat,@nColor,@combinacion,@rfid,@nHoja)
+
+    /* OK */
+    SET @flg_error = 0
+    SET @vv_mensaje = 'OK'
+    GOTO SALIR
+END
+
+/* Si no entró a band=2 */
+IF @band IS NULL OR @band <> 2
+BEGIN
+    SET @flg_error = 1
+    SET @vv_mensaje = 'No se pudo procesar: no se cumplió condición de timbrado (band<>2).'
+    GOTO SALIR
+END
+
+SALIR:
+    SELECT @flg_error AS codigo, @vv_mensaje AS mensaje
+    RETURN
+GO

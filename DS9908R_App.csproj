@@ -260,6 +260,12 @@
     <Compile Include="FormAlertaOk.Designer.cs">
       <DependentUpon>FormAlertaOk.cs</DependentUpon>
     </Compile>
+    <Compile Include="FormAviso.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormAviso.Designer.cs">
+      <DependentUpon>FormAviso.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormConfirmacion.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -354,6 +360,9 @@
     <EmbeddedResource Include="FormAlertaOk.resx">
       <DependentUpon>FormAlertaOk.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FormAviso.resx">
+      <DependentUpon>FormAviso.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormConfirmacion.resx">
       <DependentUpon>FormConfirmacion.cs</DependentUpon>
     </EmbeddedResource>
@@ -431,6 +440,7 @@
   <ItemGroup>
     <Content Include="AlertaManager.txt" />
     <Content Include="form.ico" />
+    <Content Include="formLector.Designer.txt" />
     <Content Include="MySQLconexion.txt" />
     <Content Include="prueba.txt" />
     <None Include="Resources\ok_90.png" />
