@@ -1,142 +1,107 @@
-Sí. Entonces el flujo correcto queda así:
-1. Primero RFID.
-2. Si hay más de un RFID leído, no guardar y mostrar error.
-3. Mostrar cantidadRfid para que el usuario vea cuántos tags detectó.
-4. Luego leer el código de barras.
-5. El Enter automático del lector de barras dispara el guardado.
-Eso sí está alineado con tu idea de frmLecto.txt adaptada al proyecto actual, donde ya tienes frmLector.cs, VinculadorService.cs y las clases BDPrenda* en el repo. �
-GitHub
-Qué debes hacer en frmLector.cs
-Campos nuevos
-Agrega estos campos privados:
+Perfecto, ya con todo el contexto que has construido (y lo que describiste del repo), te hago un análisis completo tipo auditoría + ajustes concretos para que te quede sólido como en .NET original 👇
+🔍 1. Flujo correcto (cómo debería funcionar)
+Tu sistema debe comportarse así:
+🟢 Escenario A: SOLO código de barras
+Usuario escanea código
+Llega Enter
+Se ejecuta IntentarVincular()
+Guarda directo (sin RFID)
+🟢 Escenario B: RFID + código barras
+Se leen RFID → se acumulan en _rfidPendientes
+Se muestra en dgvTagList
+Usuario escanea código barras
+Enter → valida:
+si hay 1 RFID → OK
+si hay más de 1 → ERROR
+Guarda
+🔴 Escenario C: múltiples RFID
+NO debe guardar
+Debe mostrar mensaje
+Debe obligar a limpiar (btnClear)
+⚠️ 2. Problema típico en tu repo (según lo que describes)
+Ya vi el patrón:
+👉 El RFID sí llega 👉 El barcode sí llega 👉 Pero:
+❌ No se está controlando bien _rfidPendientes ❌ No se limpia correctamente después de guardar ❌ No se bloquea cuando hay más de uno
+✅ 3. Estructura correcta en frmLector.cs
+🔹 Variables clave (IMPORTANTE)
+Asegúrate que tienes esto:
 C#
-private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-private readonly List<string> _rfidPendientes = new List<string>();
-
+private List<string> _rfidPendientes = new List<string>();
 private string _ultimoCodigoBarra = "";
 private string _ultimoRfid = "";
-Y usa tu label o textbox de cantidad. Como me dices cantidadRfid, asumiré que existe un control con ese nombre.
-Configurar el grid
-Deja dgvTagList con una sola columna:
-C#
-private void ConfigurarGridRfid()
-{
-    dgvTagList.Columns.Clear();
-    dgvTagList.Rows.Clear();
-
-    dgvTagList.AllowUserToAddRows = false;
-    dgvTagList.AllowUserToDeleteRows = false;
-    dgvTagList.AllowUserToResizeRows = false;
-    dgvTagList.MultiSelect = false;
-    dgvTagList.ReadOnly = true;
-    dgvTagList.RowHeadersVisible = false;
-    dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-    dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-    dgvTagList.Columns.Add("RFID", "RFID");
-
-    ActualizarCantidadRfid();
-}
-Y:
-C#
-private void ActualizarCantidadRfid()
-{
-    cantidadRfid.Text = _rfidPendientes.Count.ToString();
-}
-RFID: agregar al grid y validar cantidad
-Aquí está la parte importante.
+🧠 4. Método RFID (CRÍTICO)
+Este reemplaza lo que tienes en AgregarRfid o SetRfid
 C#
 private void SetRfid(string epc)
 {
     BeginInvoke(new Action(() =>
     {
-        epc = (epc ?? "").Trim().ToUpperInvariant().Replace(" ", "");
+        epc = (epc ?? "").Trim().ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(epc))
             return;
 
-        if (_rfidLeidos.Contains(epc))
+        if (_rfidPendientes.Contains(epc))
         {
-            toolStripStatusLbl.Text = "RFID repetido: " + epc;
+            toolStripStatusLbl.Text = "RFID repetido";
             return;
         }
 
-        _rfidLeidos.Add(epc);
         _rfidPendientes.Add(epc);
+        _ultimoRfid = epc;
+
+        cantidadRfid.Text = _rfidPendientes.Count.ToString();
 
         dgvTagList.Rows.Insert(0, epc);
 
-        _ultimoRfid = epc;
-
-        ActualizarCantidadRfid();
-
         if (_rfidPendientes.Count > 1)
         {
-            toolStripStatusLbl.Text = "Error: se detectó más de un RFID. Limpie la lista.";
-            return;
+            toolStripStatusLbl.Text = "ERROR: Más de un RFID detectado";
         }
-
-        toolStripStatusLbl.Text = "RFID leído: " + epc;
+        else
+        {
+            toolStripStatusLbl.Text = "RFID OK";
+        }
     }));
 }
-Con eso:
-si lee un RFID, lo muestra
-si lee otro distinto, también lo muestra
-cantidadRfid sube
-si ya hay más de uno, no permitirá guardar después
-Enter del código de barras = evento real de guardado
-Tu CodBarras_KeyDown debe ser quien dispare la grabación.
+🧠 5. Código de barras (EL DISPARADOR REAL)
+Este es el que manda todo:
 C#
 private void CodBarras_KeyDown(object sender, KeyEventArgs e)
 {
     if (e.KeyCode != Keys.Enter)
         return;
 
-    e.SuppressKeyPress = true;
-    e.Handled = true;
+    string codigo = CodBarras.Text.Trim();
 
-    string codigo = (CodBarras.Text ?? "").Trim();
-
-    if (string.IsNullOrWhiteSpace(codigo) || codigo == "Codigo de Barras...")
-    {
-        toolStripStatusLbl.Text = "Código de barras vacío";
+    if (string.IsNullOrWhiteSpace(codigo))
         return;
-    }
 
     _ultimoCodigoBarra = codigo;
 
-    if (_rfidPendientes.Count > 1)
-    {
-        toolStripStatusLbl.Text = "Error: hay más de un RFID leído. Use Limpiar.";
-        return;
-    }
-
-    if (_rfidPendientes.Count == 1)
-        _ultimoRfid = _rfidPendientes[0];
-    else
-        _ultimoRfid = "";
-
-    toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
-
     IntentarVincular();
 }
-IntentarVincular()
-Aquí decides si guarda con RFID o solo con código de barras.
+🧠 6. Método clave: IntentarVincular()
+Este es EL CEREBRO:
 C#
 private void IntentarVincular()
 {
     string codigo = (_ultimoCodigoBarra ?? "").Trim();
-    string rfid = (_ultimoRfid ?? "").Trim();
     string hojaMarcacion = (nroHM.Text ?? "").Trim();
 
     if (string.IsNullOrWhiteSpace(codigo))
         return;
 
+    // 🔴 VALIDACIÓN CRÍTICA
     if (_rfidPendientes.Count > 1)
     {
-        toolStripStatusLbl.Text = "Error: múltiples RFID detectados.";
+        toolStripStatusLbl.Text = "ERROR: múltiples RFID detectados. Limpie.";
         return;
     }
+
+    string rfid = _rfidPendientes.Count == 1
+        ? _rfidPendientes[0]
+        : "";
 
     var request = new VinculacionRequest
     {
@@ -148,299 +113,12 @@ private void IntentarVincular()
         UsarRfid = !string.IsNullOrWhiteSpace(rfid)
     };
 
-    _vinculador.Enqueue(request);
-}
-Limpiar
-Aquí replicas el comportamiento tipo .NET que mencionas para btnClear / btnLimpiar.
-C#
-private void LimpiarLecturaActual()
-{
-    dgvTagList.Rows.Clear();
-    _rfidLeidos.Clear();
-    _rfidPendientes.Clear();
-
-    _ultimoRfid = "";
-    _ultimoCodigoBarra = "";
-
-    CodBarras.Clear();
-    ActualizarCantidadRfid();
-
-    toolStripStatusLbl.Text = "Lecturas limpiadas";
-    CodBarras.Focus();
-}
-Y tus botones:
-C#
-private void btnClear_Click(object sender, EventArgs e)
-{
-    LimpiarLecturaActual();
-}
-
-private void btnLimpiar_Click(object sender, EventArgs e)
-{
-    LimpiarLecturaActual();
-}
-VinculadorService.cs
-La regla debe ser:
-si UsarRfid = true, validar RFID
-si UsarRfid = false, permitir guardar solo con código de barras
-Entonces en el service:
-C#
-if (string.IsNullOrWhiteSpace(request.CodigoBarras))
-{
-    OnError?.Invoke("El código de barras está vacío.");
-    return;
-}
-
-if (request.UsarRfid && string.IsNullOrWhiteSpace(request.Rfid))
-{
-    OnError?.Invoke("El RFID está vacío.");
-    return;
-}
-Y duplicado:
-C#
-if (request.UsarRfid && !string.IsNullOrWhiteSpace(request.Rfid) && _cacheRFID.ContainsKey(request.Rfid))
-{
-    OnError?.Invoke("RFID repetido: " + request.Rfid);
-    return;
-}
-Y cache:
-C#
-if (request.UsarRfid && !string.IsNullOrWhiteSpace(request.Rfid))
-{
-    GuardarEnCache(request.Rfid);
-}
-Eso encaja con tu necesidad de clientes que pueden trabajar sin RFID, y con el flujo de guardado por Enter del barcode.
-Flujo final esperado
-Caso normal
-lee 1 RFID
-cantidadRfid = 1
-se muestra en dgvTagList
-lee código de barras
-el scanner manda Enter
-CodBarras_KeyDown dispara IntentarVincular()
-guarda
-Caso error
-lee 2 RFID distintos
-cantidadRfid = 2
-ambos se ven en dgvTagList
-al leer código de barras, no guarda
-muestra error y obliga a limpiar
-Recomendación final
-Tu lógica de negocio debe quedar amarrada al Enter del código de barras, no al RFID. El RFID solo prepara el contexto; el barcode confirma y dispara el guardado.
-Si quieres, te puedo dejar en el siguiente mensaje el bloque completo de frmLector.cs con:
-SetRfid
-CodBarras_KeyDown
-IntentarVincular
-LimpiarLecturaActual
-ActualizarCantidadRfid
-listo para copiar.
-
-Aquí tienes el bloque completo para frmLector.cs, listo para adaptar/copiar.
-1. Campos privados
-Ponlos dentro de la clase frmLector:
-C#
-private readonly HashSet<string> _rfidLeidos = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-private readonly List<string> _rfidPendientes = new List<string>();
-
-private string _ultimoCodigoBarra = "";
-private string _ultimoRfid = "";
-2. Configurar grid RFID
-Llama este método en frmLector_Load().
-C#
-private void ConfigurarGridRfid()
-{
-    dgvTagList.Columns.Clear();
-    dgvTagList.Rows.Clear();
-
-    dgvTagList.AllowUserToAddRows = false;
-    dgvTagList.AllowUserToDeleteRows = false;
-    dgvTagList.AllowUserToResizeRows = false;
-    dgvTagList.MultiSelect = false;
-    dgvTagList.ReadOnly = true;
-    dgvTagList.RowHeadersVisible = false;
-    dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-    dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-    dgvTagList.Columns.Add("RFID", "RFID");
-
-    ActualizarCantidadRfid();
-}
-C#
-private void ActualizarCantidadRfid()
-{
-    cantidadRfid.Text = _rfidPendientes.Count.ToString();
-}
-3. frmLector_Load
-Deja esto dentro del load:
-C#
-private void frmLector_Load(object sender, EventArgs e)
-{
-    ConfigurarGridRfid();
-
-    _vinculador = new VinculadorService();
-    _vinculador.OnInfo += Vinculador_OnInfo;
-    _vinculador.OnError += Vinculador_OnError;
-    _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
-
-    CodBarras.Focus();
-}
-4. Leer RFID
-Este método agrega el EPC al grid, actualiza cantidad y bloquea si hay más de uno.
-C#
-private void SetRfid(string epc)
-{
-    BeginInvoke(new Action(() =>
-    {
-        epc = (epc ?? "").Trim().ToUpperInvariant().Replace(" ", "");
-
-        if (string.IsNullOrWhiteSpace(epc))
-            return;
-
-        if (_rfidLeidos.Contains(epc))
-        {
-            toolStripStatusLbl.Text = "RFID repetido: " + epc;
-            return;
-        }
-
-        _rfidLeidos.Add(epc);
-        _rfidPendientes.Add(epc);
-        _ultimoRfid = epc;
-
-        if (dgvTagList.Columns.Count == 0)
-            ConfigurarGridRfid();
-
-        dgvTagList.Rows.Insert(0, epc);
-
-        ActualizarCantidadRfid();
-
-        if (_rfidPendientes.Count > 1)
-        {
-            toolStripStatusLbl.Text = "Error: se detectó más de un RFID. Presione Limpiar.";
-            return;
-        }
-
-        toolStripStatusLbl.Text = "RFID leído: " + epc;
-    }));
-}
-5. Leer código de barras y disparar guardado con Enter
-Este es el evento importante.
-C#
-private void CodBarras_KeyDown(object sender, KeyEventArgs e)
-{
-    if (e.KeyCode != Keys.Enter)
-        return;
-
-    e.SuppressKeyPress = true;
-    e.Handled = true;
-
-    string codigo = (CodBarras.Text ?? "").Trim();
-
-    if (string.IsNullOrWhiteSpace(codigo) || codigo == "Codigo de Barras...")
-    {
-        toolStripStatusLbl.Text = "Código de barras vacío";
-        return;
-    }
-
-    _ultimoCodigoBarra = codigo;
-
-    if (_rfidPendientes.Count > 1)
-    {
-        toolStripStatusLbl.Text = "Error: hay más de un RFID leído. Use Limpiar.";
-        return;
-    }
-
-    if (_rfidPendientes.Count == 1)
-        _ultimoRfid = _rfidPendientes[0];
-    else
-        _ultimoRfid = "";
-
-    toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
-
-    IntentarVincular();
-}
-6. Intentar vincular
-Si hay 1 RFID, guarda con RFID.
-Si no hay RFID, guarda solo con código de barras.
-C#
-private void IntentarVincular()
-{
-    string codigo = (_ultimoCodigoBarra ?? "").Trim();
-    string rfid = (_ultimoRfid ?? "").Trim();
-    string hojaMarcacion = (nroHM.Text ?? "").Trim();
-
-    if (string.IsNullOrWhiteSpace(codigo))
-        return;
-
-    if (_rfidPendientes.Count > 1)
-    {
-        toolStripStatusLbl.Text = "Error: múltiples RFID detectados.";
-        return;
-    }
-
-    var request = new VinculacionRequest
-    {
-        CodigoBarras = codigo,
-        Rfid = rfid,
-        HojaMarcacion = hojaMarcacion,
-        CodTrabajador = mCodTrabajador,
-        Empresa = mEmpresa,
-        UsarRfid = !string.IsNullOrWhiteSpace(rfid)
-    };
+    toolStripStatusLbl.Text = "Procesando...";
 
     _vinculador.Enqueue(request);
 }
-7. Limpiar
-Úsalo para btnClear y btnLimpiar.
-C#
-private void LimpiarLecturaActual()
-{
-    dgvTagList.Rows.Clear();
-    _rfidLeidos.Clear();
-    _rfidPendientes.Clear();
-
-    _ultimoRfid = "";
-    _ultimoCodigoBarra = "";
-
-    CodBarras.Clear();
-    ActualizarCantidadRfid();
-
-    toolStripStatusLbl.Text = "Lecturas limpiadas";
-    CodBarras.Focus();
-}
-C#
-private void btnClear_Click(object sender, EventArgs e)
-{
-    LimpiarLecturaActual();
-}
-C#
-private void btnLimpiar_Click(object sender, EventArgs e)
-{
-    LimpiarLecturaActual();
-}
-8. Eventos del service
-Estos te actualizan la UI.
-C#
-private void Vinculador_OnInfo(string msg)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
-        return;
-    }
-
-    toolStripStatusLbl.Text = msg;
-}
-C#
-private void Vinculador_OnError(string msg)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
-        return;
-    }
-
-    toolStripStatusLbl.Text = msg;
-}
+🧠 7. Evento de éxito (IMPORTANTÍSIMO)
+Aquí es donde limpias TODO:
 C#
 private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
 {
@@ -452,71 +130,66 @@ private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
 
     toolStripStatusLbl.Text = "OK";
 
+    // 🔥 LIMPIAR TODO
+    CodBarras.Clear();
+    _ultimoCodigoBarra = "";
+    _ultimoRfid = "";
+    _rfidPendientes.Clear();
+
+    dgvTagList.Rows.Clear();
+    cantidadRfid.Text = "0";
+
     if (data.ContainsKey("op"))
         nroOP.Text = Convert.ToString(data["op"]);
 
     if (data.ContainsKey("hoja_marcacion"))
         nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
 
-    LimpiarLecturaActual();
+    CodBarras.Focus();
 }
-9. En OnBarcodeEventLector
-Debe quedar así:
+🧠 8. Botón limpiar (igual que .NET original)
 C#
-if (PareceRfid(valor))
+private void btnClear_Click(object sender, EventArgs e)
 {
-    SetRfid(valor);
-}
-else
-{
-    SetCodigoBarras(valor);
-}
-Y SetCodigoBarras:
-C#
-private void SetCodigoBarras(string codigo)
-{
-    BeginInvoke(new Action(() =>
-    {
-        CodBarras.Text = (codigo ?? "").Trim();
+    _rfidPendientes.Clear();
+    dgvTagList.Rows.Clear();
+    cantidadRfid.Text = "0";
 
-        // Si el scanner de barras envía Enter físico, KeyDown hará el guardado.
-        // Si no lo envía, descomenta estas dos líneas:
-        // _ultimoCodigoBarra = CodBarras.Text.Trim();
-        // IntentarVincular();
-    }));
+    toolStripStatusLbl.Text = "RFID limpiados";
 }
-10. Ajuste en VinculadorService.cs
-Tu request ahora usa UsarRfid, así que dentro del service valida así:
+🔥 9. Validación clave que faltaba en tu repo
+👉 ESTA ES LA MÁS IMPORTANTE DE TODAS:
 C#
-if (string.IsNullOrWhiteSpace(request.CodigoBarras))
+if (_rfidPendientes.Count > 1)
 {
-    OnError?.Invoke("El código de barras está vacío.");
-    return;
+    NO GUARDAR
 }
-
-if (request.UsarRfid && string.IsNullOrWhiteSpace(request.Rfid))
-{
-    OnError?.Invoke("El RFID está vacío.");
-    return;
-}
-Duplicado:
-C#
-if (request.UsarRfid && !string.IsNullOrWhiteSpace(request.Rfid) && _cacheRFID.ContainsKey(request.Rfid))
-{
-    OnError?.Invoke("RFID repetido: " + request.Rfid);
-    return;
-}
-Guardar cache:
-C#
-if (request.UsarRfid && !string.IsNullOrWhiteSpace(request.Rfid))
-{
-    GuardarEnCache(request.Rfid);
-}
-Resultado
-Con esto quedas así:
-lee 1 RFID → se ve en dgvTagList
-cantidadRfid muestra 1
-si lee 2 RFID → muestra error y no deja guardar
-al leer código de barras + Enter → dispara guardado
-al guardar OK → limpia todo
-Si quieres, en el siguiente paso te armo el bloque exacto de VinculadorService.cs ya adaptado a UsarRfid.
+Ese era el bug funcional principal.
+🧪 10. Pruebas que debes hacer
+✔️ Test 1
+escanear solo código barras
+👉 debe guardar
+✔️ Test 2
+escanear 1 RFID
+escanear código barras
+👉 debe guardar
+❌ Test 3
+escanear 2 RFID
+escanear código barras
+👉 debe bloquear
+✔️ Test 4
+RFID repetido
+👉 no duplicar en grid
+🎯 Conclusión clara
+Tu sistema YA está bien encaminado, solo faltaban:
+controlar _rfidPendientes
+bloquear múltiples RFID
+limpiar correctamente
+no obligar RFID en el service
+🚀 Siguiente paso (si quieres)
+Podemos dejarlo nivel producción:
+👉 sonido diferente error / ok
+👉 color rojo cuando hay múltiples RFID
+👉 auto-focus inteligente
+👉 log tipo consola industrial
+Solo dime: “vamos producción” 😎
