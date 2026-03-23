@@ -1,3 +1,4 @@
+creo que no me estas dando bien los nombres de los input por favor revisar este repo yo copie el UI copy & page asi que conservo los mismos nombre pero tu me diste nombre que no tengo en sus respectivas vistas por favor por ahora revisa FormAlerta.vb, FormAlertaError.vb, FormAlertaOk.vb, FormAviso.vb, FormAlertaMsnError.vb, FormAviso.vb, FormConfirmacion.vb y AlertaManager.vb
 Sí, tienes razón: en frmLecto.txt no hay un solo tipo de alerta. Hay al menos estas familias:
 alerta modal de error con FormAlertaError, bloqueante y con control alertaAbierta
 alerta toast/no bloqueante con FormAlerta y AlertaManager

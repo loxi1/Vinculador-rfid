@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace DS9908R_App
 {
-    static class AlertaManager
+    public static class AlertaManager
     {
         private static readonly List<FormAlerta> alertasActivas = new List<FormAlerta>();
-        private static readonly object alertasLock = new object(); // Bloqueo para evitar concurrencia
+        private static readonly object alertasLock = new object();
 
-        // Muestra una nueva alerta sin bloquear la UI
         public static void MostrarAlerta(string mensaje, Color color, int tipo = 3, int tiempo = 5)
         {
             var nuevaAlerta = new FormAlerta(mensaje, color, tipo, tiempo);
@@ -36,7 +32,6 @@ namespace DS9908R_App
             }
         }
 
-        // Método interno para manejar la alerta en el hilo principal
         private static void MostrarAlertaInterno(FormAlerta alerta)
         {
             lock (alertasLock)
@@ -52,7 +47,6 @@ namespace DS9908R_App
             alerta.Show();
         }
 
-        // Calcula la próxima posición en la pantalla
         public static int ObtenerPosicion()
         {
             int pantallaAlto = Screen.PrimaryScreen.WorkingArea.Height;
@@ -62,7 +56,6 @@ namespace DS9908R_App
             return pantallaAlto - ((alertaAlto + margen) * (alertasActivas.Count + 1));
         }
 
-        // Remueve la alerta de la lista y reorganiza las restantes
         public static void RemoverAlerta(FormAlerta alerta)
         {
             lock (alertasLock)
@@ -72,7 +65,6 @@ namespace DS9908R_App
             }
         }
 
-        // Reorganiza las posiciones de las alertas activas
         private static void ReorganizarAlertas()
         {
             lock (alertasLock)
