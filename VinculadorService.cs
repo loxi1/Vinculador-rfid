@@ -22,6 +22,8 @@ namespace DS9908R_App
         public event Action<string> OnInfo;
         public event Action<string> OnError;
         public event Action<Dictionary<string, object>> OnInsertadoOk;
+        private readonly object _queueLock = new object();
+
 
         public void Enqueue(VinculacionRequest request)
         {
@@ -31,8 +33,11 @@ namespace DS9908R_App
 
         private async Task StartProcessingQueue()
         {
-            if (_isProcessing) return;
-            _isProcessing = true;
+            lock (_queueLock)
+            {
+                if (_isProcessing) return;
+                _isProcessing = true;
+            }
 
             try
             {
@@ -43,7 +48,15 @@ namespace DS9908R_App
             }
             finally
             {
-                _isProcessing = false;
+                lock (_queueLock)
+                {
+                    _isProcessing = false;
+                }
+
+                if (!_queue.IsEmpty)
+                {
+                    _ = StartProcessingQueue();
+                }
             }
         }
 
@@ -68,7 +81,7 @@ namespace DS9908R_App
 
                 if (_cacheRFID.ContainsKey(rfid))
                 {
-                    OnError?.Invoke("Error: El RFID ya existe. Verifique.");
+                    OnError?.Invoke("RFID repetido: " + rfid);
                     return;
                 }
 

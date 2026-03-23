@@ -637,7 +637,18 @@ namespace DS9908R_App
         {
             if (e.KeyCode == Keys.Enter)
             {
-                _ultimoCodigoBarra = CodBarras.Text.Trim();
+                e.SuppressKeyPress = true;
+
+                _ultimoCodigoBarra = (CodBarras.Text ?? "").Trim();
+
+                if (string.IsNullOrWhiteSpace(_ultimoCodigoBarra))
+                {
+                    toolStripStatusLbl.Text = "Código de barras vacío";
+                    return;
+                }
+
+                toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
+
                 IntentarVincular();
             }
         }
