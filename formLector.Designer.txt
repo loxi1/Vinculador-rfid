@@ -1,0 +1,2023 @@
+﻿
+namespace DS9908R_App
+{
+    partial class frmLector
+    {
+        /// <summary>
+        /// Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        /// Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        /// Required method for Designer support - do not modify
+        /// the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            System.Windows.Forms.Button btnBuscarScanners;
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle9 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle10 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle11 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmLector));
+            this.tabMenu = new System.Windows.Forms.TabControl();
+            this.tabVinculador = new System.Windows.Forms.TabPage();
+            this.gbxInventoryEx = new System.Windows.Forms.GroupBox();
+            this.tablaContenedorTimbrado = new System.Windows.Forms.TableLayoutPanel();
+            this.tabaLadoTimbrado = new System.Windows.Forms.TableLayoutPanel();
+            this.TableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnLimpiarRFID = new System.Windows.Forms.Button();
+            this.btnClear = new System.Windows.Forms.Button();
+            this.cantidadRFID = new System.Windows.Forms.Label();
+            this.MsnVincular = new System.Windows.Forms.Label();
+            this.CodBarras = new System.Windows.Forms.TextBox();
+            this.TableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
+            this.dgvTagList = new System.Windows.Forms.DataGridView();
+            this.clnEPC = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.nroOP = new System.Windows.Forms.TextBox();
+            this.nroHM = new System.Windows.Forms.TextBox();
+            this.btnLimpiarOPHM = new System.Windows.Forms.Button();
+            this.TableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.btnVerConsolidado = new System.Windows.Forms.Button();
+            this.lblTotalCount = new System.Windows.Forms.Label();
+            this.label16 = new System.Windows.Forms.Label();
+            this.tbContEspacioVertical = new System.Windows.Forms.TableLayoutPanel();
+            this.btnStopInventoryEx = new System.Windows.Forms.Button();
+            this.cbxInventory = new System.Windows.Forms.ComboBox();
+            this.btnStartInventoryEx = new System.Windows.Forms.Button();
+            this.TableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
+            this.DataGridView1 = new System.Windows.Forms.DataGridView();
+            this.linea = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.op = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.hoja_marcacion = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.corte = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.subcorte = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.color = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.talla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.cod_talla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.id_talla = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fecha = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.id_rfid = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.TableLayoutPanel7 = new System.Windows.Forms.TableLayoutPanel();
+            this.tbConsolidado = new System.Windows.Forms.TableLayoutPanel();
+            this.lblTotalDetalle = new System.Windows.Forms.Label();
+            this.panelScroll = new System.Windows.Forms.Panel();
+            this.tbDetalleTimbrado = new System.Windows.Forms.TableLayoutPanel();
+            this.tabConsultar = new System.Windows.Forms.TabPage();
+            this.gbxBuscarPrenda = new System.Windows.Forms.GroupBox();
+            this.tablaBuscarPrenda = new System.Windows.Forms.TableLayoutPanel();
+            this.ContenedorBuscarPrenda = new System.Windows.Forms.TableLayoutPanel();
+            this.Label5 = new System.Windows.Forms.Label();
+            this.BuscarCodBarras = new System.Windows.Forms.TextBox();
+            this.MsnBusquedaPrenda = new System.Windows.Forms.Label();
+            this.DataGridView2 = new System.Windows.Forms.DataGridView();
+            this.tabHojaMarcacion = new System.Windows.Forms.TabPage();
+            this.TablaContenedorHM = new System.Windows.Forms.TableLayoutPanel();
+            this.tabaCabecera = new System.Windows.Forms.TableLayoutPanel();
+            this.TextBoxOP = new System.Windows.Forms.TextBox();
+            this.LabelOP = new System.Windows.Forms.Label();
+            this.BtnBuscarHM = new System.Windows.Forms.Button();
+            this.TextBoxHM = new System.Windows.Forms.TextBox();
+            this.LabelHM = new System.Windows.Forms.Label();
+            this.BtnLimpiarHM = new System.Windows.Forms.Button();
+            this.tableCabecera = new System.Windows.Forms.TableLayoutPanel();
+            this.lbl_op = new System.Windows.Forms.Label();
+            this.lbl_cliente = new System.Windows.Forms.Label();
+            this.lbl_shipTo = new System.Windows.Forms.Label();
+            this.lbl_Despacho = new System.Windows.Forms.Label();
+            this.lbl_empaque = new System.Windows.Forms.Label();
+            this.lbl_HM = new System.Windows.Forms.Label();
+            this.lbl_po = new System.Windows.Forms.Label();
+            this.lbl_Estado = new System.Windows.Forms.Label();
+            this.lbl_Reserva = new System.Windows.Forms.Label();
+            this.lbl_Prenda = new System.Windows.Forms.Label();
+            this.lbl_direccion_1 = new System.Windows.Forms.Label();
+            this.lbl_direccion_2 = new System.Windows.Forms.Label();
+            this.lbl_Tolerancia = new System.Windows.Forms.Label();
+            this.lbl_Estilo = new System.Windows.Forms.Label();
+            this.lbl_Observacion = new System.Windows.Forms.Label();
+            this.lbl_Certificado = new System.Windows.Forms.Label();
+            this.lbl_NKit = new System.Windows.Forms.Label();
+            this.text_norpd = new System.Windows.Forms.Label();
+            this.text_npocl = new System.Windows.Forms.Label();
+            this.text_nhjmr = new System.Windows.Forms.Label();
+            this.text_sesthm = new System.Windows.Forms.Label();
+            this.text_sreserva = new System.Windows.Forms.Label();
+            this.text_cclnt = new System.Windows.Forms.Label();
+            this.text_ttrcr = new System.Windows.Forms.Label();
+            this.text_tdscr = new System.Windows.Forms.Label();
+            this.text_temporada = new System.Windows.Forms.Label();
+            this.lbl_SitDespacho = new System.Windows.Forms.Label();
+            this.text_tdrcc = new System.Windows.Forms.Label();
+            this.txt_Direccion_2 = new System.Windows.Forms.Label();
+            this.text_clgren = new System.Windows.Forms.Label();
+            this.lbl_fEntrega = new System.Windows.Forms.Label();
+            this.text_fentr = new System.Windows.Forms.Label();
+            this.lbl_BillTo = new System.Windows.Forms.Label();
+            this.text_tlgen = new System.Windows.Forms.Label();
+            this.text_ptlrnc = new System.Windows.Forms.Label();
+            this.text_cestcl = new System.Windows.Forms.Label();
+            this.text_testcl = new System.Windows.Forms.Label();
+            this.text_flgdes = new System.Windows.Forms.Label();
+            this.text_tvia = new System.Windows.Forms.Label();
+            this.txt_nro_kit = new System.Windows.Forms.Label();
+            this.text_nro_certificado = new System.Windows.Forms.Label();
+            this.text_totros = new System.Windows.Forms.Label();
+            this.text_tfrmem = new System.Windows.Forms.Label();
+            this.text_cod_lugrent_cobro = new System.Windows.Forms.Label();
+            this.txt_BillToDet = new System.Windows.Forms.Label();
+            this.DataGridView3 = new System.Windows.Forms.DataGridView();
+            this.lblEstadoConexion = new System.Windows.Forms.Label();
+            this.tablaContenedora = new System.Windows.Forms.TableLayoutPanel();
+            this.tablaCabecera = new System.Windows.Forms.TableLayoutPanel();
+            this.cmbScanners = new System.Windows.Forms.ComboBox();
+            this.toolStripStatusLbl = new System.Windows.Forms.StatusStrip();
+            btnBuscarScanners = new System.Windows.Forms.Button();
+            this.tabMenu.SuspendLayout();
+            this.tabVinculador.SuspendLayout();
+            this.gbxInventoryEx.SuspendLayout();
+            this.tablaContenedorTimbrado.SuspendLayout();
+            this.tabaLadoTimbrado.SuspendLayout();
+            this.TableLayoutPanel1.SuspendLayout();
+            this.TableLayoutPanel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTagList)).BeginInit();
+            this.TableLayoutPanel2.SuspendLayout();
+            this.tbContEspacioVertical.SuspendLayout();
+            this.TableLayoutPanel3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView1)).BeginInit();
+            this.TableLayoutPanel7.SuspendLayout();
+            this.tbConsolidado.SuspendLayout();
+            this.panelScroll.SuspendLayout();
+            this.tabConsultar.SuspendLayout();
+            this.gbxBuscarPrenda.SuspendLayout();
+            this.tablaBuscarPrenda.SuspendLayout();
+            this.ContenedorBuscarPrenda.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView2)).BeginInit();
+            this.tabHojaMarcacion.SuspendLayout();
+            this.TablaContenedorHM.SuspendLayout();
+            this.tabaCabecera.SuspendLayout();
+            this.tableCabecera.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView3)).BeginInit();
+            this.tablaContenedora.SuspendLayout();
+            this.tablaCabecera.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // btnBuscarScanners
+            // 
+            btnBuscarScanners.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            btnBuscarScanners.BackColor = System.Drawing.Color.WhiteSmoke;
+            btnBuscarScanners.Location = new System.Drawing.Point(116, 3);
+            btnBuscarScanners.Name = "btnBuscarScanners";
+            btnBuscarScanners.Size = new System.Drawing.Size(120, 25);
+            btnBuscarScanners.TabIndex = 67;
+            btnBuscarScanners.Text = "Buscar";
+            btnBuscarScanners.UseVisualStyleBackColor = false;
+            btnBuscarScanners.Click += new System.EventHandler(this.btnBuscarScanners_Click);
+            // 
+            // tabMenu
+            // 
+            this.tabMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabMenu.Controls.Add(this.tabVinculador);
+            this.tabMenu.Controls.Add(this.tabConsultar);
+            this.tabMenu.Controls.Add(this.tabHojaMarcacion);
+            this.tabMenu.ItemSize = new System.Drawing.Size(150, 40);
+            this.tabMenu.Location = new System.Drawing.Point(3, 40);
+            this.tabMenu.Name = "tabMenu";
+            this.tabMenu.SelectedIndex = 0;
+            this.tabMenu.Size = new System.Drawing.Size(1197, 698);
+            this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabMenu.TabIndex = 4;
+            // 
+            // tabVinculador
+            // 
+            this.tabVinculador.Controls.Add(this.gbxInventoryEx);
+            this.tabVinculador.Location = new System.Drawing.Point(4, 44);
+            this.tabVinculador.Name = "tabVinculador";
+            this.tabVinculador.Padding = new System.Windows.Forms.Padding(3);
+            this.tabVinculador.Size = new System.Drawing.Size(1189, 650);
+            this.tabVinculador.TabIndex = 1;
+            this.tabVinculador.Text = "Vinculador";
+            this.tabVinculador.UseVisualStyleBackColor = true;
+            // 
+            // gbxInventoryEx
+            // 
+            this.gbxInventoryEx.Controls.Add(this.tablaContenedorTimbrado);
+            this.gbxInventoryEx.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gbxInventoryEx.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.gbxInventoryEx.Location = new System.Drawing.Point(3, 3);
+            this.gbxInventoryEx.Margin = new System.Windows.Forms.Padding(0);
+            this.gbxInventoryEx.Name = "gbxInventoryEx";
+            this.gbxInventoryEx.Size = new System.Drawing.Size(1183, 644);
+            this.gbxInventoryEx.TabIndex = 10;
+            this.gbxInventoryEx.TabStop = false;
+            // 
+            // tablaContenedorTimbrado
+            // 
+            this.tablaContenedorTimbrado.ColumnCount = 1;
+            this.tablaContenedorTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaContenedorTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tablaContenedorTimbrado.Controls.Add(this.tabaLadoTimbrado, 0, 0);
+            this.tablaContenedorTimbrado.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tablaContenedorTimbrado.Location = new System.Drawing.Point(3, 16);
+            this.tablaContenedorTimbrado.Margin = new System.Windows.Forms.Padding(0);
+            this.tablaContenedorTimbrado.Name = "tablaContenedorTimbrado";
+            this.tablaContenedorTimbrado.RowCount = 1;
+            this.tablaContenedorTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaContenedorTimbrado.Size = new System.Drawing.Size(1177, 625);
+            this.tablaContenedorTimbrado.TabIndex = 30;
+            // 
+            // tabaLadoTimbrado
+            // 
+            this.tabaLadoTimbrado.ColumnCount = 1;
+            this.tabaLadoTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tabaLadoTimbrado.Controls.Add(this.TableLayoutPanel1, 0, 0);
+            this.tabaLadoTimbrado.Controls.Add(this.TableLayoutPanel2, 0, 1);
+            this.tabaLadoTimbrado.Controls.Add(this.tbContEspacioVertical, 0, 2);
+            this.tabaLadoTimbrado.Controls.Add(this.TableLayoutPanel3, 0, 3);
+            this.tabaLadoTimbrado.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabaLadoTimbrado.Location = new System.Drawing.Point(0, 0);
+            this.tabaLadoTimbrado.Margin = new System.Windows.Forms.Padding(0);
+            this.tabaLadoTimbrado.Name = "tabaLadoTimbrado";
+            this.tabaLadoTimbrado.RowCount = 4;
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 21F));
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6F));
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 1F));
+            this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 72F));
+            this.tabaLadoTimbrado.Size = new System.Drawing.Size(1177, 625);
+            this.tabaLadoTimbrado.TabIndex = 0;
+            // 
+            // TableLayoutPanel1
+            // 
+            this.TableLayoutPanel1.ColumnCount = 4;
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.TableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 35F));
+            this.TableLayoutPanel1.Controls.Add(this.btnLimpiarRFID, 1, 1);
+            this.TableLayoutPanel1.Controls.Add(this.btnClear, 1, 0);
+            this.TableLayoutPanel1.Controls.Add(this.cantidadRFID, 2, 0);
+            this.TableLayoutPanel1.Controls.Add(this.MsnVincular, 0, 2);
+            this.TableLayoutPanel1.Controls.Add(this.CodBarras, 0, 0);
+            this.TableLayoutPanel1.Controls.Add(this.TableLayoutPanel6, 3, 0);
+            this.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.TableLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel1.Name = "TableLayoutPanel1";
+            this.TableLayoutPanel1.RowCount = 3;
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38F));
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38F));
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 24F));
+            this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.TableLayoutPanel1.Size = new System.Drawing.Size(1177, 131);
+            this.TableLayoutPanel1.TabIndex = 44;
+            // 
+            // btnLimpiarRFID
+            // 
+            this.btnLimpiarRFID.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnLimpiarRFID.Location = new System.Drawing.Point(473, 52);
+            this.btnLimpiarRFID.Name = "btnLimpiarRFID";
+            this.btnLimpiarRFID.Size = new System.Drawing.Size(170, 43);
+            this.btnLimpiarRFID.TabIndex = 51;
+            this.btnLimpiarRFID.Text = "Limpiar";
+            this.btnLimpiarRFID.UseVisualStyleBackColor = true;
+            this.btnLimpiarRFID.Click += new System.EventHandler(this.btnLimpiarRFID_Click);
+            // 
+            // btnClear
+            // 
+            this.btnClear.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(59)))), ((int)(((byte)(168)))), ((int)(((byte)(115)))));
+            this.btnClear.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btnClear.ForeColor = System.Drawing.Color.White;
+            this.btnClear.Location = new System.Drawing.Point(473, 3);
+            this.btnClear.Name = "btnClear";
+            this.btnClear.Size = new System.Drawing.Size(170, 43);
+            this.btnClear.TabIndex = 50;
+            this.btnClear.Text = "Nuevo Timbrado";
+            this.btnClear.UseVisualStyleBackColor = false;
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            // 
+            // cantidadRFID
+            // 
+            this.cantidadRFID.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.cantidadRFID.AutoSize = true;
+            this.cantidadRFID.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.cantidadRFID.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.cantidadRFID.ForeColor = System.Drawing.Color.Red;
+            this.cantidadRFID.Location = new System.Drawing.Point(649, 3);
+            this.cantidadRFID.Margin = new System.Windows.Forms.Padding(3);
+            this.cantidadRFID.Name = "cantidadRFID";
+            this.TableLayoutPanel1.SetRowSpan(this.cantidadRFID, 2);
+            this.cantidadRFID.Size = new System.Drawing.Size(111, 92);
+            this.cantidadRFID.TabIndex = 48;
+            this.cantidadRFID.Text = "0";
+            this.cantidadRFID.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // MsnVincular
+            // 
+            this.MsnVincular.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.MsnVincular.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(238)))), ((int)(((byte)(238)))), ((int)(((byte)(238)))));
+            this.MsnVincular.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.TableLayoutPanel1.SetColumnSpan(this.MsnVincular, 3);
+            this.MsnVincular.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MsnVincular.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
+            this.MsnVincular.Location = new System.Drawing.Point(3, 101);
+            this.MsnVincular.Margin = new System.Windows.Forms.Padding(3);
+            this.MsnVincular.Name = "MsnVincular";
+            this.MsnVincular.Size = new System.Drawing.Size(757, 27);
+            this.MsnVincular.TabIndex = 28;
+            this.MsnVincular.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // CodBarras
+            // 
+            this.CodBarras.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.CodBarras.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CodBarras.ForeColor = System.Drawing.Color.Gray;
+            this.CodBarras.Location = new System.Drawing.Point(3, 34);
+            this.CodBarras.Name = "CodBarras";
+            this.TableLayoutPanel1.SetRowSpan(this.CodBarras, 2);
+            this.CodBarras.Size = new System.Drawing.Size(464, 30);
+            this.CodBarras.TabIndex = 25;
+            this.CodBarras.Text = "Codigo de Barras...";
+            this.CodBarras.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            this.CodBarras.Enter += new System.EventHandler(this.CodBarras_Enter);
+            this.CodBarras.KeyDown += new System.Windows.Forms.KeyEventHandler(this.CodBarras_KeyDown);
+            this.CodBarras.Leave += new System.EventHandler(this.CodBarras_Leave);
+            // 
+            // TableLayoutPanel6
+            // 
+            this.TableLayoutPanel6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanel6.ColumnCount = 3;
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 66.66666F));
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.22222F));
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 11.11111F));
+            this.TableLayoutPanel6.Controls.Add(this.dgvTagList, 0, 0);
+            this.TableLayoutPanel6.Controls.Add(this.nroOP, 0, 1);
+            this.TableLayoutPanel6.Controls.Add(this.nroHM, 1, 1);
+            this.TableLayoutPanel6.Controls.Add(this.btnLimpiarOPHM, 2, 1);
+            this.TableLayoutPanel6.Location = new System.Drawing.Point(763, 0);
+            this.TableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel6.Name = "TableLayoutPanel6";
+            this.TableLayoutPanel6.RowCount = 2;
+            this.TableLayoutPanel1.SetRowSpan(this.TableLayoutPanel6, 3);
+            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.TableLayoutPanel6.Size = new System.Drawing.Size(414, 131);
+            this.TableLayoutPanel6.TabIndex = 52;
+            // 
+            // dgvTagList
+            // 
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            this.dgvTagList.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.dgvTagList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvTagList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvTagList.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.dgvTagList.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle2.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTagList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+            this.dgvTagList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvTagList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.clnEPC});
+            this.TableLayoutPanel6.SetColumnSpan(this.dgvTagList, 3);
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Arial", 9F);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle3.Padding = new System.Windows.Forms.Padding(5);
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.Color.LightBlue;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dgvTagList.DefaultCellStyle = dataGridViewCellStyle3;
+            this.dgvTagList.EnableHeadersVisualStyles = false;
+            this.dgvTagList.GridColor = System.Drawing.Color.LightGray;
+            this.dgvTagList.Location = new System.Drawing.Point(3, 3);
+            this.dgvTagList.Name = "dgvTagList";
+            this.dgvTagList.ReadOnly = true;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTagList.RowHeadersDefaultCellStyle = dataGridViewCellStyle4;
+            this.dgvTagList.RowHeadersVisible = false;
+            this.dgvTagList.RowTemplate.Height = 24;
+            this.dgvTagList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvTagList.Size = new System.Drawing.Size(408, 72);
+            this.dgvTagList.TabIndex = 47;
+            // 
+            // clnEPC
+            // 
+            this.clnEPC.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.clnEPC.FillWeight = 40F;
+            this.clnEPC.HeaderText = "RFID";
+            this.clnEPC.Name = "clnEPC";
+            this.clnEPC.ReadOnly = true;
+            // 
+            // nroOP
+            // 
+            this.nroOP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.nroOP.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nroOP.ForeColor = System.Drawing.Color.Gray;
+            this.nroOP.Location = new System.Drawing.Point(3, 93);
+            this.nroOP.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
+            this.nroOP.Name = "nroOP";
+            this.nroOP.Size = new System.Drawing.Size(270, 20);
+            this.nroOP.TabIndex = 48;
+            this.nroOP.Text = "Nro OP...";
+            // 
+            // nroHM
+            // 
+            this.nroHM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.nroHM.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nroHM.ForeColor = System.Drawing.Color.Gray;
+            this.nroHM.Location = new System.Drawing.Point(279, 94);
+            this.nroHM.Name = "nroHM";
+            this.nroHM.Size = new System.Drawing.Size(86, 20);
+            this.nroHM.TabIndex = 49;
+            this.nroHM.Text = "H. M....";
+            // 
+            // btnLimpiarOPHM
+            // 
+            this.btnLimpiarOPHM.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnLimpiarOPHM.BackColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.FlatAppearance.BorderSize = 0;
+            this.btnLimpiarOPHM.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnLimpiarOPHM.ForeColor = System.Drawing.Color.Transparent;
+            this.btnLimpiarOPHM.Location = new System.Drawing.Point(371, 81);
+            this.btnLimpiarOPHM.Name = "btnLimpiarOPHM";
+            this.btnLimpiarOPHM.Size = new System.Drawing.Size(40, 47);
+            this.btnLimpiarOPHM.TabIndex = 50;
+            this.btnLimpiarOPHM.UseVisualStyleBackColor = false;
+            // 
+            // TableLayoutPanel2
+            // 
+            this.TableLayoutPanel2.ColumnCount = 6;
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.TableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.TableLayoutPanel2.Controls.Add(this.btnVerConsolidado, 4, 0);
+            this.TableLayoutPanel2.Controls.Add(this.lblTotalCount, 0, 0);
+            this.TableLayoutPanel2.Controls.Add(this.label16, 0, 0);
+            this.TableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TableLayoutPanel2.Location = new System.Drawing.Point(0, 131);
+            this.TableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel2.Name = "TableLayoutPanel2";
+            this.TableLayoutPanel2.RowCount = 1;
+            this.TableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel2.Size = new System.Drawing.Size(1177, 37);
+            this.TableLayoutPanel2.TabIndex = 46;
+            // 
+            // btnVerConsolidado
+            // 
+            this.btnVerConsolidado.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.btnVerConsolidado.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnVerConsolidado.Location = new System.Drawing.Point(919, 26);
+            this.btnVerConsolidado.Name = "btnVerConsolidado";
+            this.btnVerConsolidado.Size = new System.Drawing.Size(99, 8);
+            this.btnVerConsolidado.TabIndex = 0;
+            this.btnVerConsolidado.Text = "Detalle Timbrado";
+            this.btnVerConsolidado.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnVerConsolidado.UseVisualStyleBackColor = true;
+            // 
+            // lblTotalCount
+            // 
+            this.lblTotalCount.AutoSize = true;
+            this.lblTotalCount.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.lblTotalCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.lblTotalCount.ForeColor = System.Drawing.Color.Red;
+            this.lblTotalCount.Location = new System.Drawing.Point(356, 17);
+            this.lblTotalCount.Name = "lblTotalCount";
+            this.lblTotalCount.Size = new System.Drawing.Size(52, 20);
+            this.lblTotalCount.TabIndex = 48;
+            this.lblTotalCount.Text = "0";
+            this.lblTotalCount.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
+            this.label16.ForeColor = System.Drawing.Color.Red;
+            this.label16.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
+            this.label16.Location = new System.Drawing.Point(3, 17);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(347, 20);
+            this.label16.TabIndex = 47;
+            this.label16.Text = "La Cantidad De Prendas Timbradas Es:";
+            this.label16.TextAlign = System.Drawing.ContentAlignment.BottomRight;
+            // 
+            // tbContEspacioVertical
+            // 
+            this.tbContEspacioVertical.ColumnCount = 3;
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33F));
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
+            this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tbContEspacioVertical.Controls.Add(this.btnStopInventoryEx, 0, 0);
+            this.tbContEspacioVertical.Controls.Add(this.cbxInventory, 2, 0);
+            this.tbContEspacioVertical.Controls.Add(this.btnStartInventoryEx, 1, 0);
+            this.tbContEspacioVertical.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tbContEspacioVertical.Location = new System.Drawing.Point(0, 168);
+            this.tbContEspacioVertical.Margin = new System.Windows.Forms.Padding(0);
+            this.tbContEspacioVertical.Name = "tbContEspacioVertical";
+            this.tbContEspacioVertical.RowCount = 1;
+            this.tbContEspacioVertical.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbContEspacioVertical.Size = new System.Drawing.Size(1177, 6);
+            this.tbContEspacioVertical.TabIndex = 47;
+            // 
+            // btnStopInventoryEx
+            // 
+            this.btnStopInventoryEx.Location = new System.Drawing.Point(3, 3);
+            this.btnStopInventoryEx.Name = "btnStopInventoryEx";
+            this.btnStopInventoryEx.Size = new System.Drawing.Size(65, 1);
+            this.btnStopInventoryEx.TabIndex = 30;
+            this.btnStopInventoryEx.TabStop = false;
+            this.btnStopInventoryEx.Text = "Stop";
+            this.btnStopInventoryEx.UseVisualStyleBackColor = true;
+            this.btnStopInventoryEx.Visible = false;
+            // 
+            // cbxInventory
+            // 
+            this.cbxInventory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxInventory.FormattingEnabled = true;
+            this.cbxInventory.Location = new System.Drawing.Point(778, 2);
+            this.cbxInventory.Margin = new System.Windows.Forms.Padding(2);
+            this.cbxInventory.Name = "cbxInventory";
+            this.cbxInventory.Size = new System.Drawing.Size(93, 21);
+            this.cbxInventory.TabIndex = 34;
+            this.cbxInventory.Visible = false;
+            // 
+            // btnStartInventoryEx
+            // 
+            this.btnStartInventoryEx.Location = new System.Drawing.Point(391, 3);
+            this.btnStartInventoryEx.Name = "btnStartInventoryEx";
+            this.btnStartInventoryEx.Size = new System.Drawing.Size(65, 1);
+            this.btnStartInventoryEx.TabIndex = 29;
+            this.btnStartInventoryEx.TabStop = false;
+            this.btnStartInventoryEx.Text = "Start";
+            this.btnStartInventoryEx.UseVisualStyleBackColor = true;
+            this.btnStartInventoryEx.Visible = false;
+            // 
+            // TableLayoutPanel3
+            // 
+            this.TableLayoutPanel3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanel3.ColumnCount = 2;
+            this.TableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
+            this.TableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
+            this.TableLayoutPanel3.Controls.Add(this.DataGridView1, 0, 0);
+            this.TableLayoutPanel3.Controls.Add(this.TableLayoutPanel7, 1, 0);
+            this.TableLayoutPanel3.Location = new System.Drawing.Point(3, 177);
+            this.TableLayoutPanel3.Name = "TableLayoutPanel3";
+            this.TableLayoutPanel3.RowCount = 1;
+            this.TableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel3.Size = new System.Drawing.Size(1171, 445);
+            this.TableLayoutPanel3.TabIndex = 48;
+            // 
+            // DataGridView1
+            // 
+            this.DataGridView1.AllowUserToAddRows = false;
+            this.DataGridView1.AllowUserToDeleteRows = false;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.DataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle5;
+            this.DataGridView1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle6;
+            this.DataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.linea,
+            this.op,
+            this.hoja_marcacion,
+            this.corte,
+            this.subcorte,
+            this.color,
+            this.talla,
+            this.cod_talla,
+            this.id_talla,
+            this.fecha,
+            this.id_rfid});
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.Color.Black;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.DataGridView1.DefaultCellStyle = dataGridViewCellStyle7;
+            this.DataGridView1.Location = new System.Drawing.Point(3, 3);
+            this.DataGridView1.Name = "DataGridView1";
+            this.DataGridView1.ReadOnly = true;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle8;
+            this.DataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DataGridView1.Size = new System.Drawing.Size(813, 439);
+            this.DataGridView1.TabIndex = 54;
+            // 
+            // linea
+            // 
+            this.linea.HeaderText = "Linea";
+            this.linea.Name = "linea";
+            this.linea.ReadOnly = true;
+            // 
+            // op
+            // 
+            this.op.HeaderText = "OP";
+            this.op.Name = "op";
+            this.op.ReadOnly = true;
+            // 
+            // hoja_marcacion
+            // 
+            this.hoja_marcacion.HeaderText = "HM";
+            this.hoja_marcacion.Name = "hoja_marcacion";
+            this.hoja_marcacion.ReadOnly = true;
+            // 
+            // corte
+            // 
+            this.corte.HeaderText = "corte";
+            this.corte.Name = "corte";
+            this.corte.ReadOnly = true;
+            this.corte.Visible = false;
+            // 
+            // subcorte
+            // 
+            this.subcorte.HeaderText = "subcorte";
+            this.subcorte.Name = "subcorte";
+            this.subcorte.ReadOnly = true;
+            this.subcorte.Visible = false;
+            // 
+            // color
+            // 
+            this.color.HeaderText = "Color";
+            this.color.Name = "color";
+            this.color.ReadOnly = true;
+            // 
+            // talla
+            // 
+            this.talla.HeaderText = "Talla";
+            this.talla.Name = "talla";
+            this.talla.ReadOnly = true;
+            // 
+            // cod_talla
+            // 
+            this.cod_talla.HeaderText = "cod_talla";
+            this.cod_talla.Name = "cod_talla";
+            this.cod_talla.ReadOnly = true;
+            this.cod_talla.Visible = false;
+            // 
+            // id_talla
+            // 
+            this.id_talla.HeaderText = "id_talla";
+            this.id_talla.Name = "id_talla";
+            this.id_talla.ReadOnly = true;
+            this.id_talla.Visible = false;
+            // 
+            // fecha
+            // 
+            this.fecha.HeaderText = "fecha";
+            this.fecha.Name = "fecha";
+            this.fecha.ReadOnly = true;
+            // 
+            // id_rfid
+            // 
+            this.id_rfid.HeaderText = "RFID";
+            this.id_rfid.Name = "id_rfid";
+            this.id_rfid.ReadOnly = true;
+            // 
+            // TableLayoutPanel7
+            // 
+            this.TableLayoutPanel7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.TableLayoutPanel7.ColumnCount = 1;
+            this.TableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel7.Controls.Add(this.tbConsolidado, 0, 0);
+            this.TableLayoutPanel7.Location = new System.Drawing.Point(819, 0);
+            this.TableLayoutPanel7.Margin = new System.Windows.Forms.Padding(0);
+            this.TableLayoutPanel7.Name = "TableLayoutPanel7";
+            this.TableLayoutPanel7.RowCount = 1;
+            this.TableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 445F));
+            this.TableLayoutPanel7.Size = new System.Drawing.Size(352, 445);
+            this.TableLayoutPanel7.TabIndex = 55;
+            // 
+            // tbConsolidado
+            // 
+            this.tbConsolidado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbConsolidado.AutoSize = true;
+            this.tbConsolidado.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tbConsolidado.ColumnCount = 1;
+            this.tbConsolidado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbConsolidado.Controls.Add(this.lblTotalDetalle, 0, 1);
+            this.tbConsolidado.Controls.Add(this.panelScroll, 0, 0);
+            this.tbConsolidado.Location = new System.Drawing.Point(0, 0);
+            this.tbConsolidado.Margin = new System.Windows.Forms.Padding(0);
+            this.tbConsolidado.Name = "tbConsolidado";
+            this.tbConsolidado.RowCount = 2;
+            this.tbConsolidado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 90F));
+            this.tbConsolidado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tbConsolidado.Size = new System.Drawing.Size(352, 445);
+            this.tbConsolidado.TabIndex = 2;
+            // 
+            // lblTotalDetalle
+            // 
+            this.lblTotalDetalle.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblTotalDetalle.AutoSize = true;
+            this.lblTotalDetalle.BackColor = System.Drawing.Color.LightGray;
+            this.lblTotalDetalle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblTotalDetalle.ForeColor = System.Drawing.Color.Black;
+            this.lblTotalDetalle.Location = new System.Drawing.Point(3, 403);
+            this.lblTotalDetalle.Margin = new System.Windows.Forms.Padding(3);
+            this.lblTotalDetalle.Name = "lblTotalDetalle";
+            this.lblTotalDetalle.Size = new System.Drawing.Size(346, 39);
+            this.lblTotalDetalle.TabIndex = 1;
+            this.lblTotalDetalle.Text = "TOTAL TIMBRADO";
+            this.lblTotalDetalle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panelScroll
+            // 
+            this.panelScroll.AutoScroll = true;
+            this.panelScroll.Controls.Add(this.tbDetalleTimbrado);
+            this.panelScroll.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panelScroll.Location = new System.Drawing.Point(3, 3);
+            this.panelScroll.Name = "panelScroll";
+            this.panelScroll.Size = new System.Drawing.Size(346, 394);
+            this.panelScroll.TabIndex = 2;
+            // 
+            // tbDetalleTimbrado
+            // 
+            this.tbDetalleTimbrado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbDetalleTimbrado.ColumnCount = 1;
+            this.tbDetalleTimbrado.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbDetalleTimbrado.Location = new System.Drawing.Point(8, 8);
+            this.tbDetalleTimbrado.Name = "tbDetalleTimbrado";
+            this.tbDetalleTimbrado.RowCount = 1;
+            this.tbDetalleTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tbDetalleTimbrado.Size = new System.Drawing.Size(346, 394);
+            this.tbDetalleTimbrado.TabIndex = 1;
+            // 
+            // tabConsultar
+            // 
+            this.tabConsultar.Controls.Add(this.gbxBuscarPrenda);
+            this.tabConsultar.Location = new System.Drawing.Point(4, 44);
+            this.tabConsultar.Name = "tabConsultar";
+            this.tabConsultar.Size = new System.Drawing.Size(1189, 650);
+            this.tabConsultar.TabIndex = 2;
+            this.tabConsultar.Text = "Consulta Prenda";
+            this.tabConsultar.UseVisualStyleBackColor = true;
+            // 
+            // gbxBuscarPrenda
+            // 
+            this.gbxBuscarPrenda.Controls.Add(this.tablaBuscarPrenda);
+            this.gbxBuscarPrenda.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.gbxBuscarPrenda.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.gbxBuscarPrenda.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.gbxBuscarPrenda.Location = new System.Drawing.Point(0, 0);
+            this.gbxBuscarPrenda.Margin = new System.Windows.Forms.Padding(0);
+            this.gbxBuscarPrenda.Name = "gbxBuscarPrenda";
+            this.gbxBuscarPrenda.Size = new System.Drawing.Size(1189, 650);
+            this.gbxBuscarPrenda.TabIndex = 1;
+            this.gbxBuscarPrenda.TabStop = false;
+            // 
+            // tablaBuscarPrenda
+            // 
+            this.tablaBuscarPrenda.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tablaBuscarPrenda.ColumnCount = 1;
+            this.tablaBuscarPrenda.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaBuscarPrenda.Controls.Add(this.ContenedorBuscarPrenda, 0, 0);
+            this.tablaBuscarPrenda.Controls.Add(this.MsnBusquedaPrenda, 0, 1);
+            this.tablaBuscarPrenda.Controls.Add(this.DataGridView2, 0, 2);
+            this.tablaBuscarPrenda.Location = new System.Drawing.Point(6, 19);
+            this.tablaBuscarPrenda.Margin = new System.Windows.Forms.Padding(0);
+            this.tablaBuscarPrenda.Name = "tablaBuscarPrenda";
+            this.tablaBuscarPrenda.RowCount = 3;
+            this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 85F));
+            this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tablaBuscarPrenda.Size = new System.Drawing.Size(1183, 631);
+            this.tablaBuscarPrenda.TabIndex = 0;
+            // 
+            // ContenedorBuscarPrenda
+            // 
+            this.ContenedorBuscarPrenda.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ContenedorBuscarPrenda.ColumnCount = 3;
+            this.ContenedorBuscarPrenda.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22F));
+            this.ContenedorBuscarPrenda.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.ContenedorBuscarPrenda.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 18F));
+            this.ContenedorBuscarPrenda.Controls.Add(this.Label5, 0, 0);
+            this.ContenedorBuscarPrenda.Controls.Add(this.BuscarCodBarras, 1, 0);
+            this.ContenedorBuscarPrenda.Location = new System.Drawing.Point(0, 0);
+            this.ContenedorBuscarPrenda.Margin = new System.Windows.Forms.Padding(0);
+            this.ContenedorBuscarPrenda.Name = "ContenedorBuscarPrenda";
+            this.ContenedorBuscarPrenda.RowCount = 1;
+            this.ContenedorBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.ContenedorBuscarPrenda.Size = new System.Drawing.Size(1183, 63);
+            this.ContenedorBuscarPrenda.TabIndex = 0;
+            // 
+            // Label5
+            // 
+            this.Label5.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.Label5.AutoSize = true;
+            this.Label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Label5.Location = new System.Drawing.Point(134, 21);
+            this.Label5.Name = "Label5";
+            this.Label5.Size = new System.Drawing.Size(123, 20);
+            this.Label5.TabIndex = 0;
+            this.Label5.Text = "Código Barras";
+            this.Label5.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // BuscarCodBarras
+            // 
+            this.BuscarCodBarras.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.BuscarCodBarras.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.BuscarCodBarras.ForeColor = System.Drawing.Color.Gray;
+            this.BuscarCodBarras.Location = new System.Drawing.Point(263, 16);
+            this.BuscarCodBarras.Name = "BuscarCodBarras";
+            this.BuscarCodBarras.Size = new System.Drawing.Size(703, 30);
+            this.BuscarCodBarras.TabIndex = 1;
+            this.BuscarCodBarras.Text = "Codigo de Barras...";
+            // 
+            // MsnBusquedaPrenda
+            // 
+            this.MsnBusquedaPrenda.Anchor = System.Windows.Forms.AnchorStyles.Left;
+            this.MsnBusquedaPrenda.AutoSize = true;
+            this.MsnBusquedaPrenda.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.MsnBusquedaPrenda.ForeColor = System.Drawing.Color.Red;
+            this.MsnBusquedaPrenda.Location = new System.Drawing.Point(3, 70);
+            this.MsnBusquedaPrenda.Name = "MsnBusquedaPrenda";
+            this.MsnBusquedaPrenda.Size = new System.Drawing.Size(0, 17);
+            this.MsnBusquedaPrenda.TabIndex = 1;
+            this.MsnBusquedaPrenda.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // DataGridView2
+            // 
+            this.DataGridView2.AllowUserToAddRows = false;
+            this.DataGridView2.AllowUserToDeleteRows = false;
+            this.DataGridView2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.DataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.DataGridView2.Location = new System.Drawing.Point(3, 97);
+            this.DataGridView2.Name = "DataGridView2";
+            this.DataGridView2.ReadOnly = true;
+            this.DataGridView2.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DataGridView2.Size = new System.Drawing.Size(1177, 531);
+            this.DataGridView2.TabIndex = 2;
+            // 
+            // tabHojaMarcacion
+            // 
+            this.tabHojaMarcacion.Controls.Add(this.TablaContenedorHM);
+            this.tabHojaMarcacion.Location = new System.Drawing.Point(4, 44);
+            this.tabHojaMarcacion.Name = "tabHojaMarcacion";
+            this.tabHojaMarcacion.Size = new System.Drawing.Size(1189, 650);
+            this.tabHojaMarcacion.TabIndex = 3;
+            this.tabHojaMarcacion.Text = "Hoja de Marcación";
+            this.tabHojaMarcacion.UseVisualStyleBackColor = true;
+            // 
+            // TablaContenedorHM
+            // 
+            this.TablaContenedorHM.ColumnCount = 1;
+            this.TablaContenedorHM.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TablaContenedorHM.Controls.Add(this.tabaCabecera, 0, 0);
+            this.TablaContenedorHM.Controls.Add(this.tableCabecera, 0, 1);
+            this.TablaContenedorHM.Controls.Add(this.DataGridView3, 0, 3);
+            this.TablaContenedorHM.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.TablaContenedorHM.Location = new System.Drawing.Point(0, 0);
+            this.TablaContenedorHM.Name = "TablaContenedorHM";
+            this.TablaContenedorHM.RowCount = 4;
+            this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 48F));
+            this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 2F));
+            this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
+            this.TablaContenedorHM.Size = new System.Drawing.Size(1189, 650);
+            this.TablaContenedorHM.TabIndex = 3;
+            // 
+            // tabaCabecera
+            // 
+            this.tabaCabecera.ColumnCount = 6;
+            this.tabaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 18F));
+            this.tabaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tabaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 9F));
+            this.tabaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tabaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 19F));
+            this.tabaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 19F));
+            this.tabaCabecera.Controls.Add(this.TextBoxOP, 1, 0);
+            this.tabaCabecera.Controls.Add(this.LabelOP, 0, 0);
+            this.tabaCabecera.Controls.Add(this.BtnBuscarHM, 4, 0);
+            this.tabaCabecera.Controls.Add(this.TextBoxHM, 3, 0);
+            this.tabaCabecera.Controls.Add(this.LabelHM, 2, 0);
+            this.tabaCabecera.Controls.Add(this.BtnLimpiarHM, 5, 0);
+            this.tabaCabecera.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabaCabecera.Location = new System.Drawing.Point(0, 0);
+            this.tabaCabecera.Margin = new System.Windows.Forms.Padding(0);
+            this.tabaCabecera.Name = "tabaCabecera";
+            this.tabaCabecera.RowCount = 1;
+            this.tabaCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tabaCabecera.Size = new System.Drawing.Size(1189, 65);
+            this.tabaCabecera.TabIndex = 0;
+            // 
+            // TextBoxOP
+            // 
+            this.TextBoxOP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.TextBoxOP.ForeColor = System.Drawing.Color.Gray;
+            this.TextBoxOP.Location = new System.Drawing.Point(217, 22);
+            this.TextBoxOP.Name = "TextBoxOP";
+            this.TextBoxOP.Size = new System.Drawing.Size(291, 20);
+            this.TextBoxOP.TabIndex = 2;
+            this.TextBoxOP.Text = "Nro OP...";
+            // 
+            // LabelOP
+            // 
+            this.LabelOP.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.LabelOP.AutoSize = true;
+            this.LabelOP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LabelOP.Location = new System.Drawing.Point(175, 26);
+            this.LabelOP.Name = "LabelOP";
+            this.LabelOP.Size = new System.Drawing.Size(36, 13);
+            this.LabelOP.TabIndex = 0;
+            this.LabelOP.Text = "O.P.:";
+            this.LabelOP.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // BtnBuscarHM
+            // 
+            this.BtnBuscarHM.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.BtnBuscarHM.ForeColor = System.Drawing.Color.White;
+            this.BtnBuscarHM.Location = new System.Drawing.Point(824, 22);
+            this.BtnBuscarHM.Name = "BtnBuscarHM";
+            this.BtnBuscarHM.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.BtnBuscarHM.Size = new System.Drawing.Size(49, 20);
+            this.BtnBuscarHM.TabIndex = 4;
+            this.BtnBuscarHM.Text = "Buscar";
+            // 
+            // TextBoxHM
+            // 
+            this.TextBoxHM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.TextBoxHM.Enabled = false;
+            this.TextBoxHM.ForeColor = System.Drawing.Color.Gray;
+            this.TextBoxHM.Location = new System.Drawing.Point(621, 22);
+            this.TextBoxHM.Name = "TextBoxHM";
+            this.TextBoxHM.Size = new System.Drawing.Size(112, 20);
+            this.TextBoxHM.TabIndex = 3;
+            this.TextBoxHM.Text = "H. M....";
+            // 
+            // LabelHM
+            // 
+            this.LabelHM.Anchor = System.Windows.Forms.AnchorStyles.Right;
+            this.LabelHM.AutoSize = true;
+            this.LabelHM.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.LabelHM.Location = new System.Drawing.Point(577, 26);
+            this.LabelHM.Name = "LabelHM";
+            this.LabelHM.Size = new System.Drawing.Size(38, 13);
+            this.LabelHM.TabIndex = 1;
+            this.LabelHM.Text = "H.M.:";
+            this.LabelHM.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // BtnLimpiarHM
+            // 
+            this.BtnLimpiarHM.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.BtnLimpiarHM.ForeColor = System.Drawing.Color.White;
+            this.BtnLimpiarHM.Location = new System.Drawing.Point(1049, 22);
+            this.BtnLimpiarHM.Name = "BtnLimpiarHM";
+            this.BtnLimpiarHM.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
+            this.BtnLimpiarHM.Size = new System.Drawing.Size(52, 20);
+            this.BtnLimpiarHM.TabIndex = 5;
+            this.BtnLimpiarHM.Text = "Limpiar";
+            this.BtnLimpiarHM.UseVisualStyleBackColor = true;
+            // 
+            // tableCabecera
+            // 
+            this.tableCabecera.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableCabecera.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(252)))), ((int)(((byte)(248)))), ((int)(((byte)(227)))));
+            this.tableCabecera.ColumnCount = 10;
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 10F));
+            this.tableCabecera.Controls.Add(this.lbl_op, 0, 0);
+            this.tableCabecera.Controls.Add(this.lbl_cliente, 0, 1);
+            this.tableCabecera.Controls.Add(this.lbl_shipTo, 0, 2);
+            this.tableCabecera.Controls.Add(this.lbl_Despacho, 0, 5);
+            this.tableCabecera.Controls.Add(this.lbl_empaque, 0, 6);
+            this.tableCabecera.Controls.Add(this.lbl_HM, 2, 0);
+            this.tableCabecera.Controls.Add(this.lbl_po, 4, 0);
+            this.tableCabecera.Controls.Add(this.lbl_Estado, 6, 0);
+            this.tableCabecera.Controls.Add(this.lbl_Reserva, 8, 0);
+            this.tableCabecera.Controls.Add(this.lbl_Prenda, 6, 1);
+            this.tableCabecera.Controls.Add(this.lbl_direccion_1, 6, 2);
+            this.tableCabecera.Controls.Add(this.lbl_direccion_2, 6, 3);
+            this.tableCabecera.Controls.Add(this.lbl_Tolerancia, 2, 4);
+            this.tableCabecera.Controls.Add(this.lbl_Estilo, 4, 4);
+            this.tableCabecera.Controls.Add(this.lbl_Observacion, 5, 6);
+            this.tableCabecera.Controls.Add(this.lbl_Certificado, 5, 5);
+            this.tableCabecera.Controls.Add(this.lbl_NKit, 3, 5);
+            this.tableCabecera.Controls.Add(this.text_norpd, 1, 0);
+            this.tableCabecera.Controls.Add(this.text_npocl, 5, 0);
+            this.tableCabecera.Controls.Add(this.text_nhjmr, 3, 0);
+            this.tableCabecera.Controls.Add(this.text_sesthm, 7, 0);
+            this.tableCabecera.Controls.Add(this.text_sreserva, 9, 0);
+            this.tableCabecera.Controls.Add(this.text_cclnt, 1, 1);
+            this.tableCabecera.Controls.Add(this.text_ttrcr, 2, 1);
+            this.tableCabecera.Controls.Add(this.text_tdscr, 7, 1);
+            this.tableCabecera.Controls.Add(this.text_temporada, 8, 1);
+            this.tableCabecera.Controls.Add(this.lbl_SitDespacho, 8, 4);
+            this.tableCabecera.Controls.Add(this.text_tdrcc, 7, 2);
+            this.tableCabecera.Controls.Add(this.txt_Direccion_2, 7, 3);
+            this.tableCabecera.Controls.Add(this.text_clgren, 1, 2);
+            this.tableCabecera.Controls.Add(this.lbl_fEntrega, 0, 4);
+            this.tableCabecera.Controls.Add(this.text_fentr, 1, 4);
+            this.tableCabecera.Controls.Add(this.lbl_BillTo, 0, 3);
+            this.tableCabecera.Controls.Add(this.text_tlgen, 2, 2);
+            this.tableCabecera.Controls.Add(this.text_ptlrnc, 3, 4);
+            this.tableCabecera.Controls.Add(this.text_cestcl, 5, 4);
+            this.tableCabecera.Controls.Add(this.text_testcl, 6, 4);
+            this.tableCabecera.Controls.Add(this.text_flgdes, 9, 4);
+            this.tableCabecera.Controls.Add(this.text_tvia, 1, 5);
+            this.tableCabecera.Controls.Add(this.txt_nro_kit, 4, 5);
+            this.tableCabecera.Controls.Add(this.text_nro_certificado, 6, 5);
+            this.tableCabecera.Controls.Add(this.text_totros, 6, 6);
+            this.tableCabecera.Controls.Add(this.text_tfrmem, 1, 6);
+            this.tableCabecera.Controls.Add(this.text_cod_lugrent_cobro, 1, 3);
+            this.tableCabecera.Controls.Add(this.txt_BillToDet, 2, 3);
+            this.tableCabecera.Location = new System.Drawing.Point(0, 65);
+            this.tableCabecera.Margin = new System.Windows.Forms.Padding(0);
+            this.tableCabecera.Name = "tableCabecera";
+            this.tableCabecera.Padding = new System.Windows.Forms.Padding(3);
+            this.tableCabecera.RowCount = 7;
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
+            this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20.40816F));
+            this.tableCabecera.Size = new System.Drawing.Size(1189, 312);
+            this.tableCabecera.TabIndex = 1;
+            // 
+            // lbl_op
+            // 
+            this.lbl_op.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_op.AutoSize = true;
+            this.lbl_op.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_op.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_op.Location = new System.Drawing.Point(6, 3);
+            this.lbl_op.Name = "lbl_op";
+            this.lbl_op.Size = new System.Drawing.Size(112, 40);
+            this.lbl_op.TabIndex = 0;
+            this.lbl_op.Text = "OP:";
+            this.lbl_op.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_cliente
+            // 
+            this.lbl_cliente.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_cliente.AutoSize = true;
+            this.lbl_cliente.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_cliente.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_cliente.Location = new System.Drawing.Point(6, 43);
+            this.lbl_cliente.Name = "lbl_cliente";
+            this.lbl_cliente.Size = new System.Drawing.Size(112, 40);
+            this.lbl_cliente.TabIndex = 1;
+            this.lbl_cliente.Text = "Cliente:";
+            this.lbl_cliente.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_shipTo
+            // 
+            this.lbl_shipTo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_shipTo.AutoSize = true;
+            this.lbl_shipTo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_shipTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_shipTo.Location = new System.Drawing.Point(6, 83);
+            this.lbl_shipTo.Name = "lbl_shipTo";
+            this.lbl_shipTo.Size = new System.Drawing.Size(112, 40);
+            this.lbl_shipTo.TabIndex = 2;
+            this.lbl_shipTo.Text = "Ship TO:";
+            this.lbl_shipTo.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Despacho
+            // 
+            this.lbl_Despacho.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Despacho.AutoSize = true;
+            this.lbl_Despacho.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Despacho.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Despacho.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbl_Despacho.Location = new System.Drawing.Point(6, 203);
+            this.lbl_Despacho.Name = "lbl_Despacho";
+            this.lbl_Despacho.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Despacho.TabIndex = 5;
+            this.lbl_Despacho.Text = "Via Despacho:";
+            this.lbl_Despacho.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_empaque
+            // 
+            this.lbl_empaque.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_empaque.AutoSize = true;
+            this.lbl_empaque.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_empaque.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_empaque.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbl_empaque.Location = new System.Drawing.Point(6, 243);
+            this.lbl_empaque.Name = "lbl_empaque";
+            this.lbl_empaque.Size = new System.Drawing.Size(112, 66);
+            this.lbl_empaque.TabIndex = 6;
+            this.lbl_empaque.Text = "Empaque:";
+            this.lbl_empaque.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // lbl_HM
+            // 
+            this.lbl_HM.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_HM.AutoSize = true;
+            this.lbl_HM.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_HM.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_HM.Location = new System.Drawing.Point(242, 3);
+            this.lbl_HM.Name = "lbl_HM";
+            this.lbl_HM.Size = new System.Drawing.Size(112, 40);
+            this.lbl_HM.TabIndex = 7;
+            this.lbl_HM.Text = "HM:";
+            this.lbl_HM.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_po
+            // 
+            this.lbl_po.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_po.AutoSize = true;
+            this.lbl_po.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_po.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_po.Location = new System.Drawing.Point(478, 3);
+            this.lbl_po.Name = "lbl_po";
+            this.lbl_po.Size = new System.Drawing.Size(112, 40);
+            this.lbl_po.TabIndex = 8;
+            this.lbl_po.Text = "PO:";
+            this.lbl_po.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Estado
+            // 
+            this.lbl_Estado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Estado.AutoSize = true;
+            this.lbl_Estado.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Estado.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Estado.Location = new System.Drawing.Point(714, 3);
+            this.lbl_Estado.Name = "lbl_Estado";
+            this.lbl_Estado.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Estado.TabIndex = 9;
+            this.lbl_Estado.Text = "Estado:";
+            this.lbl_Estado.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Reserva
+            // 
+            this.lbl_Reserva.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Reserva.AutoSize = true;
+            this.lbl_Reserva.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Reserva.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Reserva.Location = new System.Drawing.Point(950, 3);
+            this.lbl_Reserva.Name = "lbl_Reserva";
+            this.lbl_Reserva.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Reserva.TabIndex = 10;
+            this.lbl_Reserva.Text = "Reserva:";
+            this.lbl_Reserva.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Prenda
+            // 
+            this.lbl_Prenda.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Prenda.AutoSize = true;
+            this.lbl_Prenda.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Prenda.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Prenda.Location = new System.Drawing.Point(714, 43);
+            this.lbl_Prenda.Name = "lbl_Prenda";
+            this.lbl_Prenda.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Prenda.TabIndex = 11;
+            this.lbl_Prenda.Text = "Prenda:";
+            this.lbl_Prenda.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_direccion_1
+            // 
+            this.lbl_direccion_1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_direccion_1.AutoSize = true;
+            this.lbl_direccion_1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_direccion_1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_direccion_1.Location = new System.Drawing.Point(714, 83);
+            this.lbl_direccion_1.Name = "lbl_direccion_1";
+            this.lbl_direccion_1.Size = new System.Drawing.Size(112, 40);
+            this.lbl_direccion_1.TabIndex = 12;
+            this.lbl_direccion_1.Text = "Dirección:";
+            this.lbl_direccion_1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_direccion_2
+            // 
+            this.lbl_direccion_2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_direccion_2.AutoSize = true;
+            this.lbl_direccion_2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_direccion_2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_direccion_2.Location = new System.Drawing.Point(714, 123);
+            this.lbl_direccion_2.Name = "lbl_direccion_2";
+            this.lbl_direccion_2.Size = new System.Drawing.Size(112, 40);
+            this.lbl_direccion_2.TabIndex = 13;
+            this.lbl_direccion_2.Text = "Dirección:";
+            this.lbl_direccion_2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Tolerancia
+            // 
+            this.lbl_Tolerancia.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Tolerancia.AutoSize = true;
+            this.lbl_Tolerancia.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Tolerancia.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Tolerancia.Location = new System.Drawing.Point(242, 163);
+            this.lbl_Tolerancia.Name = "lbl_Tolerancia";
+            this.lbl_Tolerancia.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Tolerancia.TabIndex = 14;
+            this.lbl_Tolerancia.Text = "Tolerancia:";
+            this.lbl_Tolerancia.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Estilo
+            // 
+            this.lbl_Estilo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Estilo.AutoSize = true;
+            this.lbl_Estilo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Estilo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Estilo.Location = new System.Drawing.Point(478, 163);
+            this.lbl_Estilo.Name = "lbl_Estilo";
+            this.lbl_Estilo.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Estilo.TabIndex = 15;
+            this.lbl_Estilo.Text = "Estilo:";
+            this.lbl_Estilo.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_Observacion
+            // 
+            this.lbl_Observacion.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Observacion.AutoSize = true;
+            this.lbl_Observacion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Observacion.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Observacion.Location = new System.Drawing.Point(596, 243);
+            this.lbl_Observacion.Name = "lbl_Observacion";
+            this.lbl_Observacion.Size = new System.Drawing.Size(112, 66);
+            this.lbl_Observacion.TabIndex = 18;
+            this.lbl_Observacion.Text = "Observación:";
+            this.lbl_Observacion.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // lbl_Certificado
+            // 
+            this.lbl_Certificado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_Certificado.AutoSize = true;
+            this.lbl_Certificado.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_Certificado.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_Certificado.Location = new System.Drawing.Point(596, 203);
+            this.lbl_Certificado.Name = "lbl_Certificado";
+            this.lbl_Certificado.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Certificado.TabIndex = 17;
+            this.lbl_Certificado.Text = "Certificado:";
+            this.lbl_Certificado.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // lbl_NKit
+            // 
+            this.lbl_NKit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_NKit.AutoSize = true;
+            this.lbl_NKit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_NKit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_NKit.Location = new System.Drawing.Point(360, 203);
+            this.lbl_NKit.Name = "lbl_NKit";
+            this.lbl_NKit.Size = new System.Drawing.Size(112, 40);
+            this.lbl_NKit.TabIndex = 19;
+            this.lbl_NKit.Text = "N° KIT:";
+            this.lbl_NKit.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // text_norpd
+            // 
+            this.text_norpd.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_norpd.AutoSize = true;
+            this.text_norpd.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.text_norpd.Location = new System.Drawing.Point(124, 3);
+            this.text_norpd.Name = "text_norpd";
+            this.text_norpd.Size = new System.Drawing.Size(112, 40);
+            this.text_norpd.TabIndex = 20;
+            this.text_norpd.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_npocl
+            // 
+            this.text_npocl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_npocl.AutoSize = true;
+            this.text_npocl.Location = new System.Drawing.Point(596, 3);
+            this.text_npocl.Name = "text_npocl";
+            this.text_npocl.Size = new System.Drawing.Size(112, 40);
+            this.text_npocl.TabIndex = 21;
+            this.text_npocl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_nhjmr
+            // 
+            this.text_nhjmr.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_nhjmr.AutoSize = true;
+            this.text_nhjmr.Location = new System.Drawing.Point(360, 3);
+            this.text_nhjmr.Name = "text_nhjmr";
+            this.text_nhjmr.Size = new System.Drawing.Size(112, 40);
+            this.text_nhjmr.TabIndex = 22;
+            this.text_nhjmr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_sesthm
+            // 
+            this.text_sesthm.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_sesthm.AutoSize = true;
+            this.text_sesthm.Location = new System.Drawing.Point(832, 3);
+            this.text_sesthm.Name = "text_sesthm";
+            this.text_sesthm.Size = new System.Drawing.Size(112, 40);
+            this.text_sesthm.TabIndex = 23;
+            this.text_sesthm.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_sreserva
+            // 
+            this.text_sreserva.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_sreserva.AutoSize = true;
+            this.text_sreserva.Location = new System.Drawing.Point(1068, 3);
+            this.text_sreserva.Name = "text_sreserva";
+            this.text_sreserva.Size = new System.Drawing.Size(115, 40);
+            this.text_sreserva.TabIndex = 24;
+            this.text_sreserva.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_cclnt
+            // 
+            this.text_cclnt.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_cclnt.AutoSize = true;
+            this.text_cclnt.Location = new System.Drawing.Point(124, 43);
+            this.text_cclnt.Name = "text_cclnt";
+            this.text_cclnt.Size = new System.Drawing.Size(112, 40);
+            this.text_cclnt.TabIndex = 25;
+            this.text_cclnt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_ttrcr
+            // 
+            this.text_ttrcr.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_ttrcr.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_ttrcr, 4);
+            this.text_ttrcr.Location = new System.Drawing.Point(242, 43);
+            this.text_ttrcr.Name = "text_ttrcr";
+            this.text_ttrcr.Size = new System.Drawing.Size(466, 40);
+            this.text_ttrcr.TabIndex = 26;
+            this.text_ttrcr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_tdscr
+            // 
+            this.text_tdscr.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_tdscr.AutoSize = true;
+            this.text_tdscr.Location = new System.Drawing.Point(832, 43);
+            this.text_tdscr.Name = "text_tdscr";
+            this.text_tdscr.Size = new System.Drawing.Size(112, 40);
+            this.text_tdscr.TabIndex = 27;
+            this.text_tdscr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_temporada
+            // 
+            this.text_temporada.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_temporada.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_temporada, 2);
+            this.text_temporada.Location = new System.Drawing.Point(950, 43);
+            this.text_temporada.Name = "text_temporada";
+            this.text_temporada.Size = new System.Drawing.Size(233, 40);
+            this.text_temporada.TabIndex = 28;
+            this.text_temporada.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lbl_SitDespacho
+            // 
+            this.lbl_SitDespacho.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_SitDespacho.AutoSize = true;
+            this.lbl_SitDespacho.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_SitDespacho.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_SitDespacho.Location = new System.Drawing.Point(950, 163);
+            this.lbl_SitDespacho.Name = "lbl_SitDespacho";
+            this.lbl_SitDespacho.Size = new System.Drawing.Size(112, 40);
+            this.lbl_SitDespacho.TabIndex = 16;
+            this.lbl_SitDespacho.Text = "Sit Despacho:";
+            this.lbl_SitDespacho.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // text_tdrcc
+            // 
+            this.text_tdrcc.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_tdrcc.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_tdrcc, 3);
+            this.text_tdrcc.Location = new System.Drawing.Point(832, 83);
+            this.text_tdrcc.Name = "text_tdrcc";
+            this.text_tdrcc.Size = new System.Drawing.Size(351, 40);
+            this.text_tdrcc.TabIndex = 29;
+            this.text_tdrcc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txt_Direccion_2
+            // 
+            this.txt_Direccion_2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txt_Direccion_2.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.txt_Direccion_2, 3);
+            this.txt_Direccion_2.Location = new System.Drawing.Point(832, 123);
+            this.txt_Direccion_2.Name = "txt_Direccion_2";
+            this.txt_Direccion_2.Size = new System.Drawing.Size(351, 40);
+            this.txt_Direccion_2.TabIndex = 30;
+            this.txt_Direccion_2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_clgren
+            // 
+            this.text_clgren.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_clgren.AutoSize = true;
+            this.text_clgren.Location = new System.Drawing.Point(124, 83);
+            this.text_clgren.Name = "text_clgren";
+            this.text_clgren.Size = new System.Drawing.Size(112, 40);
+            this.text_clgren.TabIndex = 31;
+            this.text_clgren.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lbl_fEntrega
+            // 
+            this.lbl_fEntrega.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_fEntrega.AutoSize = true;
+            this.lbl_fEntrega.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_fEntrega.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_fEntrega.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbl_fEntrega.Location = new System.Drawing.Point(6, 163);
+            this.lbl_fEntrega.Name = "lbl_fEntrega";
+            this.lbl_fEntrega.Size = new System.Drawing.Size(112, 40);
+            this.lbl_fEntrega.TabIndex = 3;
+            this.lbl_fEntrega.Text = "F. Entrega:";
+            this.lbl_fEntrega.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // text_fentr
+            // 
+            this.text_fentr.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_fentr.AutoSize = true;
+            this.text_fentr.Location = new System.Drawing.Point(124, 163);
+            this.text_fentr.Name = "text_fentr";
+            this.text_fentr.Size = new System.Drawing.Size(112, 40);
+            this.text_fentr.TabIndex = 32;
+            this.text_fentr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // lbl_BillTo
+            // 
+            this.lbl_BillTo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_BillTo.AutoSize = true;
+            this.lbl_BillTo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
+            this.lbl_BillTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_BillTo.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.lbl_BillTo.Location = new System.Drawing.Point(6, 123);
+            this.lbl_BillTo.Name = "lbl_BillTo";
+            this.lbl_BillTo.Size = new System.Drawing.Size(112, 40);
+            this.lbl_BillTo.TabIndex = 33;
+            this.lbl_BillTo.Text = "Bill TO:";
+            this.lbl_BillTo.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // text_tlgen
+            // 
+            this.text_tlgen.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_tlgen.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_tlgen, 4);
+            this.text_tlgen.Location = new System.Drawing.Point(242, 83);
+            this.text_tlgen.Name = "text_tlgen";
+            this.text_tlgen.Size = new System.Drawing.Size(466, 40);
+            this.text_tlgen.TabIndex = 34;
+            this.text_tlgen.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_ptlrnc
+            // 
+            this.text_ptlrnc.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_ptlrnc.AutoSize = true;
+            this.text_ptlrnc.Location = new System.Drawing.Point(360, 163);
+            this.text_ptlrnc.Name = "text_ptlrnc";
+            this.text_ptlrnc.Size = new System.Drawing.Size(112, 40);
+            this.text_ptlrnc.TabIndex = 35;
+            this.text_ptlrnc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_cestcl
+            // 
+            this.text_cestcl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_cestcl.AutoSize = true;
+            this.text_cestcl.Location = new System.Drawing.Point(596, 163);
+            this.text_cestcl.Name = "text_cestcl";
+            this.text_cestcl.Size = new System.Drawing.Size(112, 40);
+            this.text_cestcl.TabIndex = 36;
+            this.text_cestcl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_testcl
+            // 
+            this.text_testcl.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_testcl.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_testcl, 2);
+            this.text_testcl.Location = new System.Drawing.Point(714, 163);
+            this.text_testcl.Name = "text_testcl";
+            this.text_testcl.Size = new System.Drawing.Size(230, 40);
+            this.text_testcl.TabIndex = 37;
+            this.text_testcl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_flgdes
+            // 
+            this.text_flgdes.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_flgdes.AutoSize = true;
+            this.text_flgdes.Location = new System.Drawing.Point(1068, 163);
+            this.text_flgdes.Name = "text_flgdes";
+            this.text_flgdes.Size = new System.Drawing.Size(115, 40);
+            this.text_flgdes.TabIndex = 38;
+            this.text_flgdes.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_tvia
+            // 
+            this.text_tvia.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_tvia.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_tvia, 2);
+            this.text_tvia.Location = new System.Drawing.Point(124, 203);
+            this.text_tvia.Name = "text_tvia";
+            this.text_tvia.Size = new System.Drawing.Size(230, 40);
+            this.text_tvia.TabIndex = 39;
+            this.text_tvia.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txt_nro_kit
+            // 
+            this.txt_nro_kit.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txt_nro_kit.AutoSize = true;
+            this.txt_nro_kit.Location = new System.Drawing.Point(478, 203);
+            this.txt_nro_kit.Name = "txt_nro_kit";
+            this.txt_nro_kit.Size = new System.Drawing.Size(112, 40);
+            this.txt_nro_kit.TabIndex = 40;
+            this.txt_nro_kit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_nro_certificado
+            // 
+            this.text_nro_certificado.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_nro_certificado.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_nro_certificado, 4);
+            this.text_nro_certificado.Location = new System.Drawing.Point(714, 203);
+            this.text_nro_certificado.Name = "text_nro_certificado";
+            this.text_nro_certificado.Size = new System.Drawing.Size(469, 40);
+            this.text_nro_certificado.TabIndex = 41;
+            this.text_nro_certificado.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // text_totros
+            // 
+            this.text_totros.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_totros.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_totros, 4);
+            this.text_totros.Location = new System.Drawing.Point(714, 243);
+            this.text_totros.Name = "text_totros";
+            this.text_totros.Size = new System.Drawing.Size(469, 66);
+            this.text_totros.TabIndex = 42;
+            // 
+            // text_tfrmem
+            // 
+            this.text_tfrmem.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_tfrmem.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.text_tfrmem, 4);
+            this.text_tfrmem.Location = new System.Drawing.Point(124, 243);
+            this.text_tfrmem.Name = "text_tfrmem";
+            this.text_tfrmem.Size = new System.Drawing.Size(466, 66);
+            this.text_tfrmem.TabIndex = 43;
+            // 
+            // text_cod_lugrent_cobro
+            // 
+            this.text_cod_lugrent_cobro.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.text_cod_lugrent_cobro.AutoSize = true;
+            this.text_cod_lugrent_cobro.Location = new System.Drawing.Point(124, 123);
+            this.text_cod_lugrent_cobro.Name = "text_cod_lugrent_cobro";
+            this.text_cod_lugrent_cobro.Size = new System.Drawing.Size(112, 40);
+            this.text_cod_lugrent_cobro.TabIndex = 44;
+            this.text_cod_lugrent_cobro.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // txt_BillToDet
+            // 
+            this.txt_BillToDet.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txt_BillToDet.AutoSize = true;
+            this.tableCabecera.SetColumnSpan(this.txt_BillToDet, 4);
+            this.txt_BillToDet.Location = new System.Drawing.Point(242, 123);
+            this.txt_BillToDet.Name = "txt_BillToDet";
+            this.txt_BillToDet.Size = new System.Drawing.Size(466, 40);
+            this.txt_BillToDet.TabIndex = 45;
+            this.txt_BillToDet.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // DataGridView3
+            // 
+            this.DataGridView3.AllowUserToAddRows = false;
+            this.DataGridView3.AllowUserToDeleteRows = false;
+            this.DataGridView3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            dataGridViewCellStyle9.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle9.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle9.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle9.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle9.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle9.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle9.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DataGridView3.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+            this.DataGridView3.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle10.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle10.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle10.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle10.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle10.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.DataGridView3.DefaultCellStyle = dataGridViewCellStyle10;
+            this.DataGridView3.Location = new System.Drawing.Point(3, 393);
+            this.DataGridView3.Name = "DataGridView3";
+            this.DataGridView3.ReadOnly = true;
+            dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle11.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle11.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle11.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle11.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle11.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.DataGridView3.RowHeadersDefaultCellStyle = dataGridViewCellStyle11;
+            this.DataGridView3.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.DataGridView3.Size = new System.Drawing.Size(1183, 254);
+            this.DataGridView3.TabIndex = 2;
+            // 
+            // lblEstadoConexion
+            // 
+            this.lblEstadoConexion.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.lblEstadoConexion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.lblEstadoConexion.Location = new System.Drawing.Point(960, 0);
+            this.lblEstadoConexion.Name = "lblEstadoConexion";
+            this.lblEstadoConexion.Size = new System.Drawing.Size(131, 28);
+            this.lblEstadoConexion.TabIndex = 69;
+            this.lblEstadoConexion.Text = "Estado: Escaneado OK";
+            this.lblEstadoConexion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // tablaContenedora
+            // 
+            this.tablaContenedora.ColumnCount = 1;
+            this.tablaContenedora.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaContenedora.Controls.Add(this.tabMenu, 0, 1);
+            this.tablaContenedora.Controls.Add(this.tablaCabecera, 0, 0);
+            this.tablaContenedora.Controls.Add(this.toolStripStatusLbl, 0, 2);
+            this.tablaContenedora.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tablaContenedora.Location = new System.Drawing.Point(0, 0);
+            this.tablaContenedora.Name = "tablaContenedora";
+            this.tablaContenedora.RowCount = 3;
+            this.tablaContenedora.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
+            this.tablaContenedora.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 94F));
+            this.tablaContenedora.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 1F));
+            this.tablaContenedora.Size = new System.Drawing.Size(1203, 749);
+            this.tablaContenedora.TabIndex = 6;
+            // 
+            // tablaCabecera
+            // 
+            this.tablaCabecera.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tablaCabecera.ColumnCount = 3;
+            this.tablaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tablaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.tablaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
+            this.tablaCabecera.Controls.Add(this.lblEstadoConexion, 2, 0);
+            this.tablaCabecera.Controls.Add(btnBuscarScanners, 0, 0);
+            this.tablaCabecera.Controls.Add(this.cmbScanners, 1, 0);
+            this.tablaCabecera.Location = new System.Drawing.Point(3, 3);
+            this.tablaCabecera.Name = "tablaCabecera";
+            this.tablaCabecera.RowCount = 1;
+            this.tablaCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tablaCabecera.Size = new System.Drawing.Size(1197, 31);
+            this.tablaCabecera.TabIndex = 5;
+            // 
+            // cmbScanners
+            // 
+            this.cmbScanners.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.cmbScanners.FormattingEnabled = true;
+            this.cmbScanners.Location = new System.Drawing.Point(448, 5);
+            this.cmbScanners.Name = "cmbScanners";
+            this.cmbScanners.Size = new System.Drawing.Size(300, 21);
+            this.cmbScanners.TabIndex = 70;
+            this.cmbScanners.SelectedIndexChanged += new System.EventHandler(this.cmbScanners_SelectedIndexChanged);
+            // 
+            // toolStripStatusLbl
+            // 
+            this.toolStripStatusLbl.Location = new System.Drawing.Point(0, 741);
+            this.toolStripStatusLbl.Name = "toolStripStatusLbl";
+            this.toolStripStatusLbl.Size = new System.Drawing.Size(1203, 8);
+            this.toolStripStatusLbl.TabIndex = 6;
+            this.toolStripStatusLbl.Text = "statusStrip1";
+            // 
+            // frmLector
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.ClientSize = new System.Drawing.Size(1203, 749);
+            this.Controls.Add(this.tablaContenedora);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
+            this.Name = "frmLector";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Lector";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.Load += new System.EventHandler(this.frmLector_Load);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.frmLector_KeyDown);
+            this.tabMenu.ResumeLayout(false);
+            this.tabVinculador.ResumeLayout(false);
+            this.gbxInventoryEx.ResumeLayout(false);
+            this.tablaContenedorTimbrado.ResumeLayout(false);
+            this.tabaLadoTimbrado.ResumeLayout(false);
+            this.TableLayoutPanel1.ResumeLayout(false);
+            this.TableLayoutPanel1.PerformLayout();
+            this.TableLayoutPanel6.ResumeLayout(false);
+            this.TableLayoutPanel6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTagList)).EndInit();
+            this.TableLayoutPanel2.ResumeLayout(false);
+            this.TableLayoutPanel2.PerformLayout();
+            this.tbContEspacioVertical.ResumeLayout(false);
+            this.TableLayoutPanel3.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView1)).EndInit();
+            this.TableLayoutPanel7.ResumeLayout(false);
+            this.TableLayoutPanel7.PerformLayout();
+            this.tbConsolidado.ResumeLayout(false);
+            this.tbConsolidado.PerformLayout();
+            this.panelScroll.ResumeLayout(false);
+            this.tabConsultar.ResumeLayout(false);
+            this.gbxBuscarPrenda.ResumeLayout(false);
+            this.tablaBuscarPrenda.ResumeLayout(false);
+            this.tablaBuscarPrenda.PerformLayout();
+            this.ContenedorBuscarPrenda.ResumeLayout(false);
+            this.ContenedorBuscarPrenda.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView2)).EndInit();
+            this.tabHojaMarcacion.ResumeLayout(false);
+            this.TablaContenedorHM.ResumeLayout(false);
+            this.tabaCabecera.ResumeLayout(false);
+            this.tabaCabecera.PerformLayout();
+            this.tableCabecera.ResumeLayout(false);
+            this.tableCabecera.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.DataGridView3)).EndInit();
+            this.tablaContenedora.ResumeLayout(false);
+            this.tablaContenedora.PerformLayout();
+            this.tablaCabecera.ResumeLayout(false);
+            this.ResumeLayout(false);
+
+        }
+
+        #endregion
+        private System.Windows.Forms.TabControl tabMenu;
+        private System.Windows.Forms.TabPage tabVinculador;
+        private System.Windows.Forms.TabPage tabConsultar;
+        private System.Windows.Forms.TabPage tabHojaMarcacion;
+        internal System.Windows.Forms.GroupBox gbxInventoryEx;
+        internal System.Windows.Forms.TableLayoutPanel tablaContenedorTimbrado;
+        internal System.Windows.Forms.TableLayoutPanel tabaLadoTimbrado;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel1;
+        internal System.Windows.Forms.Button btnLimpiarRFID;
+        internal System.Windows.Forms.Button btnClear;
+        internal System.Windows.Forms.Label cantidadRFID;
+        internal System.Windows.Forms.Label MsnVincular;
+        internal System.Windows.Forms.TextBox CodBarras;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel6;
+        internal System.Windows.Forms.DataGridView dgvTagList;
+        internal System.Windows.Forms.TextBox nroOP;
+        internal System.Windows.Forms.TextBox nroHM;
+        internal System.Windows.Forms.Button btnLimpiarOPHM;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel2;
+        internal System.Windows.Forms.Button btnVerConsolidado;
+        internal System.Windows.Forms.Label lblTotalCount;
+        internal System.Windows.Forms.Label label16;
+        internal System.Windows.Forms.TableLayoutPanel tbContEspacioVertical;
+        internal System.Windows.Forms.Button btnStopInventoryEx;
+        internal System.Windows.Forms.ComboBox cbxInventory;
+        internal System.Windows.Forms.Button btnStartInventoryEx;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel3;
+        internal System.Windows.Forms.DataGridView DataGridView1;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn linea;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn op;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn hoja_marcacion;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn corte;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn subcorte;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn color;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn talla;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn cod_talla;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn id_talla;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn fecha;
+        internal System.Windows.Forms.DataGridViewTextBoxColumn id_rfid;
+        internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel7;
+        internal System.Windows.Forms.TableLayoutPanel tbConsolidado;
+        internal System.Windows.Forms.Label lblTotalDetalle;
+        internal System.Windows.Forms.Panel panelScroll;
+        internal System.Windows.Forms.TableLayoutPanel tbDetalleTimbrado;
+        internal System.Windows.Forms.GroupBox gbxBuscarPrenda;
+        internal System.Windows.Forms.TableLayoutPanel tablaBuscarPrenda;
+        internal System.Windows.Forms.TableLayoutPanel ContenedorBuscarPrenda;
+        internal System.Windows.Forms.Label Label5;
+        internal System.Windows.Forms.TextBox BuscarCodBarras;
+        internal System.Windows.Forms.Label MsnBusquedaPrenda;
+        internal System.Windows.Forms.DataGridView DataGridView2;
+        internal System.Windows.Forms.TableLayoutPanel TablaContenedorHM;
+        internal System.Windows.Forms.TableLayoutPanel tabaCabecera;
+        internal System.Windows.Forms.TextBox TextBoxOP;
+        internal System.Windows.Forms.Label LabelOP;
+        internal System.Windows.Forms.Button BtnBuscarHM;
+        internal System.Windows.Forms.TextBox TextBoxHM;
+        internal System.Windows.Forms.Label LabelHM;
+        internal System.Windows.Forms.Button BtnLimpiarHM;
+        internal System.Windows.Forms.TableLayoutPanel tableCabecera;
+        internal System.Windows.Forms.Label lbl_op;
+        internal System.Windows.Forms.Label lbl_cliente;
+        internal System.Windows.Forms.Label lbl_shipTo;
+        internal System.Windows.Forms.Label lbl_Despacho;
+        internal System.Windows.Forms.Label lbl_empaque;
+        internal System.Windows.Forms.Label lbl_HM;
+        internal System.Windows.Forms.Label lbl_po;
+        internal System.Windows.Forms.Label lbl_Estado;
+        internal System.Windows.Forms.Label lbl_Reserva;
+        internal System.Windows.Forms.Label lbl_Prenda;
+        internal System.Windows.Forms.Label lbl_direccion_1;
+        internal System.Windows.Forms.Label lbl_direccion_2;
+        internal System.Windows.Forms.Label lbl_Tolerancia;
+        internal System.Windows.Forms.Label lbl_Estilo;
+        internal System.Windows.Forms.Label lbl_Observacion;
+        internal System.Windows.Forms.Label lbl_Certificado;
+        internal System.Windows.Forms.Label lbl_NKit;
+        internal System.Windows.Forms.Label text_norpd;
+        internal System.Windows.Forms.Label text_npocl;
+        internal System.Windows.Forms.Label text_nhjmr;
+        internal System.Windows.Forms.Label text_sesthm;
+        internal System.Windows.Forms.Label text_sreserva;
+        internal System.Windows.Forms.Label text_cclnt;
+        internal System.Windows.Forms.Label text_ttrcr;
+        internal System.Windows.Forms.Label text_tdscr;
+        internal System.Windows.Forms.Label text_temporada;
+        internal System.Windows.Forms.Label lbl_SitDespacho;
+        internal System.Windows.Forms.Label text_tdrcc;
+        internal System.Windows.Forms.Label txt_Direccion_2;
+        internal System.Windows.Forms.Label text_clgren;
+        internal System.Windows.Forms.Label lbl_fEntrega;
+        internal System.Windows.Forms.Label text_fentr;
+        internal System.Windows.Forms.Label lbl_BillTo;
+        internal System.Windows.Forms.Label text_tlgen;
+        internal System.Windows.Forms.Label text_ptlrnc;
+        internal System.Windows.Forms.Label text_cestcl;
+        internal System.Windows.Forms.Label text_testcl;
+        internal System.Windows.Forms.Label text_flgdes;
+        internal System.Windows.Forms.Label text_tvia;
+        internal System.Windows.Forms.Label txt_nro_kit;
+        internal System.Windows.Forms.Label text_nro_certificado;
+        internal System.Windows.Forms.Label text_totros;
+        internal System.Windows.Forms.Label text_tfrmem;
+        internal System.Windows.Forms.Label text_cod_lugrent_cobro;
+        internal System.Windows.Forms.Label txt_BillToDet;
+        internal System.Windows.Forms.DataGridView DataGridView3;
+        private System.Windows.Forms.Label lblEstadoConexion;
+        private System.Windows.Forms.TableLayoutPanel tablaContenedora;
+        private System.Windows.Forms.TableLayoutPanel tablaCabecera;
+        private System.Windows.Forms.StatusStrip toolStripStatusLbl;
+        private System.Windows.Forms.ComboBox cmbScanners;
+        private System.Windows.Forms.DataGridViewTextBoxColumn clnEPC;
+    }
+}

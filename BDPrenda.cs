@@ -23,6 +23,7 @@ namespace DS9908R_App
             {
                 using (var conn = _sybase.Connect())
                 {
+                    System.Diagnostics.Debug.WriteLine("Conexión abierta a Sybase.");
                     using (var cmd = new AseCommand("USP_SAL_EMB_CON_RFID", conn))
                     {
                         cmd.CommandType = CommandType.StoredProcedure;

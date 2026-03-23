@@ -539,9 +539,12 @@ namespace DS9908R_App
                 return;
             }
 
-            SetEstado(msg, Color.LightCoral);
+            toolStripStatusLbl.Text = msg;
             ReproducirError();
+            CodBarras.Clear();
             CodBarras.Focus();
+
+            MostrarAlerta(msg);
         }
 
         private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
@@ -559,8 +562,10 @@ namespace DS9908R_App
                 nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
 
             ReproducirOk();
+            AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerdeMedio, 1, 5);
+
             LimpiarTodo();
-            SetEstado("OK", Color.LightGreen);
+            toolStripStatusLbl.Text = "OK";
         }
 
         private void CargarScannersEnComboDesdeSDK()
@@ -679,6 +684,44 @@ namespace DS9908R_App
             // Aquí luego puedes agregar:
             // LimpiarGridConsolidado();
             // NuevoTimbrado();
+        }
+
+        private void AlertaErrorMsn(string mensaje, Color color)
+        {
+            toolStripStatusLbl.Text = mensaje;
+            using (var alerta = new FormAlertaError("Error", mensaje, color))
+            {
+                alerta.ShowDialog();
+            }
+        }
+
+        private void MostrarAlerta(string mensaje, Action callback = null)
+        {
+            toolStripStatusLbl.Text = mensaje;
+
+            if (FormAlertaError.alertaAbierta)
+                return;
+
+            using (var alerta = new FormAlertaError("Error", mensaje, pinturaRojoLadrillo, callback))
+            {
+                alerta.ShowDialog();
+            }
+        }
+
+        private void Alerta(string mensaje, Color color, int tipo, int tiempo = 10)
+        {
+            using (var alerta = new FormAlerta(mensaje, color, tipo, tiempo))
+            {
+                alerta.ShowDialog();
+            }
+        }
+
+        private void AlertaOk(string titulo, Color color, int tiempo, string descripcion)
+        {
+            using (var alerta = new FormAlertaOk(titulo, color, tiempo, descripcion))
+            {
+                alerta.ShowDialog();
+            }
         }
     }
 }
