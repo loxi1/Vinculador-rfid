@@ -1,103 +1,116 @@
-Sí, vi el avance y ya quedó mejor encaminado. En el repo actual hay tres cosas importantes:
-El RFID ya entra al grid, pero OnBarcodeEventLector() todavía manda RFID a AgregarRfid(valor) y no a SetRfid(valor). �
+Sí, revisé VinculadorService.cs y está bastante bien encaminado. Hace exactamente el flujo principal que buscabas: encola solicitudes con ConcurrentQueue, procesa una por una, normaliza el RFID a 24 caracteres si viene más largo, guarda primero en Sybase con SaveRFID, luego consulta tmp_etiq_timbradas, arma el diccionario y finalmente inserta en MySQL con BDPrendaScm.Insert. Además dispara eventos a la UI con OnInfo, OnError y OnInsertadoOk. �
 GitHub +1
-El código de barras leído por el scanner no actualiza _ultimoCodigoBarra, porque SetCodigoBarras() solo llena CodBarras.Text y el valor interno solo se asigna en CodBarras_KeyDown al presionar Enter. Si el scanner llena el textbox por evento y no por teclado físico, no se vinculará automáticamente. �
-GitHub +1
-Tus eventos Enter y Leave de CodBarras sí existen, pero ahora solo limpian el placeholder "Codigo de Barras..."; no afectan la vinculación. �
-GitHub +1
-Qué te recomiendo cambiar ahora
-1) Cambiar el flujo del RFID
-En OnBarcodeEventLector() cambia esto:
-C#
-if (PareceRfid(valor))
-{
-    AgregarRfid(valor);
-}
-else
-{
-    SetCodigoBarras(valor);
-}
-por esto:
-C#
-if (PareceRfid(valor))
-{
-    SetRfid(valor);
-}
-else
-{
-    SetCodigoBarras(valor);
-}
-Porque SetRfid() sí:
-guarda _ultimoRfid
-agrega al grid
-llama IntentarVincular() �
+Lo más útil ahora, si vas a configurar el lector de barras para enviar Enter, es esto:
+1. Tu VinculadorService ya sirve
+No lo cambiaría de fondo todavía. La estructura actual está bien para esta etapa:
+Enqueue() mete la solicitud en cola. �
 GitHub
-2) Corregir SetCodigoBarras()
-Ahora mismo tu método solo pinta el textbox. Haz que también actualice _ultimoCodigoBarra y dispare la vinculación:
+StartProcessingQueue() procesa con Task.Run(() => ProcesarVinculacion(...)). �
+GitHub
+ProcesarVinculacion() valida barcode vacío, RFID vacío, repetidos en caché, guarda en Sybase y luego en MySQL. �
+GitHub +1
+2. El cambio importante está más en frmLector, no en el service
+Como vas a hacer que el lector de barras dispare Enter, entonces el flujo ideal queda así:
+RFID: sigue entrando por OnBarcodeEventLector() y termina en SetRfid(...).
+Código de barras: puede entrar por el textbox CodBarras y disparar CodBarras_KeyDown.
+En CodBarras_KeyDown, cuando llegue Enter, debes tomar CodBarras.Text, guardarlo en _ultimoCodigoBarra y llamar IntentarVincular().
+Ese enfoque es consistente con tu idea actual.
+3. Qué sí mejoraría en VinculadorService
+Hay dos mejoras que te recomiendo para evitar problemas después.
+A. Proteger mejor _isProcessing
+Ahora usas un bool _isProcessing para impedir que arranquen varios procesadores a la vez. Eso funciona en muchos casos, pero no es totalmente seguro si entran lecturas muy seguidas desde distintos eventos. Hoy haces:
 C#
-private void SetCodigoBarras(string codigo)
+if (_isProcessing) return;
+_isProcessing = true;
+Eso puede tener condición de carrera. �
+GitHub
+Para dejarlo más sólido, cambia eso por un lock simple.
+Agrega este campo:
+C#
+private readonly object _queueLock = new object();
+Y cambia StartProcessingQueue() por:
+C#
+private async Task StartProcessingQueue()
 {
-    BeginInvoke(new Action(() =>
+    lock (_queueLock)
     {
-        _ultimoCodigoBarra = (codigo ?? "").Trim();
-        CodBarras.Text = _ultimoCodigoBarra;
-        toolStripStatusLbl.Text = "Código de barras leído";
+        if (_isProcessing) return;
+        _isProcessing = true;
+    }
+
+    try
+    {
+        while (_queue.TryDequeue(out var request))
+        {
+            await Task.Run(() => ProcesarVinculacion(request));
+        }
+    }
+    finally
+    {
+        lock (_queueLock)
+        {
+            _isProcessing = false;
+        }
+
+        if (!_queue.IsEmpty)
+        {
+            _ = StartProcessingQueue();
+        }
+    }
+}
+Eso evita que se queden elementos en cola si entró uno nuevo justo cuando salía el procesamiento.
+B. Mejorar el mensaje de duplicado
+Ahora si el RFID ya existe en caché, el mensaje es:
+C#
+"Error: El RFID ya existe. Verifique."
+Eso está bien, pero como tú trabajas en planta y el operador necesita algo más directo, yo lo cambiaría por:
+C#
+OnError?.Invoke("RFID repetido: " + rfid);
+La validación actual está aquí. �
+GitHub
+4. No cambiaría todavía estas partes
+Estas partes déjalas como están por ahora:
+NormalizarRfid() con recorte a 24 caracteres. �
+GitHub
+GuardarEnCache() con límite de 500. �
+GitHub
+el armado de insertData con op, corte, subcorte, talla, color, etc. �
+GitHub
+Eso ya está alineado con la lógica de negocio que vienes copiando del sistema anterior.
+5. Cómo dejarlo funcionando con el Enter del lector
+En frmLector, tu CodBarras_KeyDown debería quedar así:
+C#
+private void CodBarras_KeyDown(object sender, KeyEventArgs e)
+{
+    if (e.KeyCode == Keys.Enter)
+    {
+        e.SuppressKeyPress = true;
+
+        _ultimoCodigoBarra = (CodBarras.Text ?? "").Trim();
+
+        if (string.IsNullOrWhiteSpace(_ultimoCodigoBarra))
+        {
+            toolStripStatusLbl.Text = "Código de barras vacío";
+            return;
+        }
+
+        toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
 
         IntentarVincular();
-    }));
+    }
 }
-Con eso ya no dependerás solo de CodBarras_KeyDown. Porque hoy esa asignación solo ocurre con Enter manual. �
-GitHub +1
-3) Simplificar AgregarRfid()
-Si vas a usar SetRfid(), puedes dejar AgregarRfid() solo como helper visual o incluso quitarlo después. En el estado actual, ese método quedó “viejo”, porque valida _rfidLeidos y pone estado, pero no es el camino completo de vinculación que sí hace SetRfid(). �
-GitHub +1
-Cómo debe quedar el flujo final
-RFID leído por Zebra
-OnBarcodeEventLector()
-PareceRfid(valor) == true
-SetRfid(valor)
-guarda _ultimoRfid
-inserta en dgvTagList
-IntentarVincular()
-Código de barras leído por Zebra
-OnBarcodeEventLector()
-PareceRfid(valor) == false
-SetCodigoBarras(valor)
-guarda _ultimoCodigoBarra
-IntentarVincular()
-Resultado
-Si ya existe uno de los dos, al llegar el segundo se encola la vinculación.
-Sobre Enter, Leave y KeyDown
-Vas bien dejándolos, pero yo los usaría así:
-Enter y Leave: solo UI del placeholder
-KeyDown: soporte para ingreso manual
-no confiar solo en KeyDown para el scanner, porque el scanner está entrando por OnBarcodeEventLector() en tu implementación actual. �
-GitHub +2
-Cambio mínimo que te desbloquea
-Haz solo estas dos ediciones y pruebas:
-C#
-// OnBarcodeEventLector
-if (PareceRfid(valor))
-{
-    SetRfid(valor);
-}
-else
-{
-    SetCodigoBarras(valor);
-}
-C#
-private void SetCodigoBarras(string codigo)
-{
-    BeginInvoke(new Action(() =>
-    {
-        _ultimoCodigoBarra = (codigo ?? "").Trim();
-        CodBarras.Text = _ultimoCodigoBarra;
-        toolStripStatusLbl.Text = "Código de barras leído";
-        IntentarVincular();
-    }));
-}
-Después de eso:
-RFID debe mostrarse en dgvTagList
-barcode debe quedar en CodBarras
-al tener ambos, debe entrar a IntentarVincular()
-El siguiente paso sería revisar VinculadorService.cs para confirmar que la cola está guardando exactamente como en tu guía .NET.
+Y IntentarVincular() debe seguir siendo el punto donde se juntan:
+_ultimoCodigoBarra
+_ultimoRfid
+Si ambos existen, encolas el request.
+6. Recomendación práctica
+Como ya te funciona el RFID, yo haría esta secuencia:
+dejar VinculadorService casi igual, solo con el fix del lock;
+configurar el scanner de barras para mandar Enter;
+probar este flujo:
+lees RFID → aparece en dgvTagList
+lees barcode → cae en CodBarras_KeyDown
+IntentarVincular() encola
+VinculadorService guarda
+Con eso ya tendrías el flujo base estable.
+Si quieres, en el siguiente paso te dejo el bloque completo de IntentarVincular() y CodBarras_KeyDown revisado para que quede amarrado con tu VinculadorService actual.
