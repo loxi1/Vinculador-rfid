@@ -114,3 +114,43 @@ IntentarVincular() encola
 VinculadorService guarda
 Con eso ya tendrías el flujo base estable.
 Si quieres, en el siguiente paso te dejo el bloque completo de IntentarVincular() y CodBarras_KeyDown revisado para que quede amarrado con tu VinculadorService actual.
+
+Sí. Vi el repo actualizado y ya estás muy cerca.
+Lo que vi
+En frmLector.cs ya tienes:
+CodBarras_KeyDown guardando _ultimoCodigoBarra y llamando IntentarVincular(). �
+GitHub +1
+SetRfid() guardando _ultimoRfid, agregando al grid y llamando IntentarVincular(). �
+GitHub +1
+IntentarVincular() creando VinculacionRequest con barcode, RFID y nroHM.Text. �
+GitHub
+Y en VinculadorService.cs ya tienes la cola, Enqueue() y el procesamiento. �
+GitHub +2
+Qué te recomiendo ajustar ahora
+1. Mejorar CodBarras_KeyDown
+Déjalo así para que no meta salto de línea ni beep raro al presionar Enter:
+C#
+private void CodBarras_KeyDown(object sender, KeyEventArgs e)
+{
+    if (e.KeyCode == Keys.Enter)
+    {
+        e.SuppressKeyPress = true;
+        e.Handled = true;
+
+        _ultimoCodigoBarra = (CodBarras.Text ?? "").Trim();
+
+        if (string.IsNullOrWhiteSpace(_ultimoCodigoBarra))
+        {
+            toolStripStatusLbl.Text = "Código de barras vacío";
+            return;
+        }
+
+        toolStripStatusLbl.Text = "Código de barras leído: " + _ultimoCodigoBarra;
+        IntentarVincular();
+    }
+}
+Con eso, si configuras el lector para enviar Enter, el flujo queda limpio.
+2. Endurecer IntentarVincular()
+Para evitar encolar varias veces el mismo par cuando el RFID ya quedó leído y el barcode vuelve a disparar Enter, usa esto:
+C#
+private
