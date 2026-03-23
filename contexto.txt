@@ -1,3 +1,7 @@
 este es el mensaje de error que sale Procedure USP_SAL_EMB_CON_RFID excects parameter @tqr, which was not supplied.
-por favor validar caundo copie el codigo me sale esto: OnInsertadoOk(...); en BDPrenda.cs
-“optimiza el flujo completo lector + sybase”
+por favor validar caundo copie el codigo me sale esto: OnInsertadoOk(...); en BDPrenda.cs, adaptado a las conexiones que ya tenemos en MySQLconexion.cs, Sybase.cs  SybaseHelper.cs
+“optimiza el flujo completo lector + sybase” por favor convertir bien los archivos a c#: 
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/BDPrenda.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/BDPrendaScm.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/DBConsultarPrenda.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/DBConsultas.vb
