@@ -405,7 +405,7 @@ namespace DS9908R_App
 
                 if (PareceRfid(valor))
                 {
-                    AgregarRfid(valor);
+                    SetRfid(valor);
                 }
                 else
                 {
@@ -463,8 +463,11 @@ namespace DS9908R_App
         {
             BeginInvoke(new Action(() =>
             {
-                CodBarras.Text = codigo.Trim();
+                _ultimoCodigoBarra = (codigo ?? "").Trim();
+                CodBarras.Text = _ultimoCodigoBarra;
                 toolStripStatusLbl.Text = "Código de barras leído";
+
+                IntentarVincular();
             }));
         }
 
@@ -810,16 +813,7 @@ namespace DS9908R_App
             {
                 CodBarras.Text = "";
                 CodBarras.ForeColor = pinturaNegra;
-                BuscarPrenda();
             }
-        }
-
-        private void BuscarPrenda()
-        {
-            string CodBarras = BuscarCodBarras.Text;
-            string op, corte, subcorte, talla, idtalla;
-            object ultimoValor = null;
-
         }
     }
 }
