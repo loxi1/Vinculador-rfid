@@ -1,16 +1,2 @@
-Donde coloco esto:
-dgvTagList.DataBindingComplete += dgvTagList_DataBindingComplete;
-💎 Mejora visual (te recomiendo agregar esto)
-Para que se vea más moderno:
-C#
-dgvTagList.EnableHeadersVisualStyles = false;
-dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
-dgvTagList.BorderStyle = BorderStyle.None;
-dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-dgvTagList.RowHeadersVisible = false;
-por favor validar lo que se puso porque  no se ve tan bien
-te paso la imagen de como se ve hasta ahora:
-https://i.postimg.cc/XYP8QPt1/Screenshot-6.png
-como vez se ve el tab que lleva como los botones de un scoll fechas derecha e izquierda
-asi se deberia ver aproximadamente sin considerar la conexion solo ver el formulario dentro del tabControl
-https://i.ibb.co/60s1dcB0/Captura-18-1.png
+los nombres son: tabMenu, dgvTagList, BtnBuscarHM, BtnLimpiarHM, TextBoxHM, TextBoxOP, TextBoxOP, btnClear, btnLimpiarRFID y CodBarras en la cabecera tengo esto input: btnBuscarScanners, cmbScanners.
+revisar frmLecto.txt para mostrar el campo: MsnVincular, lblTotalCount y llenvar datos a DataGridView1 
