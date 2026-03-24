@@ -142,14 +142,14 @@ namespace DS9908R_App
                 EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
                 EstiloBoton(btnVerConsolidado, pinturaVerdeMarMedio, pinturaBlanca, pinturaGrisOscuro);
 
-                // tabcontrol
-                tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
-                tabControl.DrawItem += TabControl_DrawItem;
-                tabControl.SizeMode = TabSizeMode.Fixed;
-                AdjustTabWidth(tabControl);
+                // tabMenu
+                tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
+                tabMenu.DrawItem += tabMenu_DrawItem;
+                tabMenu.SizeMode = TabSizeMode.Fixed;
+                AdjustTabWidth(tabMenu);
 
                 // contenedor
-                EstiloContenedorTablaRFID(panelRFID);
+                EstiloContenedorTablaRFID(dgvTagList);
             }
             catch (Exception ex)
             {
@@ -819,7 +819,7 @@ namespace DS9908R_App
             btn.MouseLeave += (s, e) => btn.BackColor = fondo;
         }
 
-        private void TabControl_DrawItem(object sender, DrawItemEventArgs e)
+        private void tabMenu_DrawItem(object sender, DrawItemEventArgs e)
         {
             TabControl tab = sender as TabControl;
             TabPage page = tab.TabPages[e.Index];
@@ -845,20 +845,31 @@ namespace DS9908R_App
             );
         }
 
-        private void AdjustTabWidth(TabControl tab)
+        private void EstiloContenedorTablaRFID(DataGridView dgvTagList)
         {
-            int totalWidth = tab.Width;
-            int tabCount = tab.TabCount;
+            if (dgvTagList == null) return;
 
-            if (tabCount == 0) return;
+            dgvTagList.BackgroundColor = pinturaBlanca;
+            dgvTagList.GridColor = pinturaGris;
 
-            tab.ItemSize = new Size(totalWidth / tabCount, 40);
-        }
+            dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
+            dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
+            dgvTagList.DefaultCellStyle.Font = new Font("Arial", 10);
+            dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-        private void EstiloContenedorTablaRFID(Panel panel)
-        {
-            panel.BackColor = Color.White;
-            panel.BorderStyle = BorderStyle.FixedSingle;
+            dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
+            dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 12, FontStyle.Bold);
+            dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+            dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
+
+            dgvTagList.RowTemplate.Height = 30;
+
+            // Ocultar columna clnTID si existe
+            if (dgvTagList.Columns.Contains("clnTID"))
+            {
+                dgvTagList.Columns["clnTID"].Visible = false;
+            }
         }
 
         private void ResaltarUltimaFila(DataGridView dgv)
@@ -869,6 +880,21 @@ namespace DS9908R_App
 
             dgv.Rows[last].DefaultCellStyle.BackColor = Color.LightGreen;
             dgv.FirstDisplayedScrollingRowIndex = last;
+        }
+
+        private void AdjustTabWidth(TabControl tabCtrl)
+        {
+            if (tabCtrl == null || tabCtrl.TabCount == 0)
+                return;
+
+            int totalWidth = tabCtrl.Width;
+            int tabCount = tabCtrl.TabCount;
+
+            int tabWidth = totalWidth / tabCount;
+            if (tabWidth < 100)
+                tabWidth = 100;
+
+            tabCtrl.ItemSize = new Size(tabWidth, 40);
         }
     }
 }
