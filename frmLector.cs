@@ -104,6 +104,34 @@ namespace DS9908R_App
             {
                 ConfigurarGridRfid();
 
+                // contenedor
+                EstiloContenedorTablaRFID();
+
+                ConfigurarEstiloDataGridView(DataGridView1);
+                BloquearColumnas(DataGridView1);
+
+                EstiloBoton(btnClear, pinturaRojoIndio, pinturaBlanca, pinturaRojoCarmesi);
+                EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
+                EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+                EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
+                EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+
+                EstiloTextBox(CodBarras);
+                EstiloTextBox(TextBoxHM);
+                EstiloTextBox(TextBoxOP);
+
+                EstiloComboBox(cmbScanners);
+                EstiloLabelMensaje(MsnVincular);
+                EstiloLabelContador(lblTotalCount);
+
+                // tabMenu
+                tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
+                tabMenu.SizeMode = TabSizeMode.Fixed;
+                tabMenu.Multiline = false;
+                tabMenu.DrawItem -= TabMenu_DrawItem;
+                tabMenu.DrawItem += TabMenu_DrawItem;
+                AdjustTabWidth(tabMenu);
+
                 _vinculador = new VinculadorService();
                 _vinculador.OnInfo += Vinculador_OnInfo;
                 _vinculador.OnError += Vinculador_OnError;
@@ -126,30 +154,6 @@ namespace DS9908R_App
                 HabilitarTabsTrabajo(false);
 
                 CodBarras.Focus();
-
-                ConfigurarEstiloDataGridView(DataGridView1);
-                BloquearColumnas(DataGridView1);
-
-                // secundarios
-                MejorarDataGridView(DataGridView2);
-                MejorarDataGridView(DataGridView3);
-
-                // botones
-                EstiloBoton(btnClear, pinturaRojoIndio, pinturaBlanca, pinturaRojoCarmesi);
-                EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
-
-                EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
-                EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
-                EstiloBoton(btnVerConsolidado, pinturaVerdeMarMedio, pinturaBlanca, pinturaGrisOscuro);
-
-                // tabMenu
-                tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
-                tabMenu.DrawItem += tabMenu_DrawItem;
-                tabMenu.SizeMode = TabSizeMode.Fixed;
-                AdjustTabWidth(tabMenu);
-
-                // contenedor
-                EstiloContenedorTablaRFID(dgvTagList);
             }
             catch (Exception ex)
             {
@@ -552,6 +556,7 @@ namespace DS9908R_App
                 return;
             }
 
+            SetMensajeVincular(msg);
             SetEstado(msg, Color.Khaki);
         }
 
@@ -563,13 +568,14 @@ namespace DS9908R_App
                 return;
             }
 
+            SetMensajeVincular(msg);
             SetEstado(msg, Color.LightCoral);
             ReproducirError();
 
+            AlertaManager.MostrarAlerta(msg, pinturaRoja, 3, 5);
+
             CodBarras.Clear();
             CodBarras.Focus();
-
-            MostrarAlerta(msg);
         }
 
         private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
@@ -580,16 +586,32 @@ namespace DS9908R_App
                 return;
             }
 
+            if (data == null)
+                data = new Dictionary<string, object>();
+
             if (data.ContainsKey("op"))
-                nroOP.Text = Convert.ToString(data["op"]);
+                TextBoxOP.Text = Convert.ToString(data["op"]);
 
             if (data.ContainsKey("hoja_marcacion"))
-                nroHM.Text = Convert.ToString(data["hoja_marcacion"]);
+                TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
+            SetMensajeVincular("Prenda registrada exitosamente.");
+
+            LlenarPrimeraFilaDataGridView1(data);
+            ActualizarTotalCount();
 
             ReproducirOk();
-            AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerdeMedio, 1, 5);
+            AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5);
 
-            LimpiarTodo();
+            CodBarras.Clear();
+            _ultimoCodigoBarra = "";
+            _ultimoRfid = "";
+            _rfidPendientes.Clear();
+
+            dgvTagList.Rows.Clear();
+            cantidadRFID.Text = "0";
+
+            CodBarras.Focus();
             SetEstado("OK", Color.LightGreen);
         }
 
@@ -751,6 +773,8 @@ namespace DS9908R_App
 
         private void ConfigurarEstiloDataGridView(DataGridView dgv)
         {
+            if (dgv == null) return;
+
             dgv.ReadOnly = false;
             dgv.AllowUserToAddRows = false;
             dgv.AllowUserToDeleteRows = false;
@@ -760,21 +784,27 @@ namespace DS9908R_App
 
             dgv.BackgroundColor = Color.White;
             dgv.BorderStyle = BorderStyle.None;
-
             dgv.EnableHeadersVisualStyles = false;
+            dgv.RowHeadersVisible = false;
+            dgv.GridColor = Color.FromArgb(220, 220, 220);
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
 
             dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
             dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
-            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+            dgv.DefaultCellStyle.BackColor = Color.White;
+            dgv.DefaultCellStyle.ForeColor = Color.Black;
             dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
             dgv.DefaultCellStyle.SelectionForeColor = Color.White;
-
-            dgv.RowHeadersVisible = false;
-            dgv.GridColor = Color.FromArgb(220, 220, 220);
+            dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
             dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+            dgv.RowTemplate.Height = 34;
+            dgv.ColumnHeadersHeight = 38;
         }
 
         private void MejorarDataGridView(DataGridView dgv)
@@ -805,18 +835,16 @@ namespace DS9908R_App
 
         private void EstiloBoton(Button btn, Color fondo, Color texto, Color hover)
         {
+            if (btn == null) return;
+
             btn.BackColor = fondo;
             btn.ForeColor = texto;
             btn.FlatStyle = FlatStyle.Flat;
             btn.FlatAppearance.BorderSize = 0;
-
-            btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            btn.FlatAppearance.MouseOverBackColor = hover;
+            btn.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             btn.Cursor = Cursors.Hand;
-
-            btn.Height = 40;
-
-            btn.MouseEnter += (s, e) => btn.BackColor = hover;
-            btn.MouseLeave += (s, e) => btn.BackColor = fondo;
+            btn.Height = 38;
         }
 
         private void tabMenu_DrawItem(object sender, DrawItemEventArgs e)
@@ -845,7 +873,7 @@ namespace DS9908R_App
             );
         }
 
-        private void EstiloContenedorTablaRFID(DataGridView dgvTagList)
+        private void EstiloContenedorTablaRFID()
         {
             if (dgvTagList == null) return;
 
@@ -854,18 +882,33 @@ namespace DS9908R_App
 
             dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
             dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
-            dgvTagList.DefaultCellStyle.Font = new Font("Arial", 10);
+            dgvTagList.DefaultCellStyle.Font = new Font("Arial", 10F, FontStyle.Regular);
             dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+            dgvTagList.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
+            dgvTagList.DefaultCellStyle.SelectionForeColor = pinturaBlanca;
 
+            dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
             dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
-            dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 12, FontStyle.Bold);
+            dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 11F, FontStyle.Bold);
             dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
 
+            dgvTagList.EnableHeadersVisualStyles = false;
+            dgvTagList.BorderStyle = BorderStyle.None;
+            dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgvTagList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
             dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
-
             dgvTagList.RowTemplate.Height = 30;
+            dgvTagList.ColumnHeadersHeight = 36;
 
-            // Ocultar columna clnTID si existe
+            dgvTagList.RowHeadersVisible = false;
+            dgvTagList.AllowUserToAddRows = false;
+            dgvTagList.AllowUserToDeleteRows = false;
+            dgvTagList.AllowUserToResizeRows = false;
+            dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvTagList.MultiSelect = false;
+            dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
             if (dgvTagList.Columns.Contains("clnTID"))
             {
                 dgvTagList.Columns["clnTID"].Visible = false;
@@ -899,7 +942,123 @@ namespace DS9908R_App
 
         private void dgvTagList_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
-            EstiloContenedorTablaRFID(dgvTagList);
+            EstiloContenedorTablaRFID();
+        }
+
+        private void BloquearColumnasDataGridView1()
+        {
+            foreach (DataGridViewColumn column in DataGridView1.Columns)
+            {
+                if (column.Name != "hoja_marcacion")
+                {
+                    column.ReadOnly = true;
+                }
+            }
+        }
+
+        private void EstiloTextBox(TextBox txt)
+        {
+            if (txt == null) return;
+
+            txt.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+            txt.BackColor = Color.White;
+            txt.ForeColor = Color.Black;
+            txt.BorderStyle = BorderStyle.FixedSingle;
+        }
+
+        private void EstiloComboBox(ComboBox cmb)
+        {
+            if (cmb == null) return;
+
+            cmb.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+            cmb.BackColor = Color.White;
+            cmb.ForeColor = Color.Black;
+            cmb.DropDownStyle = ComboBoxStyle.DropDownList;
+        }
+
+        private void EstiloLabelMensaje(Label lbl)
+        {
+            if (lbl == null) return;
+
+            lbl.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lbl.ForeColor = Color.FromArgb(45, 45, 48);
+            lbl.BackColor = Color.Transparent;
+        }
+
+        private void EstiloLabelContador(Label lbl)
+        {
+            if (lbl == null) return;
+
+            lbl.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lbl.ForeColor = Color.FromArgb(0, 120, 215);
+            lbl.BackColor = Color.Transparent;
+        }
+
+        private void SetMensajeVincular(string mensaje)
+        {
+            if (MsnVincular == null)
+                return;
+
+            if (MsnVincular.InvokeRequired)
+            {
+                MsnVincular.Invoke(new Action<string>(SetMensajeVincular), mensaje);
+                return;
+            }
+
+            MsnVincular.Text = mensaje ?? "";
+        }
+
+        private void ActualizarTotalCount()
+        {
+            if (lblTotalCount == null || DataGridView1 == null)
+                return;
+
+            int total = DataGridView1.AllowUserToAddRows
+                ? DataGridView1.Rows.Count - 1
+                : DataGridView1.Rows.Count;
+
+            if (total < 0)
+                total = 0;
+
+            lblTotalCount.Text = total.ToString();
+        }
+
+        private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+        {
+            if (DataGridView1 == null || data == null)
+                return;
+
+            if (DataGridView1.InvokeRequired)
+            {
+                DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+                return;
+            }
+
+            int rowIndex = DataGridView1.Rows.Insert(0);
+
+            SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+        }
+
+        private void SetCellValueIfExists(DataGridView dgv, int rowIndex, string columnName, Dictionary<string, object> data)
+        {
+            if (dgv == null || data == null)
+                return;
+
+            if (!dgv.Columns.Contains(columnName))
+                return;
+
+            object value = data.ContainsKey(columnName) ? data[columnName] : "";
+            dgv.Rows[rowIndex].Cells[columnName].Value = value ?? "";
         }
     }
 }
