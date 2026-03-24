@@ -7,6 +7,14 @@ https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/Sybase.c
 https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/SybaseHelper.cs
 https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/MySQLconexion.cs
 y mostrarme el codigo final de cada uno de ellos
+tener como base: 
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/BDPrenda.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/BDPrendaScm.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/DBConsultas.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/Sybase.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/MySQLconexion.vb
+https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/SybaseHelper.vb
+
 
 por favor modificar o integer a lo que ya se tiene
 Perfecto, ahora sí vamos a hacerlo bien hecho nivel producción y además te corrijo exactamente lo que está fallando en tu repo 👇
