@@ -1,413 +1,141 @@
-sigo teniendo dos errores
-1>------ Rebuild All started: Project: DS9908R_App, Configuration: Debug x64 ------
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(118,29,118,46): error CS0103: The name 'btnBuscarScanners' does not exist in the current context
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(1016,28,1016,56): error CS0029: Cannot implicitly convert type 'void' to 'int'
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\FormAlerta.cs(16,21,16,27): warning CS0169: The field 'FormAlerta.conteo' is never used
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(27,24,27,44): warning CS0414: The field 'frmLector._hojaMarcacionActual' is assigned but its value is never used
-========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
-
-revisar frmLecto.txt
-' Cola concurrente para almacenar los valores de CodBarras
-Private CodBarrasQueue As New ConcurrentQueue(Of String)()
-Private IsProcessingQueue As Boolean = False
-Private cacheRFID As New Dictionary(Of String, Boolean)
-Private Const MAX_CACHE_SIZE As Integer = 500
-
-Private Sub CheckAndClearCache()
-        If cacheRFID.Count > MAX_CACHE_SIZE Then
-            Console.WriteLine($"⚠️ Caché superó {MAX_CACHE_SIZE} elementos, limpiando...")
-            cacheRFID.Clear() ' Limpiar completamente la caché
-            Console.WriteLine("✅ Caché vaciada.")
-        End If
-    End Sub
-
-Private Sub CantidadFilas()
-        Dim totalRegistros As Integer = If(DataGridView1.AllowUserToAddRows, DataGridView1.Rows.Count - 1, DataGridView1.Rows.Count)
-        SafeUpdateLabel(lblTotalCount, CType(totalRegistros, String))
-
-        ' 🔥 Verificar si se supera el límite de 500 registros
-        If totalRegistros >= MAX_CACHE_SIZE Then
-            LimpiarTodo()
-        End If
-    End Sub
-
-  Private Function CantidadFilasLeidas() As Integer
-        Dim totalRegistrosLeidos As Integer = -1
-        SafeUpdateControl(dgvTagList, Sub(dgv)
-                                          totalRegistrosLeidos = If(dgv.AllowUserToAddRows, dgv.Rows.Count - 1, dgv.Rows.Count)
-                                      End Sub)
-        Return totalRegistrosLeidos
-    End Function
-
-        Private Sub SafeUpdateControl(Of T As Control)(control As T, updateAction As Action(Of T))
-        If control.InvokeRequired Then
-            control.Invoke(New Action(Of T, Action(Of T))(AddressOf SafeUpdateControl), control, updateAction)
-        Else
-            updateAction(control)
-        End If
-    End Sub
-
-        Private Sub ActualizarDataGridView1(fila As Object())
-        SafeUpdateControl(DataGridView1, Sub(dgv)
-                                             dgv.Rows.Add(fila)
-                                         End Sub)
-    End Sub
-
-    Private Sub LimpiarTodo()
-        Try
-            Console.WriteLine("🚨 Se alcanzaron 500 registros. Limpiando todo...")
-
-            ' ✅ Ejecutar los métodos de limpieza
-            BtnClear_Click(Nothing, EventArgs.Empty) ' Simula el clic en BtnClear
-            BtnLimpiarRFID_Click(Nothing, EventArgs.Empty) ' Simula el clic en BtnLimpiarRFID
-
-            ' ✅ Forzar actualización de UI
-            BeginInvoke(New Action(Sub()
-                                       CodBarras.Focus()
-                                       CodBarras.Select()
-                                   End Sub))
-
-            Console.WriteLine("✅ Limpieza completada.")
-
-        Catch ex As Exception
-            Console.WriteLine($"❌ Error al limpiar registros: {ex.Message}")
-        End Try
-    End Sub
-
-    Private Sub BtnClear_Click(sender As Object, e As EventArgs) Handles btnClear.Click
-        Try
-            ' Limpiar la lista de tags y contar etiquetas
-            ClearTagListView()
-            CountTags()
-
-            BtnLimpiarRFID_Click(Nothing, EventArgs.Empty) ' Simula el clic en BtnLimpiarRFID
-            BtnLimpiarOPHM_Click(Nothing, EventArgs.Empty)
-
-            ' Limpiar mensaje de estado y caja de texto
-            MsnVincular.Text = ""
-            CodBarras.Text = ""
-            CodBarras.Focus()
-
-            DataGridView1.Rows.Clear()
-
-            LimpiarGridConsolidado()
-
-            NuevoTimbrado()
-
-        Catch ex As Exception
-            Console.WriteLine($"Error al limpiar la tabla DataGridView1: {ex.Message}")
-            'MostrarAlerta("Error al limpiar la tabla. Consulte con el administrador.", pinturaRoja, 3, 5)
-        End Try
-    End Sub
-
-      Private Sub BtnLimpiarRFID_Click(sender As Object, e As EventArgs) Handles btnLimpiarRFID.Click
-        ClearTagListView()
-        CodBarras.Text = ""
-    End Sub
-
-    
-    Private Function Msn(llReturn As Long) As String
-        Dim message As String
-
-        Select Case llReturn
-            Case 1
-                ' Inserción exitosa (1 fila insertada)
-                message = "El registro fue insertado correctamente."
-
-            Case 0
-                ' No se insertaron filas (por ejemplo, datos duplicados o restricciones violadas)
-                message = "No se pudo insertar el registro. Es posible que los datos no sean válidos o que ya existan registros con valores duplicados."
-
-            Case -1
-                ' Error general en la ejecución (por ejemplo, un error con la base de datos)
-                message = "Error al ejecutar la consulta. Por favor, revisa los detalles del error en el log."
-
-            Case 2
-                ' Violación de clave primaria (un valor duplicado en una columna de clave primaria)
-                message = "No se pudo insertar el registro debido a una violación de clave primaria (registro duplicado)."
-
-            Case 3
-                ' Error de conexión (no se pudo conectar con la base de datos)
-                message = "Error al conectar con la base de datos. Asegúrate de que el servidor esté disponible."
-
-            Case Else
-                ' Si el valor de llReturn no coincide con ninguno de los casos anteriores
-                message = $"Error desconocido (Código: {llReturn}). Por favor, contacta con el soporte técnico."
-        End Select
-
-        Return message
-    End Function
-
-    Private Sub BuscarPrenda()
-        Dim CodBarras As String = BuscarCodBarras.Text
-        Dim op As String
-        Dim corte As String
-        Dim subcorte As String
-        Dim talla As String
-        Dim idtalla As String
-        Dim ultimoValor As Object = Nothing
-        MsnBusquedaPrenda.Text = ""
-        BuscarCodBarras.Text = ""
-        op = CodBarras.Substring(0, 10)
-        corte = CodBarras.Substring(10, 4)
-        talla = CodBarras.Substring(14, 2)
-        idtalla = CodBarras.Substring(16)
-        subcorte = m_DBConsultarPrenda.ObtenerSubCorte(op, corte, talla, idtalla)
-        Thread.Sleep(500)
-
-        Dim l_return = m_DBConsultarPrenda.GetHistorialPrenda(op, corte, subcorte, talla, idtalla)
-
-        If l_return.Rows.Count > 0 Then
-            Dim ultimaFila = l_return.Rows(l_return.Rows.Count - 1)
-            If Not IsDBNull(ultimaFila("AREA")) Then
-                ultimoValor = ultimaFila("AREA")
-                MsnBusquedaPrenda.Text = $"La Prenda Timbrada Se Encuentra Actualmente En: {ultimoValor}"
-            End If
-        End If
-
-        ' Cargar los datos en el DataGridView
-        With DataGridView2
-            .AutoGenerateColumns = True ' Generar columnas automáticamente
-            .DataSource = l_return      ' Establecer el origen de datos
-
-            ' Ajustar los encabezados a letra capital
-            For Each column As DataGridViewColumn In .Columns
-                column.HeaderText = StrConv(column.HeaderText, VbStrConv.ProperCase)
-            Next
-
-            ' Configurar estilo de encabezado
-            .ColumnHeadersDefaultCellStyle.Font = New Font("Arial", 15, FontStyle.Bold) ' Fuente Arial, tamaño 10, negrita
-        End With
-    End Sub
-
-
-    Private Sub BuscarCodBarras_KeyDown(sender As Object, e As KeyEventArgs) Handles BuscarCodBarras.KeyDown
-        If e.KeyCode = Keys.Enter Then
-            ' Evitar que el Enter produzca un sonido o afecte otros eventos
-            e.SuppressKeyPress = True
-            BuscarPrenda()
-        End If
-    End Sub
-
-
-    Private Sub BuscarCodBarras_Enter(sender As Object, e As EventArgs) Handles BuscarCodBarras.Enter
-        If BuscarCodBarras.Text = "Codigo de Barras..." Then
-            BuscarCodBarras.Text = ""
-            BuscarCodBarras.ForeColor = pinturaNegra ' Cambia el color del texto a negro cuando el usuario escribe
-        End If
-    End Sub
-
-    Private Sub BuscarCodBarras_Leave(sender As Object, e As EventArgs) Handles BuscarCodBarras.Leave
-        If String.IsNullOrWhiteSpace(BuscarCodBarras.Text) Then
-            BuscarCodBarras.Text = "Codigo de Barras..."
-            BuscarCodBarras.ForeColor = pinturaGris ' Cambia el color del texto a gris para parecer un placeholder
-        End If
-    End Sub
-
-    Private Sub TextBoxOP_Enter(sender As Object, e As EventArgs) Handles TextBoxOP.Enter
-        If TextBoxOP.Text = "Nro OP..." Then
-            TextBoxOP.Text = ""
-            TextBoxOP.ForeColor = pinturaNegra ' Cambia el color del texto a negro cuando el usuario escribe
-        End If
-    End Sub
-
-    Private Sub TextBoxOP_Leave(sender As Object, e As EventArgs) Handles TextBoxOP.Leave
-        If String.IsNullOrWhiteSpace(TextBoxOP.Text) Then
-            TextBoxOP.Text = "Nro OP..."
-            TextBoxOP.ForeColor = pinturaGris ' Cambia el color del texto a gris para parecer un placeholder
-        End If
-    End Sub
-
-    Private Sub TextBoxOP_TextChanged(sender As Object, e As EventArgs) Handles TextBoxOP.TextChanged
-        If TextBoxOP.TextLength = 5 Then
-            ' Preparar el diccionario de parámetros
-            Dim pOp As String = "10000" & TextBoxOP.Text
-            Dim tipo As String = "norpd"
-            Dim whereParameters As New Dictionary(Of String, Object) From {{tipo, pOp}}
-            Dim valor As String = m_DBConsultarPrenda.ValidarOP(whereParameters, tipo)
-
-            If String.IsNullOrWhiteSpace(valor) Then
-                TextBoxOP.Text = ""
-                TextBoxOP.Focus()
-                AlertaError($"Verificar la OP: {pOp} .", pinturaRojoLadrillo)
-            Else
-                TextBoxOP.Text = valor
-                TextBoxOP.Enabled = False
-                TextBoxHM.Enabled = True
-                TextBoxHM.Text = ""
-                TextBoxHM.Focus()
-            End If
-        End If
-    End Sub
-
-    Private Sub TextBoxOP_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBoxOP.KeyPress
-        ' Permitir números, punto decimal y teclas de control
-        If Not Char.IsDigit(e.KeyChar) AndAlso Not Char.IsControl(e.KeyChar) AndAlso e.KeyChar <> "." Then
-            e.Handled = True
-        End If
-
-        ' Asegurarse de que solo haya un punto decimal
-        If e.KeyChar = "." AndAlso TextBoxOP.Text.Contains(".") Then
-            e.Handled = True
-        End If
-    End Sub
-
-    Private Sub TextBoxHM_KeyDown(sender As Object, e As KeyEventArgs) Handles TextBoxHM.KeyDown
-        ' Verificar si se presionó la tecla Enter o Tab
-        If e.KeyCode = Keys.Enter Then
-            e.SuppressKeyPress = True ' Evitar el sonido "ding" del sistema
-            ' Acción a realizar cuando se presiona valida HM
-            ValidarHM(TextBoxOP, TextBoxHM, BtnBuscarHM)
-        End If
-        Dim controlConFoco As Control = Me.ActiveControl
-    End Sub
-
-    Private Sub TextBoxHM_KeyPress(sender As Object, e As KeyPressEventArgs) Handles TextBoxHM.KeyPress
-        ' Permitir números, punto decimal y teclas de control
-        If Not Char.IsDigit(e.KeyChar) AndAlso Not Char.IsControl(e.KeyChar) AndAlso e.KeyChar <> "." Then
-            e.Handled = True
-        End If
-
-        ' Asegurarse de que solo haya un punto decimal
-        If e.KeyChar = "." AndAlso TextBoxHM.Text.Contains(".") Then
-            e.Handled = True
-        End If
-
-        ' Limitar a 3 caracteres
-        If TextBoxHM.Text.Length >= 3 AndAlso Not Char.IsControl(e.KeyChar) Then
-            e.Handled = True
-        End If
-
-        ' Manejar el carácter Tab si AcceptsTab es True
-        If e.KeyChar = Chr(Keys.Tab) Then
-            e.Handled = True ' Opcional: Evitar la inserción si no deseas un carácter Tab
-        End If
-    End Sub
-
-    Private Sub TextBoxHM_PreviewKeyDown(sender As Object, e As PreviewKeyDownEventArgs) Handles TextBoxHM.PreviewKeyDown
-        ' Capturar la tecla Tab en PreviewKeyDown
-        If e.KeyCode = Keys.Tab Then
-            ' Acción para la tecla Tab valida HM
-            ValidarHM(TextBoxOP, TextBoxHM, BtnBuscarHM)
-            e.IsInputKey = True ' Marca la tecla Tab como una entrada válida para personalizar el comportamiento
-        End If
-    End Sub
-
-    Private Sub BtnBuscarHM_Click(sender As Object, e As EventArgs) Handles BtnBuscarHM.Click
-        BuscarCabeceraHM()
-        BuscarHMDetalle()
-    End Sub
-
-    Public Sub BuscarHMDetalle()
-        Dim pOp As String = TextBoxOP.Text
-        Dim pHm As String = TextBoxHM.Text
-
-        Dim whereParameters As New Dictionary(Of String, Object) From {{"norpd", pOp}, {"nhjmr", pHm}}
-        Dim l_return = m_DBConsultarPrenda.BuscarHMDetalle(whereParameters)
-
-        If l_return.Item1 = 0 Then
-            Return
-        End If
-
-        ' Mostrar los datos en el DataGridView3
-        MostrarEnDataGridView3(l_return.Item2, l_return.Item3)
-    End Sub
-
-    Private Sub BuscarCabeceraHM()
-        Dim pOp As String = TextBoxOP.Text
-        Dim pHm As String = TextBoxHM.Text
-
-        Dim whereParameters As New Dictionary(Of String, Object) From {{"norpd", pOp}, {"nhjmr", pHm}}
-        Dim l_return As DataTable = m_DBConsultarPrenda.BuscarHMCabecera(whereParameters)
-
-        ' Validar si el DataTable tiene datos
-        If l_return Is Nothing OrElse l_return.Rows.Count = 0 Then
-            ' Si no hay datos, mostrar una alerta y salir del método
-            AlertaError($"No se encontraron registros para la OP: {pOp} {pHm}", pinturaRojoLadrillo)
-            Return
-        End If
-
-        CargarValoresEnLabels(l_return)
-    End Sub
-
-    Private Sub CargarValoresEnLabels(dataTable As DataTable)
-        ' Obtener la primera fila del DataTable
-        Dim dataRow As DataRow = dataTable.Rows(0)
-
-        ' Iterar por cada columna del DataTable
-        For Each column As DataColumn In dataTable.Columns
-            Dim columnName As String = column.ColumnName
-            Dim controlName As String = "text_" & columnName ' Construir el nombre del LabelBox dinámicamente
-
-            ' Buscar el control en el formulario por su nombre
-            Dim labelControl As Control = Me.Controls.Find(controlName, True).FirstOrDefault()
-
-            ' Si se encuentra el control y es un Label, asignar el valor
-            If labelControl IsNot Nothing AndAlso TypeOf labelControl Is Label Then
-                CType(labelControl, Label).Text = dataRow(columnName).ToString()
-            End If
-        Next
-    End Sub
-
-    Private Sub MostrarEnDataGridView3(totalTalla As List(Of Dictionary(Of String, Object)), detalleTalla As Dictionary(Of String, List(Of Dictionary(Of String, Object))))
-        ' Limpiar cualquier configuración previa
-        DataGridView3.DataSource = Nothing
-        DataGridView3.Rows.Clear()
-        DataGridView3.Columns.Clear()
-
-        ' Configurar las columnas del DataGridView
-        DataGridView3.Columns.Add("Color", "Color")
-        DataGridView3.Columns.Add("Descripcion", "Descripción")
-        DataGridView3.Columns.Add("Talla", "Talla")
-        DataGridView3.Columns.Add("Cantidad", "Cantidad")
-        DataGridView3.Columns.Add("Total", "Total")
-
-        ' Iterar sobre los datos y agregar filas al DataGridView
-        For Each total In totalTalla
-            Dim cclrcl As String = total("cclrcl").ToString()
-            Dim tclrcl As String = total("tclrcl").ToString()
-            Dim totalCantidad As Integer = Convert.ToInt32(total("total"))
-
-            ' Agregar fila del resumen (Color y Total)
-            Dim resumenRowIndex As Integer = DataGridView3.Rows.Add()
-            DataGridView3.Rows(resumenRowIndex).Cells("Color").Value = cclrcl
-            DataGridView3.Rows(resumenRowIndex).Cells("Descripcion").Value = tclrcl
-            DataGridView3.Rows(resumenRowIndex).Cells("Total").Value = totalCantidad.ToString("N0") ' Formato numérico
-
-            ' Aplicar estilos para resaltar la fila de resumen
-            With DataGridView3.Rows(resumenRowIndex)
-                .DefaultCellStyle.BackColor = pinturaGrisClaro
-                .DefaultCellStyle.Font = New Font(DataGridView3.Font, FontStyle.Bold)
-
-                ' Resaltar totales altos
-                If totalCantidad > 500 Then
-                    .DefaultCellStyle.ForeColor = pinturaVerdeOscuro
-                End If
-            End With
-
-            ' Agregar filas de detalle (Talla y Cantidad)
-            If detalleTalla.ContainsKey(cclrcl) Then
-                For Each detalle In detalleTalla(cclrcl)
-                    Dim talla As String = detalle("talla").ToString()
-                    Dim cantidad As Integer = Convert.ToInt32(detalle("cantidad"))
-
-                    Dim detalleRowIndex As Integer = DataGridView3.Rows.Add()
-                    DataGridView3.Rows(detalleRowIndex).Cells("Talla").Value = talla
-                    DataGridView3.Rows(detalleRowIndex).Cells("Cantidad").Value = cantidad.ToString("N0") ' Formato numérico
-
-                    ' Dejar las celdas de Color y Total en blanco para que visualmente parezca un detalle
-                    DataGridView3.Rows(detalleRowIndex).Cells("Color").Value = ""
-                    DataGridView3.Rows(detalleRowIndex).Cells("Descripcion").Value = ""
-                    DataGridView3.Rows(detalleRowIndex).Cells("Total").Value = ""
-
-                    ' Alternar color para las filas de detalle
-                    If detalleRowIndex Mod 2 = 0 Then
-                        DataGridView3.Rows(detalleRowIndex).DefaultCellStyle.BackColor = pinturaBlanca
-                    Else
-                        DataGridView3.Rows(detalleRowIndex).DefaultCellStyle.BackColor = pinturaAzulClaro
-                    End If
-                Next
-            End If
-        Next
-    End Sub
-
+Perfecto, ahora sí vamos quirúrgicamente a tus 2 errores 👇
+❌ ERROR 1
+Plain text
+CS0103: 'btnBuscarScanners' does not exist
+🔍 Causa real
+Ese control NO existe en tu Form en C#, aunque sí estaba en tu idea o VB.
+👉 O el nombre es distinto
+👉 O no lo agregaste en el Designer
+👉 O lo estás llamando antes de crearlo
+✅ SOLUCIONES (elige una)
+✔ Opción 1 (rápida)
+Simplemente comenta esta línea:
+C#
+// EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+✔ Opción 2 (correcta)
+Busca el nombre real en:
+👉 formLector.Designer.cs
+Ejemplo:
+C#
+private System.Windows.Forms.Button btnBuscarScanner; // 👈 sin "s"
+Entonces cambia:
+C#
+EstiloBoton(btnBuscarScanner, ...);
+✔ Opción 3 (seguro anti-error)
+C#
+if (btnBuscarScanners != null)
+{
+    EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+}
+❌ ERROR 2
+Plain text
+CS0029: Cannot implicitly convert type 'void' to 'int'
+🔍 Esto es EXACTAMENTE aquí:
+C#
+int total = ActualizarTotalCount(); // ❌
+✅ SOLUCIÓN
+✔ SOLO CAMBIA ESTO:
+C#
+ActualizarTotalCount(); // ✅
+✔ O si necesitas el valor:
+C#
+private int ActualizarTotalCount()
+y al final:
+C#
+return total;
+🔥 IMPORTANTE (REVISIÓN DEL VB QUE MANDASTE)
+Tu VB hace esto:
+VB
+If totalRegistros >= MAX_CACHE_SIZE Then
+    LimpiarTodo()
+End If
+y LimpiarTodo() llama:
+VB
+BtnClear_Click()
+BtnLimpiarRFID_Click()
+✅ TU C# YA LO TIENE BIEN
+Tienes:
+C#
+private void LimpiarTodo()
+{
+    LimpiarSoloRfid();
+
+    _ultimoCodigoBarra = "";
+    nroOP.Text = "";
+    nroHM.Text = "";
+
+    CodBarras.Focus();
+}
+👉 Entonces NO crees otra función nueva 👉 SOLO reutiliza esta
+✅ IMPLEMENTACIÓN FINAL CORRECTA
+🔹 ActualizarTotalCount
+C#
+private void ActualizarTotalCount()
+{
+    int total = DataGridView1.AllowUserToAddRows
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
+
+    if (total < 0)
+        total = 0;
+
+    lblTotalCount.Text = total.ToString();
+
+    if (total >= MAX_CACHE_SIZE)
+    {
+        Console.WriteLine("🚨 Se alcanzaron 500 registros");
+
+        AlertaManager.MostrarAlerta(
+            "Se alcanzaron 500 registros. Limpieza automática.",
+            pinturaGrisOscuro,
+            2,
+            5
+        );
+
+        LimpiarTodo(); // 🔥 usa tu método existente
+    }
+}
+🔥 BONUS (REPLICANDO TU VB EXACTO)
+Tu VB también limpia cache:
+VB
+If cacheRFID.Count > MAX_CACHE_SIZE Then
+    cacheRFID.Clear()
+End If
+✔ Agrega esto en C#:
+C#
+private void CheckAndClearCache()
+{
+    if (_rfidLeidos.Count > MAX_CACHE_SIZE)
+    {
+        Console.WriteLine("⚠️ Cache RFID lleno, limpiando...");
+        _rfidLeidos.Clear();
+    }
+}
+Y llámalo después de guardar RFID:
+C#
+CheckAndClearCache();
+⚠️ DETALLE IMPORTANTE (TU FLUJO)
+En VB:
+VB
+BtnClear_Click()
+BtnLimpiarRFID_Click()
+👉 en C# tú ya separaste:
+LimpiarTodo()
+LimpiarSoloRfid()
+✔ Está bien
+✔ Más limpio
+✔ Mantén así
+🚀 RESUMEN FINAL
+🔴 Error 1
+👉 botón no existe → corregir nombre o comentar
+🔴 Error 2
+👉 estás asignando un método void a int
+💣 SI QUIERES QUE QUEDE NIVEL PRODUCCIÓN REAL
+Te puedo dejar:
+🔊 sonido real scanner (ok/error)
+🟢 highlight animado de fila insertada
+⚡ parpadeo verde/rojo tipo fábrica
+📊 contador en tiempo real con color dinámico
+🧠 anti-duplicados inteligente (no solo cache)
+Solo dime:
+👉 "modo industrial PRO MAX"
