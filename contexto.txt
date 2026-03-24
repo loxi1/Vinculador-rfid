@@ -1,3 +1,14 @@
+se tiene este avance por favor integrar o midificar lo que ya se tiene:
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/BDPrendaScm.cs
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/BDPrenda.cs
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/DBConsultarPrenda.cs
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/DBConsultas.cs
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/Sybase.cs
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/SybaseHelper.cs
+https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/MySQLconexion.cs
+y mostrarme el codigo final de cada uno de ellos
+
+por favor modificar o integer a lo que ya se tiene
 Perfecto, ahora sí vamos a hacerlo bien hecho nivel producción y además te corrijo exactamente lo que está fallando en tu repo 👇
 🚨 1. ERROR REAL: @tqr
 expects parameter @tqr
