@@ -30,8 +30,7 @@ namespace DS9908R_App
 
             // Usar UtilidadesSVG para cargar el icono SVG
             UtilidadesSVG utilSVG = new UtilidadesSVG();
-            string svgPath = utilSVG.ObtenerRutaSVG("icono_error_512.svg");
-            utilSVG.CargarIconoSVG(icon_error, svgPath);
+            utilSVG.CargarIconoSVG(this.icon_error, "icono_error_512.svg");
 
             // Asignar tiempo personalizado
             tiempo_ = tiempo;
@@ -47,17 +46,7 @@ namespace DS9908R_App
             tiempo.Start();
             // Usar UtilidadesSVG para cargar el icono SVG
             var utilSVG = new UtilidadesSVG();
-            string svgPath = utilSVG.ObtenerRutaSVG("icono_error_512.svg");
-
-            if (!string.IsNullOrEmpty(svgPath))
-            {
-                utilSVG.CargarIconoSVG(this.icon_error, svgPath);
-            }
-            else
-            {
-                Console.WriteLine("⚠️ No se pudo encontrar la imagen SVG.");
-            }
-
+            utilSVG.CargarIconoSVG(this.icon_error, "icono_error_512.svg");
         }
 
         private void tiempo_Tick(object sender, EventArgs e)

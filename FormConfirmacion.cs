@@ -64,16 +64,7 @@ namespace DS9908R_App
         private void FormConfirmacion_Load(object sender, EventArgs e)
         {
             var utilSVG = new UtilidadesSVG();
-            string svgPath = utilSVG.ObtenerRutaSVG("icono_exclamation_512.svg");
-
-            if (!string.IsNullOrEmpty(svgPath))
-            {
-                utilSVG.CargarIconoSVG(this.pictureBox1, svgPath);
-            }
-            else
-            {
-                Console.WriteLine("⚠️ No se pudo encontrar la imagen SVG.");
-            }
+            utilSVG.CargarIconoSVG(this.pictureBox1, "icono_exclamation_512.svg");
         }
 
         private void btnAceptar_Click(object sender, EventArgs e)

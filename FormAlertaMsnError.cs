@@ -35,8 +35,7 @@ namespace DS9908R_App
         {
             // Usar UtilidadesSVG para cargar el icono SVG
             var utilSVG = new UtilidadesSVG();
-            string svgPath = utilSVG.ObtenerRutaSVG("icono_error_512.svg");
-            utilSVG.CargarIconoSVG(icon_error, svgPath);
+            utilSVG.CargarIconoSVG(this.icon_error, "icono_error_512.svg");
         }
 
         private void BtnAceptar_Click(object sender, EventArgs e)

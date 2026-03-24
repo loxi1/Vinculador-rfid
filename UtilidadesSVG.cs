@@ -56,19 +56,22 @@ namespace DS9908R_App
                 return;
             }
 
-            // Obtener la ruta del archivo SVG
+            if (string.IsNullOrWhiteSpace(svgFileName))
+            {
+                MessageBox.Show("⚠️ El nombre del archivo SVG está vacío.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             string svgPath = ObtenerRutaSVG(svgFileName);
 
-            // Validar que el archivo existe
             if (string.IsNullOrEmpty(svgPath))
             {
-                MessageBox.Show($"⚠️ Archivo SVG no encontrado: {svgPath}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"⚠️ Archivo SVG no encontrado: {svgFileName}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             try
             {
-                // Cargar el documento SVG
                 SvgDocument svgDocument = SvgDocument.Open(svgPath);
                 if (svgDocument == null)
                 {
@@ -76,23 +79,19 @@ namespace DS9908R_App
                     return;
                 }
 
-                // Renderizar el SVG como Bitmap
                 Bitmap bitmap = svgDocument.Draw();
-
                 if (bitmap == null)
                 {
                     MessageBox.Show("⚠️ Error al convertir SVG a Bitmap.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
 
-                // Asignar la imagen al PictureBox
                 pictureBox.Image = bitmap;
                 pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
-                pictureBox.Refresh();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"⚠️ Error al cargar el archivo SVG.\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("❌ Error cargando SVG: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

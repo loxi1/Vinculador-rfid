@@ -39,18 +39,9 @@ namespace DS9908R_App
         private void FormAlertaOk_Load(object sender, EventArgs e)
         {
             Tiempo.Start();
-            // Usar UtilidadesSVG para cargar el icono SVG
-            var utilSVG = new UtilidadesSVG();
-            string svgPath = utilSVG.ObtenerRutaSVG("icono_checking_512.svg");
 
-            if (!string.IsNullOrEmpty(svgPath))
-            {
-                utilSVG.CargarIconoSVG(this.icon_ok, svgPath);
-            }
-            else
-            {
-                Console.WriteLine("⚠️ No se pudo encontrar la imagen SVG.");
-            }
+            var utilSVG = new UtilidadesSVG();
+            utilSVG.CargarIconoSVG(this.icon_ok, "icono_checking_512.svg");
         }
 
         private void Tiempo_Tick(object sender, EventArgs e)

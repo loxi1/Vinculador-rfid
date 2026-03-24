@@ -69,8 +69,8 @@ namespace DS9908R_App
                     break;
             }
 
-            string svgPath = utilSVG.ObtenerRutaSVG(svgFileName);
-            utilSVG.CargarIconoSVG(tipo == 1 ? icon_ok : (tipo == 2 ? icon_info : icon_error), svgPath);
+            PictureBox target = tipo == 1 ? icon_ok : (tipo == 2 ? icon_info : icon_error);
+            utilSVG.CargarIconoSVG(target, svgFileName);
         }
 
         private async void FormAlerta_Load(object sender, EventArgs e)
