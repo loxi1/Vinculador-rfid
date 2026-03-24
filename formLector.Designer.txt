@@ -181,8 +181,7 @@ namespace DS9908R_App
             // 
             // btnBuscarScanners
             // 
-            btnBuscarScanners.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            btnBuscarScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             btnBuscarScanners.BackColor = System.Drawing.Color.WhiteSmoke;
             btnBuscarScanners.Location = new System.Drawing.Point(45, 39);
             btnBuscarScanners.Name = "btnBuscarScanners";
@@ -202,8 +201,8 @@ namespace DS9908R_App
             this.tabMenu.Location = new System.Drawing.Point(0, 0);
             this.tabMenu.Name = "tabMenu";
             this.tabMenu.SelectedIndex = 0;
-            this.tabMenu.Size = new System.Drawing.Size(1359, 680);
-            this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+            this.tabMenu.Size = new System.Drawing.Size(1203, 673);
+            this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
             this.tabMenu.TabIndex = 4;
             this.tabMenu.TabStop = false;
             this.tabMenu.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabMenu_DrawItem);
@@ -763,7 +762,7 @@ namespace DS9908R_App
             this.tabConsultar.Controls.Add(this.gbxBuscarPrenda);
             this.tabConsultar.Location = new System.Drawing.Point(4, 44);
             this.tabConsultar.Name = "tabConsultar";
-            this.tabConsultar.Size = new System.Drawing.Size(1189, 650);
+            this.tabConsultar.Size = new System.Drawing.Size(1351, 632);
             this.tabConsultar.TabIndex = 2;
             this.tabConsultar.Text = "Consulta Prenda";
             this.tabConsultar.UseVisualStyleBackColor = true;
@@ -777,7 +776,7 @@ namespace DS9908R_App
             this.gbxBuscarPrenda.Location = new System.Drawing.Point(0, 0);
             this.gbxBuscarPrenda.Margin = new System.Windows.Forms.Padding(0);
             this.gbxBuscarPrenda.Name = "gbxBuscarPrenda";
-            this.gbxBuscarPrenda.Size = new System.Drawing.Size(1189, 650);
+            this.gbxBuscarPrenda.Size = new System.Drawing.Size(1351, 632);
             this.gbxBuscarPrenda.TabIndex = 1;
             this.gbxBuscarPrenda.TabStop = false;
             // 
@@ -799,7 +798,7 @@ namespace DS9908R_App
             this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
             this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 85F));
             this.tablaBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.tablaBuscarPrenda.Size = new System.Drawing.Size(1183, 631);
+            this.tablaBuscarPrenda.Size = new System.Drawing.Size(1345, 613);
             this.tablaBuscarPrenda.TabIndex = 0;
             // 
             // ContenedorBuscarPrenda
@@ -818,7 +817,7 @@ namespace DS9908R_App
             this.ContenedorBuscarPrenda.Name = "ContenedorBuscarPrenda";
             this.ContenedorBuscarPrenda.RowCount = 1;
             this.ContenedorBuscarPrenda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.ContenedorBuscarPrenda.Size = new System.Drawing.Size(1183, 63);
+            this.ContenedorBuscarPrenda.Size = new System.Drawing.Size(1345, 61);
             this.ContenedorBuscarPrenda.TabIndex = 0;
             // 
             // Label5
@@ -826,7 +825,7 @@ namespace DS9908R_App
             this.Label5.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.Label5.AutoSize = true;
             this.Label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Label5.Location = new System.Drawing.Point(134, 21);
+            this.Label5.Location = new System.Drawing.Point(169, 20);
             this.Label5.Name = "Label5";
             this.Label5.Size = new System.Drawing.Size(123, 20);
             this.Label5.TabIndex = 0;
@@ -838,9 +837,9 @@ namespace DS9908R_App
             this.BuscarCodBarras.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.BuscarCodBarras.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.BuscarCodBarras.ForeColor = System.Drawing.Color.Gray;
-            this.BuscarCodBarras.Location = new System.Drawing.Point(263, 16);
+            this.BuscarCodBarras.Location = new System.Drawing.Point(298, 15);
             this.BuscarCodBarras.Name = "BuscarCodBarras";
-            this.BuscarCodBarras.Size = new System.Drawing.Size(703, 30);
+            this.BuscarCodBarras.Size = new System.Drawing.Size(801, 30);
             this.BuscarCodBarras.TabIndex = 1;
             this.BuscarCodBarras.Text = "Codigo de Barras...";
             // 
@@ -850,7 +849,7 @@ namespace DS9908R_App
             this.MsnBusquedaPrenda.AutoSize = true;
             this.MsnBusquedaPrenda.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MsnBusquedaPrenda.ForeColor = System.Drawing.Color.Red;
-            this.MsnBusquedaPrenda.Location = new System.Drawing.Point(3, 70);
+            this.MsnBusquedaPrenda.Location = new System.Drawing.Point(3, 67);
             this.MsnBusquedaPrenda.Name = "MsnBusquedaPrenda";
             this.MsnBusquedaPrenda.Size = new System.Drawing.Size(0, 17);
             this.MsnBusquedaPrenda.TabIndex = 1;
@@ -864,11 +863,11 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DataGridView2.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.DataGridView2.Location = new System.Drawing.Point(3, 97);
+            this.DataGridView2.Location = new System.Drawing.Point(3, 94);
             this.DataGridView2.Name = "DataGridView2";
             this.DataGridView2.ReadOnly = true;
             this.DataGridView2.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DataGridView2.Size = new System.Drawing.Size(1177, 531);
+            this.DataGridView2.Size = new System.Drawing.Size(1339, 516);
             this.DataGridView2.TabIndex = 2;
             // 
             // tabHojaMarcacion
@@ -876,7 +875,7 @@ namespace DS9908R_App
             this.tabHojaMarcacion.Controls.Add(this.TablaContenedorHM);
             this.tabHojaMarcacion.Location = new System.Drawing.Point(4, 44);
             this.tabHojaMarcacion.Name = "tabHojaMarcacion";
-            this.tabHojaMarcacion.Size = new System.Drawing.Size(1189, 650);
+            this.tabHojaMarcacion.Size = new System.Drawing.Size(1195, 625);
             this.tabHojaMarcacion.TabIndex = 3;
             this.tabHojaMarcacion.Text = "Hoja de Marcación";
             this.tabHojaMarcacion.UseVisualStyleBackColor = true;
@@ -896,7 +895,7 @@ namespace DS9908R_App
             this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 48F));
             this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 2F));
             this.TablaContenedorHM.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            this.TablaContenedorHM.Size = new System.Drawing.Size(1189, 650);
+            this.TablaContenedorHM.Size = new System.Drawing.Size(1195, 625);
             this.TablaContenedorHM.TabIndex = 3;
             // 
             // tabaCabecera
@@ -920,16 +919,16 @@ namespace DS9908R_App
             this.tabaCabecera.Name = "tabaCabecera";
             this.tabaCabecera.RowCount = 1;
             this.tabaCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tabaCabecera.Size = new System.Drawing.Size(1189, 65);
+            this.tabaCabecera.Size = new System.Drawing.Size(1195, 62);
             this.tabaCabecera.TabIndex = 0;
             // 
             // TextBoxOP
             // 
             this.TextBoxOP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.TextBoxOP.ForeColor = System.Drawing.Color.Gray;
-            this.TextBoxOP.Location = new System.Drawing.Point(217, 22);
+            this.TextBoxOP.Location = new System.Drawing.Point(218, 21);
             this.TextBoxOP.Name = "TextBoxOP";
-            this.TextBoxOP.Size = new System.Drawing.Size(291, 20);
+            this.TextBoxOP.Size = new System.Drawing.Size(292, 20);
             this.TextBoxOP.TabIndex = 2;
             this.TextBoxOP.Text = "Nro OP...";
             // 
@@ -938,7 +937,7 @@ namespace DS9908R_App
             this.LabelOP.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.LabelOP.AutoSize = true;
             this.LabelOP.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelOP.Location = new System.Drawing.Point(175, 26);
+            this.LabelOP.Location = new System.Drawing.Point(176, 24);
             this.LabelOP.Name = "LabelOP";
             this.LabelOP.Size = new System.Drawing.Size(36, 13);
             this.LabelOP.TabIndex = 0;
@@ -949,7 +948,7 @@ namespace DS9908R_App
             // 
             this.BtnBuscarHM.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.BtnBuscarHM.ForeColor = System.Drawing.Color.White;
-            this.BtnBuscarHM.Location = new System.Drawing.Point(824, 22);
+            this.BtnBuscarHM.Location = new System.Drawing.Point(828, 21);
             this.BtnBuscarHM.Name = "BtnBuscarHM";
             this.BtnBuscarHM.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.BtnBuscarHM.Size = new System.Drawing.Size(49, 20);
@@ -961,9 +960,9 @@ namespace DS9908R_App
             this.TextBoxHM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.TextBoxHM.Enabled = false;
             this.TextBoxHM.ForeColor = System.Drawing.Color.Gray;
-            this.TextBoxHM.Location = new System.Drawing.Point(621, 22);
+            this.TextBoxHM.Location = new System.Drawing.Point(623, 21);
             this.TextBoxHM.Name = "TextBoxHM";
-            this.TextBoxHM.Size = new System.Drawing.Size(112, 20);
+            this.TextBoxHM.Size = new System.Drawing.Size(113, 20);
             this.TextBoxHM.TabIndex = 3;
             this.TextBoxHM.Text = "H. M....";
             // 
@@ -972,7 +971,7 @@ namespace DS9908R_App
             this.LabelHM.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.LabelHM.AutoSize = true;
             this.LabelHM.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.LabelHM.Location = new System.Drawing.Point(577, 26);
+            this.LabelHM.Location = new System.Drawing.Point(579, 24);
             this.LabelHM.Name = "LabelHM";
             this.LabelHM.Size = new System.Drawing.Size(38, 13);
             this.LabelHM.TabIndex = 1;
@@ -983,7 +982,7 @@ namespace DS9908R_App
             // 
             this.BtnLimpiarHM.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.BtnLimpiarHM.ForeColor = System.Drawing.Color.White;
-            this.BtnLimpiarHM.Location = new System.Drawing.Point(1049, 22);
+            this.BtnLimpiarHM.Location = new System.Drawing.Point(1054, 21);
             this.BtnLimpiarHM.Name = "BtnLimpiarHM";
             this.BtnLimpiarHM.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.BtnLimpiarHM.Size = new System.Drawing.Size(52, 20);
@@ -1053,7 +1052,7 @@ namespace DS9908R_App
             this.tableCabecera.Controls.Add(this.text_tfrmem, 1, 6);
             this.tableCabecera.Controls.Add(this.text_cod_lugrent_cobro, 1, 3);
             this.tableCabecera.Controls.Add(this.txt_BillToDet, 2, 3);
-            this.tableCabecera.Location = new System.Drawing.Point(0, 65);
+            this.tableCabecera.Location = new System.Drawing.Point(0, 62);
             this.tableCabecera.Margin = new System.Windows.Forms.Padding(0);
             this.tableCabecera.Name = "tableCabecera";
             this.tableCabecera.Padding = new System.Windows.Forms.Padding(3);
@@ -1065,7 +1064,7 @@ namespace DS9908R_App
             this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
             this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 13.26531F));
             this.tableCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20.40816F));
-            this.tableCabecera.Size = new System.Drawing.Size(1189, 312);
+            this.tableCabecera.Size = new System.Drawing.Size(1195, 300);
             this.tableCabecera.TabIndex = 1;
             // 
             // lbl_op
@@ -1078,7 +1077,7 @@ namespace DS9908R_App
             this.lbl_op.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_op.Location = new System.Drawing.Point(6, 3);
             this.lbl_op.Name = "lbl_op";
-            this.lbl_op.Size = new System.Drawing.Size(112, 40);
+            this.lbl_op.Size = new System.Drawing.Size(112, 39);
             this.lbl_op.TabIndex = 0;
             this.lbl_op.Text = "OP:";
             this.lbl_op.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1091,9 +1090,9 @@ namespace DS9908R_App
             this.lbl_cliente.AutoSize = true;
             this.lbl_cliente.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_cliente.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_cliente.Location = new System.Drawing.Point(6, 43);
+            this.lbl_cliente.Location = new System.Drawing.Point(6, 42);
             this.lbl_cliente.Name = "lbl_cliente";
-            this.lbl_cliente.Size = new System.Drawing.Size(112, 40);
+            this.lbl_cliente.Size = new System.Drawing.Size(112, 39);
             this.lbl_cliente.TabIndex = 1;
             this.lbl_cliente.Text = "Cliente:";
             this.lbl_cliente.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1106,9 +1105,9 @@ namespace DS9908R_App
             this.lbl_shipTo.AutoSize = true;
             this.lbl_shipTo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_shipTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_shipTo.Location = new System.Drawing.Point(6, 83);
+            this.lbl_shipTo.Location = new System.Drawing.Point(6, 81);
             this.lbl_shipTo.Name = "lbl_shipTo";
-            this.lbl_shipTo.Size = new System.Drawing.Size(112, 40);
+            this.lbl_shipTo.Size = new System.Drawing.Size(112, 39);
             this.lbl_shipTo.TabIndex = 2;
             this.lbl_shipTo.Text = "Ship TO:";
             this.lbl_shipTo.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1122,9 +1121,9 @@ namespace DS9908R_App
             this.lbl_Despacho.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_Despacho.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_Despacho.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.lbl_Despacho.Location = new System.Drawing.Point(6, 203);
+            this.lbl_Despacho.Location = new System.Drawing.Point(6, 198);
             this.lbl_Despacho.Name = "lbl_Despacho";
-            this.lbl_Despacho.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Despacho.Size = new System.Drawing.Size(112, 39);
             this.lbl_Despacho.TabIndex = 5;
             this.lbl_Despacho.Text = "Via Despacho:";
             this.lbl_Despacho.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1138,9 +1137,9 @@ namespace DS9908R_App
             this.lbl_empaque.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_empaque.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_empaque.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.lbl_empaque.Location = new System.Drawing.Point(6, 243);
+            this.lbl_empaque.Location = new System.Drawing.Point(6, 237);
             this.lbl_empaque.Name = "lbl_empaque";
-            this.lbl_empaque.Size = new System.Drawing.Size(112, 66);
+            this.lbl_empaque.Size = new System.Drawing.Size(112, 60);
             this.lbl_empaque.TabIndex = 6;
             this.lbl_empaque.Text = "Empaque:";
             this.lbl_empaque.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -1155,7 +1154,7 @@ namespace DS9908R_App
             this.lbl_HM.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_HM.Location = new System.Drawing.Point(242, 3);
             this.lbl_HM.Name = "lbl_HM";
-            this.lbl_HM.Size = new System.Drawing.Size(112, 40);
+            this.lbl_HM.Size = new System.Drawing.Size(112, 39);
             this.lbl_HM.TabIndex = 7;
             this.lbl_HM.Text = "HM:";
             this.lbl_HM.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1170,7 +1169,7 @@ namespace DS9908R_App
             this.lbl_po.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_po.Location = new System.Drawing.Point(478, 3);
             this.lbl_po.Name = "lbl_po";
-            this.lbl_po.Size = new System.Drawing.Size(112, 40);
+            this.lbl_po.Size = new System.Drawing.Size(112, 39);
             this.lbl_po.TabIndex = 8;
             this.lbl_po.Text = "PO:";
             this.lbl_po.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1185,7 +1184,7 @@ namespace DS9908R_App
             this.lbl_Estado.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_Estado.Location = new System.Drawing.Point(714, 3);
             this.lbl_Estado.Name = "lbl_Estado";
-            this.lbl_Estado.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Estado.Size = new System.Drawing.Size(112, 39);
             this.lbl_Estado.TabIndex = 9;
             this.lbl_Estado.Text = "Estado:";
             this.lbl_Estado.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1200,7 +1199,7 @@ namespace DS9908R_App
             this.lbl_Reserva.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_Reserva.Location = new System.Drawing.Point(950, 3);
             this.lbl_Reserva.Name = "lbl_Reserva";
-            this.lbl_Reserva.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Reserva.Size = new System.Drawing.Size(112, 39);
             this.lbl_Reserva.TabIndex = 10;
             this.lbl_Reserva.Text = "Reserva:";
             this.lbl_Reserva.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1213,9 +1212,9 @@ namespace DS9908R_App
             this.lbl_Prenda.AutoSize = true;
             this.lbl_Prenda.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_Prenda.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_Prenda.Location = new System.Drawing.Point(714, 43);
+            this.lbl_Prenda.Location = new System.Drawing.Point(714, 42);
             this.lbl_Prenda.Name = "lbl_Prenda";
-            this.lbl_Prenda.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Prenda.Size = new System.Drawing.Size(112, 39);
             this.lbl_Prenda.TabIndex = 11;
             this.lbl_Prenda.Text = "Prenda:";
             this.lbl_Prenda.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1228,9 +1227,9 @@ namespace DS9908R_App
             this.lbl_direccion_1.AutoSize = true;
             this.lbl_direccion_1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_direccion_1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_direccion_1.Location = new System.Drawing.Point(714, 83);
+            this.lbl_direccion_1.Location = new System.Drawing.Point(714, 81);
             this.lbl_direccion_1.Name = "lbl_direccion_1";
-            this.lbl_direccion_1.Size = new System.Drawing.Size(112, 40);
+            this.lbl_direccion_1.Size = new System.Drawing.Size(112, 39);
             this.lbl_direccion_1.TabIndex = 12;
             this.lbl_direccion_1.Text = "Dirección:";
             this.lbl_direccion_1.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1243,9 +1242,9 @@ namespace DS9908R_App
             this.lbl_direccion_2.AutoSize = true;
             this.lbl_direccion_2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_direccion_2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_direccion_2.Location = new System.Drawing.Point(714, 123);
+            this.lbl_direccion_2.Location = new System.Drawing.Point(714, 120);
             this.lbl_direccion_2.Name = "lbl_direccion_2";
-            this.lbl_direccion_2.Size = new System.Drawing.Size(112, 40);
+            this.lbl_direccion_2.Size = new System.Drawing.Size(112, 39);
             this.lbl_direccion_2.TabIndex = 13;
             this.lbl_direccion_2.Text = "Dirección:";
             this.lbl_direccion_2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1258,9 +1257,9 @@ namespace DS9908R_App
             this.lbl_Tolerancia.AutoSize = true;
             this.lbl_Tolerancia.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_Tolerancia.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_Tolerancia.Location = new System.Drawing.Point(242, 163);
+            this.lbl_Tolerancia.Location = new System.Drawing.Point(242, 159);
             this.lbl_Tolerancia.Name = "lbl_Tolerancia";
-            this.lbl_Tolerancia.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Tolerancia.Size = new System.Drawing.Size(112, 39);
             this.lbl_Tolerancia.TabIndex = 14;
             this.lbl_Tolerancia.Text = "Tolerancia:";
             this.lbl_Tolerancia.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1273,9 +1272,9 @@ namespace DS9908R_App
             this.lbl_Estilo.AutoSize = true;
             this.lbl_Estilo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_Estilo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_Estilo.Location = new System.Drawing.Point(478, 163);
+            this.lbl_Estilo.Location = new System.Drawing.Point(478, 159);
             this.lbl_Estilo.Name = "lbl_Estilo";
-            this.lbl_Estilo.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Estilo.Size = new System.Drawing.Size(112, 39);
             this.lbl_Estilo.TabIndex = 15;
             this.lbl_Estilo.Text = "Estilo:";
             this.lbl_Estilo.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1288,9 +1287,9 @@ namespace DS9908R_App
             this.lbl_Observacion.AutoSize = true;
             this.lbl_Observacion.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_Observacion.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_Observacion.Location = new System.Drawing.Point(596, 243);
+            this.lbl_Observacion.Location = new System.Drawing.Point(596, 237);
             this.lbl_Observacion.Name = "lbl_Observacion";
-            this.lbl_Observacion.Size = new System.Drawing.Size(112, 66);
+            this.lbl_Observacion.Size = new System.Drawing.Size(112, 60);
             this.lbl_Observacion.TabIndex = 18;
             this.lbl_Observacion.Text = "Observación:";
             this.lbl_Observacion.TextAlign = System.Drawing.ContentAlignment.TopRight;
@@ -1303,9 +1302,9 @@ namespace DS9908R_App
             this.lbl_Certificado.AutoSize = true;
             this.lbl_Certificado.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_Certificado.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_Certificado.Location = new System.Drawing.Point(596, 203);
+            this.lbl_Certificado.Location = new System.Drawing.Point(596, 198);
             this.lbl_Certificado.Name = "lbl_Certificado";
-            this.lbl_Certificado.Size = new System.Drawing.Size(112, 40);
+            this.lbl_Certificado.Size = new System.Drawing.Size(112, 39);
             this.lbl_Certificado.TabIndex = 17;
             this.lbl_Certificado.Text = "Certificado:";
             this.lbl_Certificado.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1318,9 +1317,9 @@ namespace DS9908R_App
             this.lbl_NKit.AutoSize = true;
             this.lbl_NKit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_NKit.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_NKit.Location = new System.Drawing.Point(360, 203);
+            this.lbl_NKit.Location = new System.Drawing.Point(360, 198);
             this.lbl_NKit.Name = "lbl_NKit";
-            this.lbl_NKit.Size = new System.Drawing.Size(112, 40);
+            this.lbl_NKit.Size = new System.Drawing.Size(112, 39);
             this.lbl_NKit.TabIndex = 19;
             this.lbl_NKit.Text = "N° KIT:";
             this.lbl_NKit.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1334,7 +1333,7 @@ namespace DS9908R_App
             this.text_norpd.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.text_norpd.Location = new System.Drawing.Point(124, 3);
             this.text_norpd.Name = "text_norpd";
-            this.text_norpd.Size = new System.Drawing.Size(112, 40);
+            this.text_norpd.Size = new System.Drawing.Size(112, 39);
             this.text_norpd.TabIndex = 20;
             this.text_norpd.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1346,7 +1345,7 @@ namespace DS9908R_App
             this.text_npocl.AutoSize = true;
             this.text_npocl.Location = new System.Drawing.Point(596, 3);
             this.text_npocl.Name = "text_npocl";
-            this.text_npocl.Size = new System.Drawing.Size(112, 40);
+            this.text_npocl.Size = new System.Drawing.Size(112, 39);
             this.text_npocl.TabIndex = 21;
             this.text_npocl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1358,7 +1357,7 @@ namespace DS9908R_App
             this.text_nhjmr.AutoSize = true;
             this.text_nhjmr.Location = new System.Drawing.Point(360, 3);
             this.text_nhjmr.Name = "text_nhjmr";
-            this.text_nhjmr.Size = new System.Drawing.Size(112, 40);
+            this.text_nhjmr.Size = new System.Drawing.Size(112, 39);
             this.text_nhjmr.TabIndex = 22;
             this.text_nhjmr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1370,7 +1369,7 @@ namespace DS9908R_App
             this.text_sesthm.AutoSize = true;
             this.text_sesthm.Location = new System.Drawing.Point(832, 3);
             this.text_sesthm.Name = "text_sesthm";
-            this.text_sesthm.Size = new System.Drawing.Size(112, 40);
+            this.text_sesthm.Size = new System.Drawing.Size(112, 39);
             this.text_sesthm.TabIndex = 23;
             this.text_sesthm.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1382,7 +1381,7 @@ namespace DS9908R_App
             this.text_sreserva.AutoSize = true;
             this.text_sreserva.Location = new System.Drawing.Point(1068, 3);
             this.text_sreserva.Name = "text_sreserva";
-            this.text_sreserva.Size = new System.Drawing.Size(115, 40);
+            this.text_sreserva.Size = new System.Drawing.Size(121, 39);
             this.text_sreserva.TabIndex = 24;
             this.text_sreserva.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1392,9 +1391,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_cclnt.AutoSize = true;
-            this.text_cclnt.Location = new System.Drawing.Point(124, 43);
+            this.text_cclnt.Location = new System.Drawing.Point(124, 42);
             this.text_cclnt.Name = "text_cclnt";
-            this.text_cclnt.Size = new System.Drawing.Size(112, 40);
+            this.text_cclnt.Size = new System.Drawing.Size(112, 39);
             this.text_cclnt.TabIndex = 25;
             this.text_cclnt.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1405,9 +1404,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_ttrcr.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_ttrcr, 4);
-            this.text_ttrcr.Location = new System.Drawing.Point(242, 43);
+            this.text_ttrcr.Location = new System.Drawing.Point(242, 42);
             this.text_ttrcr.Name = "text_ttrcr";
-            this.text_ttrcr.Size = new System.Drawing.Size(466, 40);
+            this.text_ttrcr.Size = new System.Drawing.Size(466, 39);
             this.text_ttrcr.TabIndex = 26;
             this.text_ttrcr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1417,9 +1416,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_tdscr.AutoSize = true;
-            this.text_tdscr.Location = new System.Drawing.Point(832, 43);
+            this.text_tdscr.Location = new System.Drawing.Point(832, 42);
             this.text_tdscr.Name = "text_tdscr";
-            this.text_tdscr.Size = new System.Drawing.Size(112, 40);
+            this.text_tdscr.Size = new System.Drawing.Size(112, 39);
             this.text_tdscr.TabIndex = 27;
             this.text_tdscr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1430,9 +1429,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_temporada.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_temporada, 2);
-            this.text_temporada.Location = new System.Drawing.Point(950, 43);
+            this.text_temporada.Location = new System.Drawing.Point(950, 42);
             this.text_temporada.Name = "text_temporada";
-            this.text_temporada.Size = new System.Drawing.Size(233, 40);
+            this.text_temporada.Size = new System.Drawing.Size(239, 39);
             this.text_temporada.TabIndex = 28;
             this.text_temporada.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1444,9 +1443,9 @@ namespace DS9908R_App
             this.lbl_SitDespacho.AutoSize = true;
             this.lbl_SitDespacho.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_SitDespacho.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_SitDespacho.Location = new System.Drawing.Point(950, 163);
+            this.lbl_SitDespacho.Location = new System.Drawing.Point(950, 159);
             this.lbl_SitDespacho.Name = "lbl_SitDespacho";
-            this.lbl_SitDespacho.Size = new System.Drawing.Size(112, 40);
+            this.lbl_SitDespacho.Size = new System.Drawing.Size(112, 39);
             this.lbl_SitDespacho.TabIndex = 16;
             this.lbl_SitDespacho.Text = "Sit Despacho:";
             this.lbl_SitDespacho.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1458,9 +1457,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_tdrcc.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_tdrcc, 3);
-            this.text_tdrcc.Location = new System.Drawing.Point(832, 83);
+            this.text_tdrcc.Location = new System.Drawing.Point(832, 81);
             this.text_tdrcc.Name = "text_tdrcc";
-            this.text_tdrcc.Size = new System.Drawing.Size(351, 40);
+            this.text_tdrcc.Size = new System.Drawing.Size(357, 39);
             this.text_tdrcc.TabIndex = 29;
             this.text_tdrcc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1471,9 +1470,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_Direccion_2.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.txt_Direccion_2, 3);
-            this.txt_Direccion_2.Location = new System.Drawing.Point(832, 123);
+            this.txt_Direccion_2.Location = new System.Drawing.Point(832, 120);
             this.txt_Direccion_2.Name = "txt_Direccion_2";
-            this.txt_Direccion_2.Size = new System.Drawing.Size(351, 40);
+            this.txt_Direccion_2.Size = new System.Drawing.Size(357, 39);
             this.txt_Direccion_2.TabIndex = 30;
             this.txt_Direccion_2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1483,9 +1482,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_clgren.AutoSize = true;
-            this.text_clgren.Location = new System.Drawing.Point(124, 83);
+            this.text_clgren.Location = new System.Drawing.Point(124, 81);
             this.text_clgren.Name = "text_clgren";
-            this.text_clgren.Size = new System.Drawing.Size(112, 40);
+            this.text_clgren.Size = new System.Drawing.Size(112, 39);
             this.text_clgren.TabIndex = 31;
             this.text_clgren.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1498,9 +1497,9 @@ namespace DS9908R_App
             this.lbl_fEntrega.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_fEntrega.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_fEntrega.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.lbl_fEntrega.Location = new System.Drawing.Point(6, 163);
+            this.lbl_fEntrega.Location = new System.Drawing.Point(6, 159);
             this.lbl_fEntrega.Name = "lbl_fEntrega";
-            this.lbl_fEntrega.Size = new System.Drawing.Size(112, 40);
+            this.lbl_fEntrega.Size = new System.Drawing.Size(112, 39);
             this.lbl_fEntrega.TabIndex = 3;
             this.lbl_fEntrega.Text = "F. Entrega:";
             this.lbl_fEntrega.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1511,9 +1510,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_fentr.AutoSize = true;
-            this.text_fentr.Location = new System.Drawing.Point(124, 163);
+            this.text_fentr.Location = new System.Drawing.Point(124, 159);
             this.text_fentr.Name = "text_fentr";
-            this.text_fentr.Size = new System.Drawing.Size(112, 40);
+            this.text_fentr.Size = new System.Drawing.Size(112, 39);
             this.text_fentr.TabIndex = 32;
             this.text_fentr.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1526,9 +1525,9 @@ namespace DS9908R_App
             this.lbl_BillTo.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))));
             this.lbl_BillTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lbl_BillTo.ImageAlign = System.Drawing.ContentAlignment.MiddleRight;
-            this.lbl_BillTo.Location = new System.Drawing.Point(6, 123);
+            this.lbl_BillTo.Location = new System.Drawing.Point(6, 120);
             this.lbl_BillTo.Name = "lbl_BillTo";
-            this.lbl_BillTo.Size = new System.Drawing.Size(112, 40);
+            this.lbl_BillTo.Size = new System.Drawing.Size(112, 39);
             this.lbl_BillTo.TabIndex = 33;
             this.lbl_BillTo.Text = "Bill TO:";
             this.lbl_BillTo.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
@@ -1540,9 +1539,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_tlgen.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_tlgen, 4);
-            this.text_tlgen.Location = new System.Drawing.Point(242, 83);
+            this.text_tlgen.Location = new System.Drawing.Point(242, 81);
             this.text_tlgen.Name = "text_tlgen";
-            this.text_tlgen.Size = new System.Drawing.Size(466, 40);
+            this.text_tlgen.Size = new System.Drawing.Size(466, 39);
             this.text_tlgen.TabIndex = 34;
             this.text_tlgen.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1552,9 +1551,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_ptlrnc.AutoSize = true;
-            this.text_ptlrnc.Location = new System.Drawing.Point(360, 163);
+            this.text_ptlrnc.Location = new System.Drawing.Point(360, 159);
             this.text_ptlrnc.Name = "text_ptlrnc";
-            this.text_ptlrnc.Size = new System.Drawing.Size(112, 40);
+            this.text_ptlrnc.Size = new System.Drawing.Size(112, 39);
             this.text_ptlrnc.TabIndex = 35;
             this.text_ptlrnc.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1564,9 +1563,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_cestcl.AutoSize = true;
-            this.text_cestcl.Location = new System.Drawing.Point(596, 163);
+            this.text_cestcl.Location = new System.Drawing.Point(596, 159);
             this.text_cestcl.Name = "text_cestcl";
-            this.text_cestcl.Size = new System.Drawing.Size(112, 40);
+            this.text_cestcl.Size = new System.Drawing.Size(112, 39);
             this.text_cestcl.TabIndex = 36;
             this.text_cestcl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1577,9 +1576,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_testcl.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_testcl, 2);
-            this.text_testcl.Location = new System.Drawing.Point(714, 163);
+            this.text_testcl.Location = new System.Drawing.Point(714, 159);
             this.text_testcl.Name = "text_testcl";
-            this.text_testcl.Size = new System.Drawing.Size(230, 40);
+            this.text_testcl.Size = new System.Drawing.Size(230, 39);
             this.text_testcl.TabIndex = 37;
             this.text_testcl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1589,9 +1588,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_flgdes.AutoSize = true;
-            this.text_flgdes.Location = new System.Drawing.Point(1068, 163);
+            this.text_flgdes.Location = new System.Drawing.Point(1068, 159);
             this.text_flgdes.Name = "text_flgdes";
-            this.text_flgdes.Size = new System.Drawing.Size(115, 40);
+            this.text_flgdes.Size = new System.Drawing.Size(121, 39);
             this.text_flgdes.TabIndex = 38;
             this.text_flgdes.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1602,9 +1601,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_tvia.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_tvia, 2);
-            this.text_tvia.Location = new System.Drawing.Point(124, 203);
+            this.text_tvia.Location = new System.Drawing.Point(124, 198);
             this.text_tvia.Name = "text_tvia";
-            this.text_tvia.Size = new System.Drawing.Size(230, 40);
+            this.text_tvia.Size = new System.Drawing.Size(230, 39);
             this.text_tvia.TabIndex = 39;
             this.text_tvia.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1614,9 +1613,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_nro_kit.AutoSize = true;
-            this.txt_nro_kit.Location = new System.Drawing.Point(478, 203);
+            this.txt_nro_kit.Location = new System.Drawing.Point(478, 198);
             this.txt_nro_kit.Name = "txt_nro_kit";
-            this.txt_nro_kit.Size = new System.Drawing.Size(112, 40);
+            this.txt_nro_kit.Size = new System.Drawing.Size(112, 39);
             this.txt_nro_kit.TabIndex = 40;
             this.txt_nro_kit.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1627,9 +1626,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_nro_certificado.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_nro_certificado, 4);
-            this.text_nro_certificado.Location = new System.Drawing.Point(714, 203);
+            this.text_nro_certificado.Location = new System.Drawing.Point(714, 198);
             this.text_nro_certificado.Name = "text_nro_certificado";
-            this.text_nro_certificado.Size = new System.Drawing.Size(469, 40);
+            this.text_nro_certificado.Size = new System.Drawing.Size(475, 39);
             this.text_nro_certificado.TabIndex = 41;
             this.text_nro_certificado.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1640,9 +1639,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_totros.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_totros, 4);
-            this.text_totros.Location = new System.Drawing.Point(714, 243);
+            this.text_totros.Location = new System.Drawing.Point(714, 237);
             this.text_totros.Name = "text_totros";
-            this.text_totros.Size = new System.Drawing.Size(469, 66);
+            this.text_totros.Size = new System.Drawing.Size(475, 60);
             this.text_totros.TabIndex = 42;
             // 
             // text_tfrmem
@@ -1652,9 +1651,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_tfrmem.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.text_tfrmem, 4);
-            this.text_tfrmem.Location = new System.Drawing.Point(124, 243);
+            this.text_tfrmem.Location = new System.Drawing.Point(124, 237);
             this.text_tfrmem.Name = "text_tfrmem";
-            this.text_tfrmem.Size = new System.Drawing.Size(466, 66);
+            this.text_tfrmem.Size = new System.Drawing.Size(466, 60);
             this.text_tfrmem.TabIndex = 43;
             // 
             // text_cod_lugrent_cobro
@@ -1663,9 +1662,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.text_cod_lugrent_cobro.AutoSize = true;
-            this.text_cod_lugrent_cobro.Location = new System.Drawing.Point(124, 123);
+            this.text_cod_lugrent_cobro.Location = new System.Drawing.Point(124, 120);
             this.text_cod_lugrent_cobro.Name = "text_cod_lugrent_cobro";
-            this.text_cod_lugrent_cobro.Size = new System.Drawing.Size(112, 40);
+            this.text_cod_lugrent_cobro.Size = new System.Drawing.Size(112, 39);
             this.text_cod_lugrent_cobro.TabIndex = 44;
             this.text_cod_lugrent_cobro.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1676,9 +1675,9 @@ namespace DS9908R_App
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_BillToDet.AutoSize = true;
             this.tableCabecera.SetColumnSpan(this.txt_BillToDet, 4);
-            this.txt_BillToDet.Location = new System.Drawing.Point(242, 123);
+            this.txt_BillToDet.Location = new System.Drawing.Point(242, 120);
             this.txt_BillToDet.Name = "txt_BillToDet";
-            this.txt_BillToDet.Size = new System.Drawing.Size(466, 40);
+            this.txt_BillToDet.Size = new System.Drawing.Size(466, 39);
             this.txt_BillToDet.TabIndex = 45;
             this.txt_BillToDet.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -1706,7 +1705,7 @@ namespace DS9908R_App
             dataGridViewCellStyle10.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle10.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.DataGridView3.DefaultCellStyle = dataGridViewCellStyle10;
-            this.DataGridView3.Location = new System.Drawing.Point(3, 393);
+            this.DataGridView3.Location = new System.Drawing.Point(3, 377);
             this.DataGridView3.Name = "DataGridView3";
             this.DataGridView3.ReadOnly = true;
             dataGridViewCellStyle11.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
@@ -1718,23 +1717,24 @@ namespace DS9908R_App
             dataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.DataGridView3.RowHeadersDefaultCellStyle = dataGridViewCellStyle11;
             this.DataGridView3.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DataGridView3.Size = new System.Drawing.Size(1183, 254);
+            this.DataGridView3.Size = new System.Drawing.Size(1189, 245);
             this.DataGridView3.TabIndex = 2;
             // 
             // lblEstadoConexion
             // 
+            this.lblEstadoConexion.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblEstadoConexion.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblEstadoConexion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.lblEstadoConexion.Location = new System.Drawing.Point(510, 33);
             this.lblEstadoConexion.Name = "lblEstadoConexion";
-            this.lblEstadoConexion.Size = new System.Drawing.Size(131, 28);
+            this.lblEstadoConexion.Size = new System.Drawing.Size(212, 28);
             this.lblEstadoConexion.TabIndex = 69;
             this.lblEstadoConexion.Text = "Estado: Escaneado OK";
             this.lblEstadoConexion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // cmbScanners
             // 
-            this.cmbScanners.Anchor = System.Windows.Forms.AnchorStyles.None;
+            this.cmbScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.cmbScanners.FormattingEnabled = true;
             this.cmbScanners.Location = new System.Drawing.Point(191, 39);
             this.cmbScanners.Name = "cmbScanners";
@@ -1756,9 +1756,9 @@ namespace DS9908R_App
             this.pnlConnect.Controls.Add(btnBuscarScanners);
             this.pnlConnect.Controls.Add(this.cmbScanners);
             this.pnlConnect.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pnlConnect.Location = new System.Drawing.Point(0, 680);
+            this.pnlConnect.Location = new System.Drawing.Point(0, 673);
             this.pnlConnect.Name = "pnlConnect";
-            this.pnlConnect.Size = new System.Drawing.Size(1359, 76);
+            this.pnlConnect.Size = new System.Drawing.Size(1203, 76);
             this.pnlConnect.TabIndex = 8;
             // 
             // lblSdkVersion
@@ -1775,7 +1775,7 @@ namespace DS9908R_App
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.ClientSize = new System.Drawing.Size(1359, 756);
+            this.ClientSize = new System.Drawing.Size(1203, 749);
             this.Controls.Add(this.tabMenu);
             this.Controls.Add(this.pnlConnect);
             this.Controls.Add(this.panel1);
@@ -1827,7 +1827,6 @@ namespace DS9908R_App
         }
 
         #endregion
-        private System.Windows.Forms.TabControl tabMenu;
         private System.Windows.Forms.TabPage tabVinculador;
         private System.Windows.Forms.TabPage tabConsultar;
         private System.Windows.Forms.TabPage tabHojaMarcacion;
@@ -1935,5 +1934,6 @@ namespace DS9908R_App
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Panel pnlConnect;
         internal System.Windows.Forms.Label lblSdkVersion;
+        internal System.Windows.Forms.TabControl tabMenu;
     }
 }

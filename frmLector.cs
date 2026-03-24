@@ -186,8 +186,7 @@ namespace DS9908R_App
             lblEstadoConexion.ForeColor = Color.White;
             lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
 
-            if (toolStripStatusLbl != null)
-                toolStripStatusLbl.Text = texto;
+            SetMensajeVincular(texto);
         }
 
         private void HabilitarTabsTrabajo(bool habilitar)
@@ -307,7 +306,7 @@ namespace DS9908R_App
             {
                 BeginInvoke(new Action(() =>
                 {
-                    toolStripStatusLbl.Text = "Error lectura: " + ex.Message;
+                    SetMensajeVincular("Error lectura: " + ex.Message);
                 }));
             }
         }
@@ -405,7 +404,7 @@ namespace DS9908R_App
 
             m_pCoreScanner.ExecCommand(1001, ref inXml, out outXml, out status);
 
-            toolStripStatusLbl.Text = "REGISTER_FOR_EVENTS status: " + status;
+            SetMensajeVincular("REGISTER_FOR_EVENTS status: " + status);
         }
 
         private void OnPnpEventLector(short eventType, ref string pnpData)
@@ -414,7 +413,7 @@ namespace DS9908R_App
             {
                 BeginInvoke(new Action(() =>
                 {
-                    toolStripStatusLbl.Text = "Evento PNP: " + eventType;
+                    SetMensajeVincular("Evento PNP: " + eventType);
 
                     try
                     {
@@ -436,7 +435,7 @@ namespace DS9908R_App
                     }
                     catch (Exception ex2)
                     {
-                        toolStripStatusLbl.Text = "Error refrescando scanners: " + ex2.Message;
+                        SetMensajeVincular("Error refrescando scanners: " + ex2.Message);
                     }
                 }));
             }
@@ -444,7 +443,7 @@ namespace DS9908R_App
             {
                 BeginInvoke(new Action(() =>
                 {
-                    toolStripStatusLbl.Text = "Error PNP: " + ex.Message;
+                    SetMensajeVincular("Error PNP: " + ex.Message);
                 }));
             }
         }
@@ -507,7 +506,7 @@ namespace DS9908R_App
         private void IntentarVincular()
         {
             string codigo = (_ultimoCodigoBarra ?? "").Trim();
-            string hojaMarcacion = (nroHM.Text ?? "").Trim();
+            string hojaMarcacion = "";
 
             if (string.IsNullOrWhiteSpace(codigo))
                 return;
@@ -557,8 +556,7 @@ namespace DS9908R_App
                 return;
             }
 
-            SetMensajeVincular(msg);
-            SetEstado(msg, Color.Khaki);
+            SetEstado(msg, Color.DarkOrange);
         }
 
         private void Vinculador_OnError(string msg)
@@ -569,8 +567,7 @@ namespace DS9908R_App
                 return;
             }
 
-            SetMensajeVincular(msg);
-            SetEstado(msg, Color.LightCoral);
+            SetEstado(msg, Color.Firebrick);
             ReproducirError();
 
             AlertaManager.MostrarAlerta(msg, pinturaRoja, 3, 5);
@@ -587,17 +584,16 @@ namespace DS9908R_App
                 return;
             }
 
-            if (data == null)
-                data = new Dictionary<string, object>();
+            if (data != null)
+            {
+                if (data.ContainsKey("op"))
+                    TextBoxOP.Text = Convert.ToString(data["op"]);
 
-            if (data.ContainsKey("op"))
-                TextBoxOP.Text = Convert.ToString(data["op"]);
+                if (data.ContainsKey("hoja_marcacion"))
+                    TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
+            }
 
-            if (data.ContainsKey("hoja_marcacion"))
-                TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
-
-            SetMensajeVincular("Prenda registrada exitosamente.");
-
+            SetEstado("Prenda registrada exitosamente.", Color.Green);
             LlenarPrimeraFilaDataGridView1(data);
             ActualizarTotalCount();
 
@@ -608,12 +604,9 @@ namespace DS9908R_App
             _ultimoCodigoBarra = "";
             _ultimoRfid = "";
             _rfidPendientes.Clear();
-
             dgvTagList.Rows.Clear();
             cantidadRFID.Text = "0";
-
             CodBarras.Focus();
-            SetEstado("OK", Color.LightGreen);
         }
 
         private void CargarScannersEnComboDesdeSDK()
@@ -637,7 +630,7 @@ namespace DS9908R_App
                     claimlist
                 );
 
-                toolStripStatusLbl.Text = "GET_SCANNERS status: " + status + " total: " + numOfScanners;
+                SetMensajeVincular("GET_SCANNERS status: " + status + " total: " + numOfScanners);
 
                 if (status != 0 || numOfScanners <= 0 || m_arScanners == null)
                     return;
@@ -661,7 +654,7 @@ namespace DS9908R_App
             }
             catch (Exception ex)
             {
-                toolStripStatusLbl.Text = "Error GET_SCANNERS: " + ex.Message;
+                SetMensajeVincular("Error GET_SCANNERS: " + ex.Message);
             }
         }
 
@@ -689,8 +682,7 @@ namespace DS9908R_App
         }
         private void SetEstado(string mensaje, Color color)
         {
-            toolStripStatusLbl.Text = mensaje;
-            toolStripStatusLbl.BackColor = color;
+            SetEstadoGeneral(mensaje, color);
         }
 
         private void ReproducirOk()
@@ -728,7 +720,7 @@ namespace DS9908R_App
 
         private void AlertaErrorMsn(string mensaje, Color color)
         {
-            toolStripStatusLbl.Text = mensaje;
+            SetMensajeVincular(mensaje);
             using (var alerta = new FormAlertaError("Error", mensaje, color))
             {
                 alerta.ShowDialog();
@@ -737,7 +729,7 @@ namespace DS9908R_App
 
         private void MostrarAlerta(string mensaje, Action callback = null)
         {
-            toolStripStatusLbl.Text = mensaje;
+            SetMensajeVincular(mensaje);
 
             if (FormAlertaError.alertaAbierta)
                 return;
@@ -1108,6 +1100,16 @@ namespace DS9908R_App
         private void tablaContenedora_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void SetEstadoGeneral(string mensaje, Color color)
+        {
+            SetMensajeVincular(mensaje);
+
+            if (MsnVincular != null)
+            {
+                MsnVincular.ForeColor = color;
+            }
         }
     }
 }
