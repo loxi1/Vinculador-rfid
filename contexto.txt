@@ -1,1 +1,49 @@
-Tengo un incovenite con el layout especificamente con el tabMenu al inico se ven bien pero cuando hago click en el ultimo tab el primer tab se desplaza al a la izquierda y solo se ven dos tabs: tabConsultar y tabHojaMarcacion son los unicos que se ven para ir al tabVinculador tengo que darle click a la flecha hacia la izquieda que se muestra en la parte superior derecha del tabMenu. Si deseas ves el formLector.Designer.txt
+Sí, eso suena a un comportamiento típico del TabControl de WinForms: cuando no alcanza el ancho, aparecen las flechas de navegación y al seleccionar el último tab, el control desplaza la tira de pestañas, por eso el primero queda “oculto” a la izquierda.
+Lo más probable es que tu tabMenu esté funcionando así por tamaño disponible, no porque el tab se haya roto.
+Prueba estas revisiones en formLector.Designer o desde el diseñador visual:
+C#
+this.tabMenu.Multiline = true;
+this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Normal;
+Si quieres forzar que entren mejor, también puedes usar:
+C#
+this.tabMenu.Multiline = false;
+this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+this.tabMenu.ItemSize = new System.Drawing.Size(140, 30);
+Pero aquí hay una diferencia importante:
+Multiline = true hace que los tabs bajen a otra fila cuando no entran.
+Fixed + ItemSize fuerza un ancho fijo por tab, útil si quieres controlar mejor cuánto ocupan.
+Si el contenedor donde está tabMenu es muy angosto, igual puede seguir pasando.
+Te recomiendo este orden:
+Opción 1: la más simple
+Activa varias filas:
+C#
+this.tabMenu.Multiline = true;
+Con eso normalmente dejas de depender de las flechas laterales.
+Opción 2: reducir el ancho de cada tab
+Si los textos son largos o el área del TabControl quedó más pequeña por el rediseño:
+C#
+this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+this.tabMenu.ItemSize = new System.Drawing.Size(120, 30);
+this.tabMenu.Multiline = false;
+Opción 3: revisar el contenedor padre
+Como comentaste que cambiaste el diseño, quitaste cosas y moviste paneles, también revisa si el tabMenu quedó dentro de un Panel o SplitContainer más pequeño que antes. A veces el problema no es el tab sino esto:
+C#
+this.tabMenu.Dock = System.Windows.Forms.DockStyle.Fill;
+o al menos:
+C#
+this.tabMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top 
+    | System.Windows.Forms.AnchorStyles.Left) 
+    | System.Windows.Forms.AnchorStyles.Right) 
+    | System.Windows.Forms.AnchorStyles.Bottom)));
+Si no está bien anclado, al cambiar tamaño del formulario se queda angosto y comienzan las flechas.
+Lo que yo revisaría en tu caso
+Por lo que describes, haría esto primero:
+C#
+this.tabMenu.Multiline = true;
+this.tabMenu.Dock = System.Windows.Forms.DockStyle.Fill;
+y si no te gusta que haya dos filas, entonces:
+C#
+this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+this.tabMenu.ItemSize = new System.Drawing.Size(110, 28);
+Además revisa que los nombres visibles de pestañas no sean demasiado largos.
+Pásame el formLector.Designer.txt y te digo exactamente qué línea cambiar y te lo devuelvo ya corregido.
