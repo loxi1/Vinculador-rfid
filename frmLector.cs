@@ -39,6 +39,7 @@ namespace DS9908R_App
         private ScanToConnect scanToConnect;
         private List<string> claimlist = new List<string>();
         private readonly List<ScannerInfoItem> _scanners = new List<ScannerInfoItem>();
+        private const int MAX_CACHE_SIZE = 500;
 
         Color pinturaBlanca = Color.White; // #FFFFFF
         Color pinturaBlancoHumo = Color.WhiteSmoke;
@@ -128,8 +129,8 @@ namespace DS9908R_App
                 tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
                 tabMenu.SizeMode = TabSizeMode.Fixed;
                 tabMenu.Multiline = false;
-                tabMenu.DrawItem -= TabMenu_DrawItem;
-                tabMenu.DrawItem += TabMenu_DrawItem;
+                tabMenu.DrawItem -= tabMenu_DrawItem;
+                tabMenu.DrawItem += tabMenu_DrawItem;
                 AdjustTabWidth(tabMenu);
 
                 _vinculador = new VinculadorService();
@@ -847,32 +848,6 @@ namespace DS9908R_App
             btn.Height = 38;
         }
 
-        private void tabMenu_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            TabControl tab = sender as TabControl;
-            TabPage page = tab.TabPages[e.Index];
-
-            Rectangle rect = e.Bounds;
-            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
-
-            Color bg = isSelected ? Color.FromArgb(0, 120, 215) : Color.LightGray;
-            Color fg = isSelected ? Color.White : Color.Black;
-
-            using (SolidBrush brush = new SolidBrush(bg))
-            {
-                e.Graphics.FillRectangle(brush, rect);
-            }
-
-            TextRenderer.DrawText(
-                e.Graphics,
-                page.Text,
-                new Font("Segoe UI", 10, FontStyle.Bold),
-                rect,
-                fg,
-                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
-            );
-        }
-
         private void EstiloContenedorTablaRFID()
         {
             if (dgvTagList == null) return;
@@ -1010,9 +985,6 @@ namespace DS9908R_App
 
         private void ActualizarTotalCount()
         {
-            if (lblTotalCount == null || DataGridView1 == null)
-                return;
-
             int total = DataGridView1.AllowUserToAddRows
                 ? DataGridView1.Rows.Count - 1
                 : DataGridView1.Rows.Count;
@@ -1021,6 +993,13 @@ namespace DS9908R_App
                 total = 0;
 
             lblTotalCount.Text = total.ToString();
+
+            // 🔥 reutiliza tu método existente
+            if (total >= MAX_CACHE_SIZE)
+            {
+                LimpiarTodo();
+                SetEstado("Se alcanzaron 500 registros. Limpieza automática.", Color.Khaki);
+            }
         }
 
         private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
@@ -1059,6 +1038,32 @@ namespace DS9908R_App
 
             object value = data.ContainsKey(columnName) ? data[columnName] : "";
             dgv.Rows[rowIndex].Cells[columnName].Value = value ?? "";
+        }
+
+        private void tabMenu_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            TabControl tab = sender as TabControl;
+            TabPage page = tab.TabPages[e.Index];
+
+            Rectangle rect = e.Bounds;
+            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+            Color bg = isSelected ? Color.FromArgb(0, 120, 215) : Color.LightGray;
+            Color fg = isSelected ? Color.White : Color.Black;
+
+            using (SolidBrush brush = new SolidBrush(bg))
+            {
+                e.Graphics.FillRectangle(brush, rect);
+            }
+
+            TextRenderer.DrawText(
+                e.Graphics,
+                page.Text,
+                new Font("Segoe UI", 10, FontStyle.Bold),
+                rect,
+                fg,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            );
         }
     }
 }
