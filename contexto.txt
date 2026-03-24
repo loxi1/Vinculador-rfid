@@ -8,3 +8,45 @@ Rebuild started...
 1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\FormAlerta.cs(16,21,16,27): warning CS0169: The field 'FormAlerta.conteo' is never used
 1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(27,24,27,44): warning CS0414: The field 'frmLector._hojaMarcacionActual' is assigned but its value is never used
 ========== Rebuild All: 0 succeeded, 1 failed, 0 skipped ==========
+
+por ahora se tenia esto:
+private void btnClear_Click(object sender, EventArgs e)
+{
+    LimpiarTodo();
+}
+
+private void LimpiarSoloRfid()
+{
+    dgvTagList.Rows.Clear();
+    _rfidPendientes.Clear();
+    _rfidLeidos.Clear();
+    _ultimoRfid = "";
+
+    cantidadRFID.Text = "0";
+    CodBarras.Clear();
+    CodBarras.Focus();
+
+    SetEstado("RFID limpiados", Color.Khaki);
+}
+
+private void LimpiarTodo()
+{
+    LimpiarSoloRfid();
+
+    _ultimoCodigoBarra = "";
+    nroOP.Text = "";
+    nroHM.Text = "";
+    _hojaMarcacionActual = "";
+
+    toolStripStatusLbl.Text = "Formulario limpiado";
+    CodBarras.Focus();
+
+    // Aquí luego puedes agregar:
+    // LimpiarGridConsolidado();
+    // NuevoTimbrado();
+}
+
+private void btnLimpiarRFID_Click(object sender, EventArgs e)
+{
+    LimpiarSoloRfid();
+}
