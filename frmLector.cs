@@ -724,14 +724,8 @@ namespace DS9908R_App
             _ultimoCodigoBarra = "";
             nroOP.Text = "";
             nroHM.Text = "";
-            _hojaMarcacionActual = "";
 
-            toolStripStatusLbl.Text = "Formulario limpiado";
             CodBarras.Focus();
-
-            // Aquí luego puedes agregar:
-            // LimpiarGridConsolidado();
-            // NuevoTimbrado();
         }
 
         private void AlertaErrorMsn(string mensaje, Color color)
@@ -986,19 +980,35 @@ namespace DS9908R_App
         private void ActualizarTotalCount()
         {
             int total = DataGridView1.AllowUserToAddRows
-                ? DataGridView1.Rows.Count - 1
-                : DataGridView1.Rows.Count;
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
 
             if (total < 0)
                 total = 0;
 
             lblTotalCount.Text = total.ToString();
 
-            // 🔥 reutiliza tu método existente
             if (total >= MAX_CACHE_SIZE)
             {
-                LimpiarTodo();
-                SetEstado("Se alcanzaron 500 registros. Limpieza automática.", Color.Khaki);
+                Console.WriteLine("🚨 Se alcanzaron 500 registros");
+
+                AlertaManager.MostrarAlerta(
+                    "Se alcanzaron 500 registros. Limpieza automática.",
+                    pinturaGrisOscuro,
+                    2,
+                    5
+                );
+
+                LimpiarTodo(); // 🔥 usa tu método existente
+            }
+        }
+
+        private void CheckAndClearCache()
+        {
+            if (_rfidLeidos.Count > MAX_CACHE_SIZE)
+            {
+                Console.WriteLine("⚠️ Cache RFID lleno, limpiando...");
+                _rfidLeidos.Clear();
             }
         }
 
