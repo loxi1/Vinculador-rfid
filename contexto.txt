@@ -1,2 +1,367 @@
-los nombres son: tabMenu, dgvTagList, BtnBuscarHM, BtnLimpiarHM, TextBoxHM, TextBoxOP, TextBoxOP, btnClear, btnLimpiarRFID y CodBarras en la cabecera tengo esto input: btnBuscarScanners, cmbScanners lo puedes validar aqui: formLector.Designer.txt. no te olvides que el repo es: https://github.com/loxi1/Vinculador-rfid.
-revisar frmLecto.txt para mostrar el campo: MsnVincular, lblTotalCount y llenvar datos a DataGridView1 
+Sí. Con los nombres reales de tu formulario, el bloque de estilo debe apuntar a:
+tabMenu
+dgvTagList
+BtnBuscarHM
+BtnLimpiarHM
+TextBoxHM
+TextBoxOP
+btnClear
+btnLimpiarRFID
+CodBarras
+cabecera: btnBuscarScanners, cmbScanners
+y también los elementos que quieres mostrar: MsnVincular, lblTotalCount, DataGridView1. Eso coincide con tu formLector.Designer.txt y con el flujo de frmLecto.txt, donde se estilizan DataGridView1, DataGridView2, DataGridView3, btnClear, btnLimpiarRFID, BtnBuscarHM, BtnLimpiarHM, btnVerConsolidado, además de MsnVincular, lblTotalCount y la carga de DataGridView1. �
+GitHub +1
+Te dejo el bloque ya aterrizado a tus nombres reales.
+1) Pon esto en frmLector_Load
+Justo después de ConfigurarGridRfid(); y antes de CodBarras.Focus();
+C#
+private void frmLector_Load(object sender, EventArgs e)
+{
+    try
+    {
+        ConfigurarGridRfid();
+        EstiloContenedorTablaRFID();
+
+        ConfigurarEstiloDataGridView(DataGridView1);
+        BloquearColumnasDataGridView1();
+
+        EstiloBoton(btnClear, pinturaRojoIndio, pinturaBlanca, pinturaRojoCarmesi);
+        EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
+        EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+        EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
+        EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+
+        EstiloTextBox(CodBarras);
+        EstiloTextBox(TextBoxHM);
+        EstiloTextBox(TextBoxOP);
+
+        EstiloComboBox(cmbScanners);
+        EstiloLabelMensaje(MsnVincular);
+        EstiloLabelContador(lblTotalCount);
+
+        tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
+        tabMenu.SizeMode = TabSizeMode.Fixed;
+        tabMenu.Multiline = false;
+        tabMenu.DrawItem -= TabMenu_DrawItem;
+        tabMenu.DrawItem += TabMenu_DrawItem;
+        AdjustTabWidth(tabMenu);
+
+        _vinculador = new VinculadorService();
+        _vinculador.OnInfo += Vinculador_OnInfo;
+        _vinculador.OnError += Vinculador_OnError;
+        _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+        m_pCoreScanner = new CCoreScannerClass();
+        discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+        scanToConnect = ScanToConnect.GetInstance();
+
+        m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+        m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
+
+        m_arScanners = new Scanner[255];
+        for (int i = 0; i < m_arScanners.Length; i++)
+            m_arScanners[i] = new Scanner();
+
+        m_bScannerOpen = false;
+
+        ActualizarEstadoConexion("LISTO PARA CONECTAR", Color.DarkOrange);
+        HabilitarTabsTrabajo(false);
+
+        CodBarras.Focus();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(
+            "Error inicializando CoreScanner: " + ex.Message,
+            "CoreScanner",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error
+        );
+
+        ActualizarEstadoConexion("ERROR INICIALIZANDO", Color.Firebrick);
+    }
+}
+2) AdjustTabWidth para tabMenu
+C#
+private void AdjustTabWidth(TabControl tabCtrl)
+{
+    if (tabCtrl == null || tabCtrl.TabCount == 0)
+        return;
+
+    int ancho = 150;
+    int alto = 38;
+
+    tabCtrl.ItemSize = new Size(ancho, alto);
+}
+Si quieres recalcular al redimensionar:
+C#
+private void frmLector_Resize(object sender, EventArgs e)
+{
+    AdjustTabWidth(tabMenu);
+}
+3) Pintado del tabMenu
+C#
+private void TabMenu_DrawItem(object sender, DrawItemEventArgs e)
+{
+    TabControl tab = sender as TabControl;
+    if (tab == null) return;
+
+    TabPage page = tab.TabPages[e.Index];
+    Rectangle rect = e.Bounds;
+
+    bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+    Color backColor = selected ? Color.FromArgb(0, 120, 215) : Color.FromArgb(235, 235, 235);
+    Color textColor = selected ? Color.White : Color.FromArgb(45, 45, 48);
+
+    using (SolidBrush brush = new SolidBrush(backColor))
+    {
+        e.Graphics.FillRectangle(brush, rect);
+    }
+
+    TextRenderer.DrawText(
+        e.Graphics,
+        page.Text,
+        new Font("Segoe UI", 10F, FontStyle.Bold),
+        rect,
+        textColor,
+        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+    );
+}
+4) Estilo del RFID dgvTagList
+Tu VB original tiene una función específica para esta tabla. Con tu nombre real, déjala así:
+C#
+private void EstiloContenedorTablaRFID()
+{
+    if (dgvTagList == null) return;
+
+    dgvTagList.BackgroundColor = pinturaBlanca;
+    dgvTagList.GridColor = pinturaGris;
+
+    dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
+    dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
+    dgvTagList.DefaultCellStyle.Font = new Font("Arial", 10F, FontStyle.Regular);
+    dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+    dgvTagList.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
+    dgvTagList.DefaultCellStyle.SelectionForeColor = pinturaBlanca;
+
+    dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+    dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
+    dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 11F, FontStyle.Bold);
+    dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+    dgvTagList.EnableHeadersVisualStyles = false;
+    dgvTagList.BorderStyle = BorderStyle.None;
+    dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+    dgvTagList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+    dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
+    dgvTagList.RowTemplate.Height = 30;
+    dgvTagList.ColumnHeadersHeight = 36;
+
+    dgvTagList.RowHeadersVisible = false;
+    dgvTagList.AllowUserToAddRows = false;
+    dgvTagList.AllowUserToDeleteRows = false;
+    dgvTagList.AllowUserToResizeRows = false;
+    dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+    dgvTagList.MultiSelect = false;
+    dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+    if (dgvTagList.Columns.Contains("clnTID"))
+    {
+        dgvTagList.Columns["clnTID"].Visible = false;
+    }
+}
+No uses DataBindingComplete aquí; tu dgvTagList se llena manualmente con Rows.Insert, no con DataSource. Por eso no te estaba ayudando. El VB original también aplica el estilo directamente y separa esa función de la carga de DataGridView1. �
+GitHub
+5) Estilo de DataGridView1
+En frmLecto.txt, DataGridView1 es la grilla principal donde se muestran registros y donde solo hoja_marcacion queda editable; además se actualizan MsnVincular y lblTotalCount. �
+GitHub
+C#
+private void ConfigurarEstiloDataGridView(DataGridView dgv)
+{
+    if (dgv == null) return;
+
+    dgv.ReadOnly = false;
+    dgv.AllowUserToAddRows = false;
+    dgv.AllowUserToDeleteRows = false;
+    dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
+    dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+    dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+    dgv.BackgroundColor = Color.White;
+    dgv.BorderStyle = BorderStyle.None;
+    dgv.EnableHeadersVisualStyles = false;
+    dgv.RowHeadersVisible = false;
+    dgv.GridColor = Color.FromArgb(220, 220, 220);
+    dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+    dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+    dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+    dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+    dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+    dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+    dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+    dgv.DefaultCellStyle.BackColor = Color.White;
+    dgv.DefaultCellStyle.ForeColor = Color.Black;
+    dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
+    dgv.DefaultCellStyle.SelectionForeColor = Color.White;
+    dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+    dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+    dgv.RowTemplate.Height = 34;
+    dgv.ColumnHeadersHeight = 38;
+}
+
+private void BloquearColumnasDataGridView1()
+{
+    foreach (DataGridViewColumn column in DataGridView1.Columns)
+    {
+        if (column.Name != "hoja_marcacion")
+        {
+            column.ReadOnly = true;
+        }
+    }
+}
+6) Estilo de botones, textboxes, combo y labels
+C#
+private void EstiloBoton(Button btn, Color fondo, Color texto, Color hover)
+{
+    if (btn == null) return;
+
+    btn.BackColor = fondo;
+    btn.ForeColor = texto;
+    btn.FlatStyle = FlatStyle.Flat;
+    btn.FlatAppearance.BorderSize = 0;
+    btn.FlatAppearance.MouseOverBackColor = hover;
+    btn.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+    btn.Cursor = Cursors.Hand;
+    btn.Height = 38;
+}
+
+private void EstiloTextBox(TextBox txt)
+{
+    if (txt == null) return;
+
+    txt.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+    txt.BackColor = Color.White;
+    txt.ForeColor = Color.Black;
+    txt.BorderStyle = BorderStyle.FixedSingle;
+}
+
+private void EstiloComboBox(ComboBox cmb)
+{
+    if (cmb == null) return;
+
+    cmb.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
+    cmb.BackColor = Color.White;
+    cmb.ForeColor = Color.Black;
+    cmb.DropDownStyle = ComboBoxStyle.DropDownList;
+}
+
+private void EstiloLabelMensaje(Label lbl)
+{
+    if (lbl == null) return;
+
+    lbl.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+    lbl.ForeColor = Color.FromArgb(45, 45, 48);
+    lbl.BackColor = Color.Transparent;
+}
+
+private void EstiloLabelContador(Label lbl)
+{
+    if (lbl == null) return;
+
+    lbl.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+    lbl.ForeColor = Color.FromArgb(0, 120, 215);
+    lbl.BackColor = Color.Transparent;
+}
+7) Mostrar MsnVincular, lblTotalCount y llenar DataGridView1
+Eso en tu flujo original sí existe: SafeUpdateLabel(MsnVincular, ...), conteo con lblTotalCount, y carga de DataGridView1 con LlenarPrimeraFila o desde DataTable. �
+GitHub
+Mensaje
+C#
+private void SetMensajeVincular(string mensaje)
+{
+    if (MsnVincular.InvokeRequired)
+    {
+        MsnVincular.Invoke(new Action<string>(SetMensajeVincular), mensaje);
+        return;
+    }
+
+    MsnVincular.Text = mensaje;
+}
+Contador
+C#
+private void ActualizarTotalCount()
+{
+    int totalRegistros = DataGridView1.AllowUserToAddRows
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
+
+    lblTotalCount.Text = totalRegistros.ToString();
+}
+Insertar arriba en DataGridView1
+Usando las claves reales que ya manejas en VinculadorService:
+C#
+private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+{
+    if (data == null) return;
+
+    if (DataGridView1.InvokeRequired)
+    {
+        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        return;
+    }
+
+    int rowIndex = DataGridView1.Rows.Insert(0);
+
+    if (DataGridView1.Columns.Contains("id_rfid"))
+        DataGridView1.Rows[rowIndex].Cells["id_rfid"].Value = data.ContainsKey("id_rfid") ? data["id_rfid"] : "";
+
+    if (DataGridView1.Columns.Contains("op"))
+        DataGridView1.Rows[rowIndex].Cells["op"].Value = data.ContainsKey("op") ? data["op"] : "";
+
+    if (DataGridView1.Columns.Contains("corte"))
+        DataGridView1.Rows[rowIndex].Cells["corte"].Value = data.ContainsKey("corte") ? data["corte"] : "";
+
+    if (DataGridView1.Columns.Contains("subcorte"))
+        DataGridView1.Rows[rowIndex].Cells["subcorte"].Value = data.ContainsKey("subcorte") ? data["subcorte"] : "";
+
+    if (DataGridView1.Columns.Contains("cod_talla"))
+        DataGridView1.Rows[rowIndex].Cells["cod_talla"].Value = data.ContainsKey("cod_talla") ? data["cod_talla"] : "";
+
+    if (DataGridView1.Columns.Contains("id_talla"))
+        DataGridView1.Rows[rowIndex].Cells["id_talla"].Value = data.ContainsKey("id_talla") ? data["id_talla"] : "";
+
+    if (DataGridView1.Columns.Contains("talla"))
+        DataGridView1.Rows[rowIndex].Cells["talla"].Value = data.ContainsKey("talla") ? data["talla"] : "";
+
+    if (DataGridView1.Columns.Contains("color"))
+        DataGridView1.Rows[rowIndex].Cells["color"].Value = data.ContainsKey("color") ? data["color"] : "";
+
+    if (DataGridView1.Columns.Contains("hoja_marcacion"))
+        DataGridView1.Rows[rowIndex].Cells["hoja_marcacion"].Value = data.ContainsKey("hoja_marcacion") ? data["hoja_marcacion"] : "";
+
+    if (DataGridView1.Columns.Contains("fecha"))
+        DataGridView1.Rows[rowIndex].Cells["fecha"].Value = data.ContainsKey("fecha") ? data["fecha"] : "";
+
+    if (DataGridView1.Columns.Contains("linea"))
+        DataGridView1.Rows[rowIndex].Cells["linea"].Value = data.ContainsKey("linea") ? data["linea"] : "";
+
+    ActualizarTotalCount();
+}
+Y en Vinculador_OnInsertadoOk, además de actualizar TextBoxOP y TextBoxHM, llama:
+C#
+SetMensajeVincular("Prenda registrada exitosamente.");
+LlenarPrimeraFilaDataGridView1(data);
+8) Ajuste visual para que se parezca más a tu segunda imagen
+Tu captura deseada muestra un área interna más limpia que el TabControl WinForms clásico. Lo mínimo para acercarte es:
+tabMenu pintado por dueño (OwnerDrawFixed)
+tabs de 150x38
+fondo claro en tabs no seleccionados
+paneles internos blancos
+dgvTagList y DataGridView1 sin borde pesado
+Si quieres dar un salto real, el siguiente paso sería reemplazar la cabecera nativa del TabControl por un panel de botones superiores, pero con lo de arriba ya mejora bastante.
+Si quieres, te doy el bloque final de Vinculador_OnInsertadoOk y Vinculador_OnError ya amarrado a MsnVincular, lblTotalCount y DataGridView1.
