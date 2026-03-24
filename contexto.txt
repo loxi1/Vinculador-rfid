@@ -1,206 +1,179 @@
-Tengo esete error:
-Build started...
-1>------ Build started: Project: DS9908R_App, Configuration: Debug x64 ------
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\MySQLconexion.cs(123,61,123,75): error CS0117: 'DBConsultas' does not contain a definition for 'LoadJsonConfig'
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\Sybase.cs(72,61,72,75): error CS0117: 'DBConsultas' does not contain a definition for 'LoadJsonConfig'
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\FormAlerta.cs(16,21,16,27): warning CS0169: The field 'FormAlerta.conteo' is never used
-1>D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\frmLector.cs(27,24,27,44): warning CS0414: The field 'frmLector._hojaMarcacionActual' is assigned but its value is never used
-========== Build: 0 succeeded, 1 failed, 0 up-to-date, 0 skipped ==========
-revisar el repo -> https://github.com/loxi1/Vinculador-rfid para mas contexto
-VinculadorService.cs
+Sí, ya vi el problema del build.
+El error no está en VinculadorService.cs. El fallo viene de que MySQLconexion.cs y Sybase.cs están intentando llamar DBConsultas.LoadJsonConfig(...), pero en tu repo actual DBConsultas.cs no tiene ese método; solo tiene constructor + Encrypt + Decrypt. �
+GitHub +2
+Además, por lo que muestras, VinculadorService.cs sí está bien encaminado en el flujo: hace SaveRFID(...) en Sybase, luego GetTimbradasByWorkerAndEtiqueta(...), luego Insert(...) en MySQL y finalmente dispara OnInsertadoOk o OnError. �
+GitHub
+Qué debes corregir ahora
+Tienes dos caminos:
+Opción A: la más simple
+Volver a dejar MySQLconexion.cs y Sybase.cs con su LoadConfig(...) interno, como ya estaban.
+Opción B: la más limpia
+Agregar a DBConsultas.cs los métodos estáticos que faltan:
+GetConfigPath
+LoadJsonConfig
+Como ya te sale ese error exacto, aquí conviene ir con la opción B.
+Código final de DBConsultas.cs
+Reemplázalo completo por esto:
+C#
 using System;
+using System.IO;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Data;
-using System.Collections.Concurrent;
+using System.Linq;
+using System.Text;
+using System.Security.Cryptography;
+using Newtonsoft.Json;
 
 namespace DS9908R_App
 {
-    public class VinculadorService
+    public class DBConsultas
     {
-        private readonly BDPrenda _bdPrenda = new BDPrenda();
-        private readonly BDPrendaScm _bdPrendaScm = new BDPrendaScm();
+        private string SECRET_KEY;
+        private string SECRET_IV;
+        private string METHOD;
 
-        private readonly ConcurrentQueue<VinculacionRequest> _queue = new ConcurrentQueue<VinculacionRequest>();
-        private readonly Dictionary<string, bool> _cacheRFID = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
-        private const int MaxCacheSize = 500;
+        private byte[] key;
+        private byte[] iv;
 
-        private bool _isProcessing;
-        private readonly object _queueLock = new object();
-
-        public event Action<string> OnInfo;
-        public event Action<string> OnError;
-        public event Action<Dictionary<string, object>> OnInsertadoOk;
-
-        public void Enqueue(VinculacionRequest request)
+        public DBConsultas()
         {
-            _queue.Enqueue(request);
-            _ = StartProcessingQueue();
+            var config = LoadJsonConfig("tsconfig.json");
+
+            SECRET_KEY = config.ContainsKey("SECRET_KEY") ? config["SECRET_KEY"] : "";
+            SECRET_IV = config.ContainsKey("SECRET_IV") ? config["SECRET_IV"] : "";
+            METHOD = config.ContainsKey("METHOD") ? config["METHOD"] : "AES-256-CBC";
+
+            if (string.IsNullOrWhiteSpace(SECRET_KEY) || string.IsNullOrWhiteSpace(SECRET_IV))
+            {
+                throw new Exception("Faltan SECRET_KEY o SECRET_IV en tsconfig.json.");
+            }
+
+            key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY));
+            iv = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_IV)).Take(16).ToArray();
         }
 
-        private async Task StartProcessingQueue()
+        public static string GetConfigPath(string filePath)
         {
-            lock (_queueLock)
-            {
-                if (_isProcessing) return;
-                _isProcessing = true;
-            }
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            Console.WriteLine("baseDirectory-->" + baseDirectory);
 
-            try
-            {
-                while (_queue.TryDequeue(out var request))
-                {
-                    await Task.Run(() => ProcesarVinculacion(request));
-                }
-            }
-            finally
-            {
-                lock (_queueLock)
-                {
-                    _isProcessing = false;
-                }
+            string parent1 = Directory.GetParent(baseDirectory) != null
+                ? Directory.GetParent(baseDirectory).FullName
+                : baseDirectory;
 
-                if (!_queue.IsEmpty)
-                {
-                    _ = StartProcessingQueue();
-                }
-            }
+            string parent2 = Directory.GetParent(parent1) != null
+                ? Directory.GetParent(parent1).FullName
+                : parent1;
+
+            string iniDirectory = Path.Combine(parent2, "Ini");
+            Console.WriteLine("iniDirectory-->" + iniDirectory);
+
+            string configPath = Path.Combine(iniDirectory, filePath);
+            Console.WriteLine("configPath-->" + configPath);
+
+            return configPath;
         }
 
-        private void ProcesarVinculacion(VinculacionRequest request)
+        public static Dictionary<string, string> LoadJsonConfig(string filePath)
         {
-            try
+            string configPath = GetConfigPath(filePath);
+
+            if (!File.Exists(configPath))
             {
-                string codigoBarra = (request.CodigoBarras ?? "").Trim();
-                string rfid = NormalizarRfid(request.Rfid);
-                bool usarRfid = request.UsarRfid;
-
-                if (string.IsNullOrWhiteSpace(codigoBarra))
-                {
-                    OnError?.Invoke("El código de barras está vacío.");
-                    return;
-                }
-
-                if (usarRfid && string.IsNullOrWhiteSpace(rfid))
-                {
-                    OnError?.Invoke("El RFID está vacío.");
-                    return;
-                }
-
-                if (usarRfid && !string.IsNullOrWhiteSpace(rfid) && _cacheRFID.ContainsKey(rfid))
-                {
-                    OnError?.Invoke("RFID repetido: " + rfid);
-                    return;
-                }
-
-                Tuple<int, string> result;
-
-                if (usarRfid)
-                {
-                    result = _bdPrenda.SaveRFID(
-                        codigoBarra,
-                        request.Empresa,
-                        request.CodTrabajador,
-                        rfid,
-                        request.HojaMarcacion
-                    );
-
-                    if (result.Item1 != 0)
-                    {
-                        if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfid))
-                            GuardarEnCache(rfid);
-
-                        OnError?.Invoke(result.Item2);
-                        return;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(rfid))
-                        GuardarEnCache(rfid);
-                }
-                else
-                {
-                    result = Tuple.Create(0, "OK");
-                }
-
-                DataTable dataTimbrado = _bdPrenda.GetTimbradasByWorkerAndEtiqueta(
-                    request.CodTrabajador,
-                    codigoBarra
-                );
-
-                if (dataTimbrado.Rows.Count == 0)
-                {
-                    OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas.");
-                    return;
-                }
-
-                DataRow row = dataTimbrado.Rows[0];
-
-                var insertData = new Dictionary<string, object>
-                {
-                    { "id_rfid", usarRfid ? rfid : "" },
-                    { "id_barras", row["etiqueta"] },
-                    { "op", row["op"] },
-                    { "corte", row["corte"] },
-                    { "subcorte", row["sub_corte"] },
-                    { "cod_talla", row["cod_talla"] },
-                    { "id_talla", row["id_talla"] },
-                    { "talla", row["talla"] },
-                    { "cod_combinacion", row["cod_comb"] },
-                    { "color", row["color"] },
-                    { "cod_trabajador", row["fotocheck"] },
-                    { "hoja_marcacion", request.HojaMarcacion }
-                };
-
-                long insertReturn = _bdPrendaScm.Insert(insertData);
-
-                if (insertReturn != 1)
-                {
-                    OnError?.Invoke("No se pudo insertar en bd_ci_scm.prenda.");
-                    return;
-                }
-
-                insertData["fecha"] = DateTime.Now;
-                insertData["linea"] = row["linea"];
-
-                if (insertData.ContainsKey("id_barras")) insertData.Remove("id_barras");
-                if (insertData.ContainsKey("cod_combinacion")) insertData.Remove("cod_combinacion");
-                if (insertData.ContainsKey("cod_trabajador")) insertData.Remove("cod_trabajador");
-
-                OnInsertadoOk?.Invoke(insertData);
-                OnInfo?.Invoke("Prenda registrada exitosamente.");
+                throw new FileNotFoundException("No existe el archivo de configuración.", configPath);
             }
-            catch (Exception ex)
+
+            string jsonContent = File.ReadAllText(configPath);
+            var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent);
+
+            if (config == null)
             {
-                OnError?.Invoke("Error inesperado al registrar: " + ex.Message);
+                throw new Exception("No se pudo deserializar el archivo de configuración.");
+            }
+
+            return config;
+        }
+
+        public string Encrypt(string stringToEncrypt)
+        {
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                {
+                    byte[] plainTextBytes = Encoding.UTF8.GetBytes(stringToEncrypt);
+                    byte[] cipherTextBytes = encryptor.TransformFinalBlock(plainTextBytes, 0, plainTextBytes.Length);
+                    return Convert.ToBase64String(cipherTextBytes);
+                }
             }
         }
 
-        private string NormalizarRfid(string rfid)
+        public string Decrypt(string stringToDecrypt)
         {
-            rfid = (rfid ?? "").Trim().Replace(" ", "");
-            if (rfid.Length > 24)
-                rfid = rfid.Substring(rfid.Length - 24);
-            return rfid;
-        }
-
-        private void GuardarEnCache(string rfid)
-        {
-            if (string.IsNullOrWhiteSpace(rfid)) return;
-
-            if (_cacheRFID.Count >= MaxCacheSize)
+            using (Aes aes = Aes.Create())
             {
-                string firstKey = null;
-                foreach (var key in _cacheRFID.Keys)
+                aes.Key = key;
+                aes.IV = iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform decryptor = aes.CreateDecryptor())
                 {
-                    firstKey = key;
-                    break;
+                    byte[] cipherTextBytes = Convert.FromBase64String(stringToDecrypt);
+                    byte[] plainTextBytes = decryptor.TransformFinalBlock(cipherTextBytes, 0, cipherTextBytes.Length);
+                    return Encoding.UTF8.GetString(plainTextBytes);
                 }
-
-                if (firstKey != null)
-                    _cacheRFID.Remove(firstKey);
             }
-
-            _cacheRFID[rfid] = true;
         }
     }
 }
+Por qué con eso se arregla
+Porque ahora sí existirán:
+C#
+DBConsultas.LoadJsonConfig(...)
+DBConsultas.GetConfigPath(...)
+que son justamente los métodos que MySQLconexion.cs y Sybase.cs están intentando usar. El error de compilación que muestras coincide exactamente con esa ausencia. �
+GitHub +2
+Validación de VinculadorService.cs
+Tu VinculadorService.cs está bien estructurado para el flujo que tenías en VB:
+normaliza RFID
+bloquea RFID vacío si UsarRfid
+usa caché para repetidos
+llama SaveRFID(...)
+si SaveRFID devuelve error, propaga result.Item2
+consulta tmp_etiq_timbradas
+inserta en MySQL
+arma insertData
+llama OnInsertadoOk �
+GitHub
+Lo único que te sugeriría afinar ahí es este bloque:
+C#
+if (insertReturn != 1)
+{
+    OnError?.Invoke("No se pudo insertar en bd_ci_scm.prenda.");
+    return;
+}
+Mejor así, para no perder el mensaje real de MySQL:
+C#
+if (insertReturn != 1)
+{
+    string mysqlError = _bdPrendaScm.GetError();
+    OnError?.Invoke(string.IsNullOrWhiteSpace(mysqlError)
+        ? "No se pudo insertar en bd_ci_scm.prenda."
+        : mysqlError);
+    return;
+}
+Sobre los warnings
+Estos no te bloquean el build:
+FormAlerta.conteo no usado
+frmLector._hojaMarcacionActual no usado
+Puedes dejarlos por ahora.
+Qué haría yo en tu repo ahora
+reemplazar DBConsultas.cs por el código de arriba
+recompilar
+si compila, probar login + scanner + guardado
+si vuelve a fallar al guardar, el siguiente punto será revisar BDPrenda.cs y BDPrendaScm.cs ya en ejecución real
+Si quieres, el siguiente mensaje te dejo también la versión final de BDPrenda.cs y BDPrendaScm.cs ajustada a tu VinculadorService.cs actual.
