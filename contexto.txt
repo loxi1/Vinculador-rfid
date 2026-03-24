@@ -1,11 +1,139 @@
-La ruta corresta es esta donde estan los archivos:
+Sí, ahí está el problema exacto.
+Tu código SVG está buscando en:
+Plain text
+...SampleApp_CSharp\bin\x64\Debug\Ini
+pero tus archivos reales están en:
+Plain text
+...SampleApp_CSharp\bin\x64\Ini
+O sea, está sobrando \Debug en la búsqueda.
+Qué debes corregir
+UtilidadesSVG.cs
+Tu método ObtenerRutaSVG no debe usar:
+C#
+string iniDirectory = Path.Combine(baseDirectory, "Ini");
+porque baseDirectory en ejecución es:
+Plain text
+...\bin\x64\Debug\
+Entonces termina buscando en:
+Plain text
+...\bin\x64\Debug\Ini
+y esa carpeta no es la correcta.
+Código correcto para ObtenerRutaSVG
+Reemplázalo por este:
+C#
+public string ObtenerRutaSVG(string fileName)
+{
+    try
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            return string.Empty;
 
-ti.desarrollo10@PC179 MINGW64 /d/Proyecto/C_Sharp/proyectoLectorBarraRfid/Scanner-SDK-for-Windows/SampleApp_CSharp/bin/x64/Ini (main)
-$ ls -l
-total 15
--rw-r--r-- 1 ti.desarrollo10 1049089  445 Sep 12  2024 configuracion.ini
--rw-r--r-- 1 ti.desarrollo10 1049089  717 Feb 11  2025 icono_checking_512.svg
--rw-r--r-- 1 ti.desarrollo10 1049089 2375 Feb 11  2025 icono_error_512.svg
--rw-r--r-- 1 ti.desarrollo10 1049089  435 Feb 11  2025 icono_exclamation_512.svg
--rw-r--r-- 1 ti.desarrollo10 1049089  343 Mar 23 15:08 tsconfig.json
--rw-r--r-- 1 ti.desarrollo10 1049089 1164 Jan 24  2025 tsconfigOrigen.json
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+        string parent1 = Directory.GetParent(baseDirectory) != null
+            ? Directory.GetParent(baseDirectory).FullName
+            : baseDirectory;
+
+        string iniDirectory = Path.Combine(parent1, "Ini");
+        string svgFilePath = Path.Combine(iniDirectory, fileName);
+
+        System.Diagnostics.Debug.WriteLine(
+            "fileName->" + fileName +
+            " base->" + baseDirectory +
+            " iniDirectory->" + iniDirectory +
+            " svgFilePath->" + svgFilePath);
+
+        if (File.Exists(svgFilePath))
+        {
+            return svgFilePath;
+        }
+
+        return string.Empty;
+    }
+    catch
+    {
+        return string.Empty;
+    }
+}
+Por qué así sí funciona
+Si baseDirectory es:
+Plain text
+D:\Proyecto\...\SampleApp_CSharp\bin\x64\Debug\
+entonces:
+C#
+Directory.GetParent(baseDirectory).FullName
+te da:
+Plain text
+D:\Proyecto\...\SampleApp_CSharp\bin\x64
+y luego:
+C#
+Path.Combine(parent1, "Ini")
+te da justo:
+Plain text
+D:\Proyecto\...\SampleApp_CSharp\bin\x64\Ini
+que es donde realmente están tus SVG.
+También debes ajustar DBConsultas.GetConfigPath
+Porque tsconfig.json está en esa misma carpeta:
+Plain text
+bin\x64\Ini
+Si hoy tu método sube dos niveles, puede estar bien o mal según desde dónde parta, pero para tu caso actual conviene dejarlo consistente con la misma lógica.
+Versión correcta:
+C#
+public static string GetConfigPath(string filePath)
+{
+    string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+    string parent1 = Directory.GetParent(baseDirectory) != null
+        ? Directory.GetParent(baseDirectory).FullName
+        : baseDirectory;
+
+    string iniDirectory = Path.Combine(parent1, "Ini");
+    string configPath = Path.Combine(iniDirectory, filePath);
+
+    Console.WriteLine("baseDirectory-->" + baseDirectory);
+    Console.WriteLine("iniDirectory-->" + iniDirectory);
+    Console.WriteLine("configPath-->" + configPath);
+
+    return configPath;
+}
+Recomendación importante
+Haz que CargarIconoSVG sea silencioso si no encuentra archivo, porque tus formularios ya tienen iconos por defecto en el diseñador.
+UtilidadesSVG.cs recomendado
+C#
+public void CargarIconoSVG(PictureBox pictureBox, string svgFileName)
+{
+    if (pictureBox == null || string.IsNullOrWhiteSpace(svgFileName))
+        return;
+
+    string svgPath = ObtenerRutaSVG(svgFileName);
+
+    if (string.IsNullOrWhiteSpace(svgPath) || !File.Exists(svgPath))
+        return;
+
+    try
+    {
+        SvgDocument svgDocument = SvgDocument.Open(svgPath);
+        if (svgDocument == null)
+            return;
+
+        Bitmap bitmap = svgDocument.Draw();
+        if (bitmap == null)
+            return;
+
+        pictureBox.Image = bitmap;
+        pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
+    }
+    catch
+    {
+    }
+}
+Resumen
+Tu ruta real es:
+Plain text
+bin\x64\Ini
+Tu código estaba buscando en:
+Plain text
+bin\x64\Debug\Ini
+Entonces la solución es:
+en UtilidadesSVG.cs, subir un nivel
+en DBConsultas.cs, usar la misma lógica para tsconfig.json
+Si quieres, te dejo en el siguiente mensaje el archivo UtilidadesSVG.cs completo ya armado para pegar.
