@@ -126,6 +126,30 @@ namespace DS9908R_App
                 HabilitarTabsTrabajo(false);
 
                 CodBarras.Focus();
+
+                ConfigurarEstiloDataGridView(DataGridView1);
+                BloquearColumnas(DataGridView1);
+
+                // secundarios
+                MejorarDataGridView(DataGridView2);
+                MejorarDataGridView(DataGridView3);
+
+                // botones
+                EstiloBoton(btnClear, pinturaRojoIndio, pinturaBlanca, pinturaRojoCarmesi);
+                EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
+
+                EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+                EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
+                EstiloBoton(btnVerConsolidado, pinturaVerdeMarMedio, pinturaBlanca, pinturaGrisOscuro);
+
+                // tabcontrol
+                tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+                tabControl.DrawItem += TabControl_DrawItem;
+                tabControl.SizeMode = TabSizeMode.Fixed;
+                AdjustTabWidth(tabControl);
+
+                // contenedor
+                EstiloContenedorTablaRFID(panelRFID);
             }
             catch (Exception ex)
             {
@@ -723,6 +747,128 @@ namespace DS9908R_App
             {
                 alerta.ShowDialog();
             }
+        }
+
+        private void ConfigurarEstiloDataGridView(DataGridView dgv)
+        {
+            dgv.ReadOnly = false;
+            dgv.AllowUserToAddRows = false;
+            dgv.AllowUserToDeleteRows = false;
+            dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+            dgv.BackgroundColor = Color.White;
+            dgv.BorderStyle = BorderStyle.None;
+
+            dgv.EnableHeadersVisualStyles = false;
+
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+
+            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10);
+            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
+            dgv.DefaultCellStyle.SelectionForeColor = Color.White;
+
+            dgv.RowHeadersVisible = false;
+            dgv.GridColor = Color.FromArgb(220, 220, 220);
+
+            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+        }
+
+        private void MejorarDataGridView(DataGridView dgv)
+        {
+            ConfigurarEstiloDataGridView(dgv);
+
+            dgv.RowTemplate.Height = 35;
+            dgv.ColumnHeadersHeight = 40;
+
+            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+            dgv.DefaultCellStyle.Padding = new Padding(5);
+
+            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        }
+
+        private void BloquearColumnas(DataGridView dgv)
+        {
+            foreach (DataGridViewColumn column in dgv.Columns)
+            {
+                if (column.Name != "hoja_marcacion")
+                {
+                    column.ReadOnly = true;
+                }
+            }
+        }
+
+        private void EstiloBoton(Button btn, Color fondo, Color texto, Color hover)
+        {
+            btn.BackColor = fondo;
+            btn.ForeColor = texto;
+            btn.FlatStyle = FlatStyle.Flat;
+            btn.FlatAppearance.BorderSize = 0;
+
+            btn.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            btn.Cursor = Cursors.Hand;
+
+            btn.Height = 40;
+
+            btn.MouseEnter += (s, e) => btn.BackColor = hover;
+            btn.MouseLeave += (s, e) => btn.BackColor = fondo;
+        }
+
+        private void TabControl_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            TabControl tab = sender as TabControl;
+            TabPage page = tab.TabPages[e.Index];
+
+            Rectangle rect = e.Bounds;
+            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+            Color bg = isSelected ? Color.FromArgb(0, 120, 215) : Color.LightGray;
+            Color fg = isSelected ? Color.White : Color.Black;
+
+            using (SolidBrush brush = new SolidBrush(bg))
+            {
+                e.Graphics.FillRectangle(brush, rect);
+            }
+
+            TextRenderer.DrawText(
+                e.Graphics,
+                page.Text,
+                new Font("Segoe UI", 10, FontStyle.Bold),
+                rect,
+                fg,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+            );
+        }
+
+        private void AdjustTabWidth(TabControl tab)
+        {
+            int totalWidth = tab.Width;
+            int tabCount = tab.TabCount;
+
+            if (tabCount == 0) return;
+
+            tab.ItemSize = new Size(totalWidth / tabCount, 40);
+        }
+
+        private void EstiloContenedorTablaRFID(Panel panel)
+        {
+            panel.BackColor = Color.White;
+            panel.BorderStyle = BorderStyle.FixedSingle;
+        }
+
+        private void ResaltarUltimaFila(DataGridView dgv)
+        {
+            if (dgv.Rows.Count == 0) return;
+
+            int last = dgv.Rows.Count - 1;
+
+            dgv.Rows[last].DefaultCellStyle.BackColor = Color.LightGreen;
+            dgv.FirstDisplayedScrollingRowIndex = last;
         }
     }
 }
