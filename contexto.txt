@@ -1,31 +1,21 @@
-Sí. Hazla recibir el TabControl como parámetro.
-C#
-private void AdjustTabWidth(TabControl tabCtrl)
-{
-    if (tabCtrl == null || tabCtrl.TabCount == 0)
-        return;
+falta esto:
+Private Sub EstiloContenedorTablaRFID()
+        With dgvTagList
+            .BackgroundColor = pinturaBlanca
+            .GridColor = pinturaGris
+            .DefaultCellStyle.BackColor = pinturaBlanca
+            .DefaultCellStyle.ForeColor = pinturaNegra
+            .DefaultCellStyle.Font = New Font("Arial", 10)
+            .DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+            .ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca
+            .ColumnHeadersDefaultCellStyle.Font = New Font("Arial", 12, FontStyle.Bold)
+            .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+            .AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo ' Fondo gris muy claro para filas alternas
+            .RowTemplate.Height = 30
 
-    int totalWidth = tabCtrl.Width;
-    int tabCount = tabCtrl.TabCount;
-
-    int tabWidth = totalWidth / tabCount;
-    if (tabWidth < 100)
-        tabWidth = 100;
-
-    tabCtrl.ItemSize = new Size(tabWidth, 40);
-}
-Y la llamas así:
-C#
-AdjustTabWidth(this.tabControl);
-Si quieres que también se recalcule cuando cambie el tamaño del formulario:
-C#
-private void frmLector_Resize(object sender, EventArgs e)
-{
-    AdjustTabWidth(this.tabControl);
-}
-Y en el Load:
-C#
-tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
-tabControl.SizeMode = TabSizeMode.Fixed;
-AdjustTabWidth(this.tabControl);
-Si deseas, también te la adapto para que el ancho se calcule según el texto de cada pestaña y no repartido igual.
+            ' Ocultar la columna clnTID
+            If .Columns.Contains("clnTID") Then
+                .Columns("clnTID").Visible = False
+            End If
+        End With
+    End Sub
