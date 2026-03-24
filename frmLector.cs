@@ -115,7 +115,7 @@ namespace DS9908R_App
                 EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
                 EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
                 EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
-                EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+                //EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
 
                 EstiloTextBox(CodBarras);
                 EstiloTextBox(TextBoxHM);
@@ -722,8 +722,6 @@ namespace DS9908R_App
             LimpiarSoloRfid();
 
             _ultimoCodigoBarra = "";
-            nroOP.Text = "";
-            nroHM.Text = "";
 
             CodBarras.Focus();
         }
@@ -1023,19 +1021,40 @@ namespace DS9908R_App
                 return;
             }
 
-            int rowIndex = DataGridView1.Rows.Insert(0);
+            DataGridView1.Rows.Insert(0);
+            int rowIndex = 0;
 
             SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
-            SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
-            SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
-            SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
-            SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+
+            ResaltarFilaInsertada(rowIndex);
+        }
+
+        private void ResaltarFilaInsertada(int rowIndex)
+        {
+            if (rowIndex < 0 || rowIndex >= DataGridView1.Rows.Count)
+                return;
+
+            var row = DataGridView1.Rows[rowIndex];
+
+            row.DefaultCellStyle.BackColor = Color.LightGreen;
+
+            Timer t = new Timer();
+            t.Interval = 800;
+
+            t.Tick += (s, e) =>
+            {
+                row.DefaultCellStyle.BackColor = Color.White;
+                t.Stop();
+                t.Dispose();
+            };
+
+            t.Start();
         }
 
         private void SetCellValueIfExists(DataGridView dgv, int rowIndex, string columnName, Dictionary<string, object> data)
@@ -1074,6 +1093,21 @@ namespace DS9908R_App
                 fg,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             );
+        }
+
+        private bool ExisteRFIDEnGrid(string rfid)
+        {
+            foreach (DataGridViewRow row in DataGridView1.Rows)
+            {
+                if (row.Cells["id_rfid"].Value?.ToString() == rfid)
+                    return true;
+            }
+            return false;
+        }
+
+        private void tablaContenedora_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
