@@ -896,5 +896,10 @@ namespace DS9908R_App
 
             tabCtrl.ItemSize = new Size(tabWidth, 40);
         }
+
+        private void dgvTagList_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            EstiloContenedorTablaRFID(dgvTagList);
+        }
     }
 }
