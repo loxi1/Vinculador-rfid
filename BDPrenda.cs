@@ -30,7 +30,7 @@ namespace DS9908R_App
                 {
                     sIDRfid = sIDRfid.Substring(sIDRfid.Length - 24);
                 }
-
+                System.Diagnostics.Debug.WriteLine("codBarras"+sCodBarra+" compania->"+ sCompania+" codigo->"+ sCodTrabajador+ " rfid->"+ sIDRfid);
                 using (AseConnection connectionAse = _sybase.Connect())
                 {
                     if (connectionAse == null || connectionAse.State != ConnectionState.Open)

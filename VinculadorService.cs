@@ -145,7 +145,10 @@ namespace DS9908R_App
 
                 if (insertReturn != 1)
                 {
-                    OnError?.Invoke("No se pudo insertar en bd_ci_scm.prenda.");
+                    string mysqlError = _bdPrendaScm.GetError();
+                    OnError?.Invoke(string.IsNullOrWhiteSpace(mysqlError)
+                        ? "No se pudo insertar en bd_ci_scm.prenda."
+                        : mysqlError);
                     return;
                 }
 

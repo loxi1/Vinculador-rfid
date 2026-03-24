@@ -20,13 +20,15 @@ namespace DS9908R_App
                 string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
                 // Subir dos niveles para llegar a la carpeta "bin"
-                string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
+                //string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
 
                 // Construir la ruta de la carpeta "Ini"
-                string iniDirectory = Path.Combine(binDirectory, "Ini");
+                string iniDirectory = Path.Combine(baseDirectory, "Ini");
 
                 // Construir la ruta completa del archivo SVG
                 string svgFilePath = Path.Combine(iniDirectory, fileName);
+
+                System.Diagnostics.Debug.WriteLine("fileName->"+ fileName + " base->" + baseDirectory + " inDirectory->"+ iniDirectory+ " svgFilePath->"+ svgFilePath);
 
                 // Verificar si el archivo existe
                 if (File.Exists(svgFilePath))

@@ -3,67 +3,79 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 using Newtonsoft.Json;
 
 namespace DS9908R_App
 {
-    class DBConsultas
+    public class DBConsultas
     {
-        // Variables de configuración
         private string SECRET_KEY;
         private string SECRET_IV;
         private string METHOD;
 
-        // Variables para clave y vector de inicialización
         private byte[] key;
         private byte[] iv;
 
-        // Constructor que carga los valores desde un archivo JSON
         public DBConsultas()
         {
-            string filePath = "tsconfig.json";
+            var config = LoadJsonConfig("tsconfig.json");
 
-            // Obtener el directorio base de ejecución
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            Console.WriteLine($"baseDirectory-->{baseDirectory}");
+            SECRET_KEY = config.ContainsKey("SECRET_KEY") ? config["SECRET_KEY"] : "";
+            SECRET_IV = config.ContainsKey("SECRET_IV") ? config["SECRET_IV"] : "";
+            METHOD = config.ContainsKey("METHOD") ? config["METHOD"] : "AES-256-CBC";
 
-            // Subir dos niveles para llegar a "bin"
-            string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
-            Console.WriteLine($"binDirectory-->{binDirectory}");
-
-            // Construir la ruta del archivo tsconfig.json
-            string iniDirectory = Path.Combine(binDirectory, "Ini");
-            Console.WriteLine($"iniDirectory-->{iniDirectory}");
-
-            string configPath = Path.Combine(iniDirectory, filePath);
-            Console.WriteLine($"configPath-->{configPath}");
-
-            // Leer y procesar el archivo JSON
-            if (File.Exists(configPath))
+            if (string.IsNullOrWhiteSpace(SECRET_KEY) || string.IsNullOrWhiteSpace(SECRET_IV))
             {
-                string jsonContent = File.ReadAllText(configPath);
-                var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent);
-
-                // Extraer los valores de configuración
-                SECRET_KEY = config["SECRET_KEY"];
-                SECRET_IV = config["SECRET_IV"];
-                METHOD = config["METHOD"];
-
-                // Convertir SECRET_KEY y SECRET_IV a hash de 256 bits y 128 bits respectivamente
-                key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY));
-                iv = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_IV)).Take(16).ToArray();
+                throw new Exception("Faltan SECRET_KEY o SECRET_IV en tsconfig.json.");
             }
-            else
-            {
-                throw new FileNotFoundException(
-                    $"baseDirectory->{baseDirectory} binDirectory->{binDirectory} iniDirectory->{iniDirectory} configPath->{configPath}"
-                );
-            }
+
+            key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY));
+            iv = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_IV)).Take(16).ToArray();
         }
 
-        // Función para cifrar un texto
+        public static string GetConfigPath(string filePath)
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            Console.WriteLine("baseDirectory-->" + baseDirectory);
+
+            string parent1 = Directory.GetParent(baseDirectory) != null
+                ? Directory.GetParent(baseDirectory).FullName
+                : baseDirectory;
+
+            string parent2 = Directory.GetParent(parent1) != null
+                ? Directory.GetParent(parent1).FullName
+                : parent1;
+
+            string iniDirectory = Path.Combine(parent2, "Ini");
+            Console.WriteLine("iniDirectory-->" + iniDirectory);
+
+            string configPath = Path.Combine(iniDirectory, filePath);
+            Console.WriteLine("configPath-->" + configPath);
+
+            return configPath;
+        }
+
+        public static Dictionary<string, string> LoadJsonConfig(string filePath)
+        {
+            string configPath = GetConfigPath(filePath);
+
+            if (!File.Exists(configPath))
+            {
+                throw new FileNotFoundException("No existe el archivo de configuración.", configPath);
+            }
+
+            string jsonContent = File.ReadAllText(configPath);
+            var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent);
+
+            if (config == null)
+            {
+                throw new Exception("No se pudo deserializar el archivo de configuración.");
+            }
+
+            return config;
+        }
+
         public string Encrypt(string stringToEncrypt)
         {
             using (Aes aes = Aes.Create())
@@ -71,6 +83,7 @@ namespace DS9908R_App
                 aes.Key = key;
                 aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
 
                 using (ICryptoTransform encryptor = aes.CreateEncryptor())
                 {
@@ -81,7 +94,6 @@ namespace DS9908R_App
             }
         }
 
-        // Función para descifrar un texto
         public string Decrypt(string stringToDecrypt)
         {
             using (Aes aes = Aes.Create())
@@ -89,6 +101,7 @@ namespace DS9908R_App
                 aes.Key = key;
                 aes.IV = iv;
                 aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
 
                 using (ICryptoTransform decryptor = aes.CreateDecryptor())
                 {

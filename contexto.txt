@@ -1,179 +1,39 @@
-Sí, ya vi el problema del build.
-El error no está en VinculadorService.cs. El fallo viene de que MySQLconexion.cs y Sybase.cs están intentando llamar DBConsultas.LoadJsonConfig(...), pero en tu repo actual DBConsultas.cs no tiene ese método; solo tiene constructor + Encrypt + Decrypt. �
-GitHub +2
-Además, por lo que muestras, VinculadorService.cs sí está bien encaminado en el flujo: hace SaveRFID(...) en Sybase, luego GetTimbradasByWorkerAndEtiqueta(...), luego Insert(...) en MySQL y finalmente dispara OnInsertadoOk o OnError. �
-GitHub
-Qué debes corregir ahora
-Tienes dos caminos:
-Opción A: la más simple
-Volver a dejar MySQLconexion.cs y Sybase.cs con su LoadConfig(...) interno, como ya estaban.
-Opción B: la más limpia
-Agregar a DBConsultas.cs los métodos estáticos que faltan:
-GetConfigPath
-LoadJsonConfig
-Como ya te sale ese error exacto, aquí conviene ir con la opción B.
-Código final de DBConsultas.cs
-Reemplázalo completo por esto:
-C#
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Security.Cryptography;
-using Newtonsoft.Json;
 
-namespace DS9908R_App
+sale esta alerta de estaq funcion ⚠️ Archivo SVG no encontrado : NO sabe que pintureBox es
+puse un print: fileName-> base->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\ inDirectory->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Ini svgFilePath->D:\Proyecto\C_Sharp\proyectoLectorBarraRfid\Scanner-SDK-for-Windows\SampleApp_CSharp\bin\x64\Debug\Ini al parecer no se envia el fileName pero si acepto la alerta sale el alert con el icono correcto es decir ok pero nose porque aquien se envia antes sin fileName
+public string ObtenerRutaSVG(string fileName)
 {
-    public class DBConsultas
+    try
     {
-        private string SECRET_KEY;
-        private string SECRET_IV;
-        private string METHOD;
+        // Obtener la ruta base de la aplicación
+        string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-        private byte[] key;
-        private byte[] iv;
+        // Subir dos niveles para llegar a la carpeta "bin"
+        //string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
 
-        public DBConsultas()
+        // Construir la ruta de la carpeta "Ini"
+        string iniDirectory = Path.Combine(baseDirectory, "Ini");
+
+        // Construir la ruta completa del archivo SVG
+        string svgFilePath = Path.Combine(iniDirectory, fileName);
+
+        System.Diagnostics.Debug.WriteLine("fileName->"+ fileName + " base->" + baseDirectory + " inDirectory->"+ iniDirectory+ " svgFilePath->"+ svgFilePath);
+
+        // Verificar si el archivo existe
+        if (File.Exists(svgFilePath))
         {
-            var config = LoadJsonConfig("tsconfig.json");
-
-            SECRET_KEY = config.ContainsKey("SECRET_KEY") ? config["SECRET_KEY"] : "";
-            SECRET_IV = config.ContainsKey("SECRET_IV") ? config["SECRET_IV"] : "";
-            METHOD = config.ContainsKey("METHOD") ? config["METHOD"] : "AES-256-CBC";
-
-            if (string.IsNullOrWhiteSpace(SECRET_KEY) || string.IsNullOrWhiteSpace(SECRET_IV))
-            {
-                throw new Exception("Faltan SECRET_KEY o SECRET_IV en tsconfig.json.");
-            }
-
-            key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY));
-            iv = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(SECRET_IV)).Take(16).ToArray();
+            return svgFilePath;
         }
-
-        public static string GetConfigPath(string filePath)
+        else
         {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            Console.WriteLine("baseDirectory-->" + baseDirectory);
-
-            string parent1 = Directory.GetParent(baseDirectory) != null
-                ? Directory.GetParent(baseDirectory).FullName
-                : baseDirectory;
-
-            string parent2 = Directory.GetParent(parent1) != null
-                ? Directory.GetParent(parent1).FullName
-                : parent1;
-
-            string iniDirectory = Path.Combine(parent2, "Ini");
-            Console.WriteLine("iniDirectory-->" + iniDirectory);
-
-            string configPath = Path.Combine(iniDirectory, filePath);
-            Console.WriteLine("configPath-->" + configPath);
-
-            return configPath;
-        }
-
-        public static Dictionary<string, string> LoadJsonConfig(string filePath)
-        {
-            string configPath = GetConfigPath(filePath);
-
-            if (!File.Exists(configPath))
-            {
-                throw new FileNotFoundException("No existe el archivo de configuración.", configPath);
-            }
-
-            string jsonContent = File.ReadAllText(configPath);
-            var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonContent);
-
-            if (config == null)
-            {
-                throw new Exception("No se pudo deserializar el archivo de configuración.");
-            }
-
-            return config;
-        }
-
-        public string Encrypt(string stringToEncrypt)
-        {
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (ICryptoTransform encryptor = aes.CreateEncryptor())
-                {
-                    byte[] plainTextBytes = Encoding.UTF8.GetBytes(stringToEncrypt);
-                    byte[] cipherTextBytes = encryptor.TransformFinalBlock(plainTextBytes, 0, plainTextBytes.Length);
-                    return Convert.ToBase64String(cipherTextBytes);
-                }
-            }
-        }
-
-        public string Decrypt(string stringToDecrypt)
-        {
-            using (Aes aes = Aes.Create())
-            {
-                aes.Key = key;
-                aes.IV = iv;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (ICryptoTransform decryptor = aes.CreateDecryptor())
-                {
-                    byte[] cipherTextBytes = Convert.FromBase64String(stringToDecrypt);
-                    byte[] plainTextBytes = decryptor.TransformFinalBlock(cipherTextBytes, 0, cipherTextBytes.Length);
-                    return Encoding.UTF8.GetString(plainTextBytes);
-                }
-            }
+            Console.WriteLine($"⚠️ Archivo SVG no encontrado: {svgFilePath}");
+            return string.Empty;
         }
     }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error obteniendo la ruta SVG: {ex.Message}");
+        return string.Empty;
+    }
 }
-Por qué con eso se arregla
-Porque ahora sí existirán:
-C#
-DBConsultas.LoadJsonConfig(...)
-DBConsultas.GetConfigPath(...)
-que son justamente los métodos que MySQLconexion.cs y Sybase.cs están intentando usar. El error de compilación que muestras coincide exactamente con esa ausencia. �
-GitHub +2
-Validación de VinculadorService.cs
-Tu VinculadorService.cs está bien estructurado para el flujo que tenías en VB:
-normaliza RFID
-bloquea RFID vacío si UsarRfid
-usa caché para repetidos
-llama SaveRFID(...)
-si SaveRFID devuelve error, propaga result.Item2
-consulta tmp_etiq_timbradas
-inserta en MySQL
-arma insertData
-llama OnInsertadoOk �
-GitHub
-Lo único que te sugeriría afinar ahí es este bloque:
-C#
-if (insertReturn != 1)
-{
-    OnError?.Invoke("No se pudo insertar en bd_ci_scm.prenda.");
-    return;
-}
-Mejor así, para no perder el mensaje real de MySQL:
-C#
-if (insertReturn != 1)
-{
-    string mysqlError = _bdPrendaScm.GetError();
-    OnError?.Invoke(string.IsNullOrWhiteSpace(mysqlError)
-        ? "No se pudo insertar en bd_ci_scm.prenda."
-        : mysqlError);
-    return;
-}
-Sobre los warnings
-Estos no te bloquean el build:
-FormAlerta.conteo no usado
-frmLector._hojaMarcacionActual no usado
-Puedes dejarlos por ahora.
-Qué haría yo en tu repo ahora
-reemplazar DBConsultas.cs por el código de arriba
-recompilar
-si compila, probar login + scanner + guardado
-si vuelve a fallar al guardar, el siguiente punto será revisar BDPrenda.cs y BDPrendaScm.cs ya en ejecución real
-Si quieres, el siguiente mensaje te dejo también la versión final de BDPrenda.cs y BDPrendaScm.cs ajustada a tu VinculadorService.cs actual.
+tengo que reusar: Dictionary<string, string> config = DBConsultas.LoadJsonConfig("tsconfig.json"); de LoadConfig() en Sybase.cs
