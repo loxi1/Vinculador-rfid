@@ -365,3 +365,193 @@ paneles internos blancos
 dgvTagList y DataGridView1 sin borde pesado
 Si quieres dar un salto real, el siguiente paso sería reemplazar la cabecera nativa del TabControl por un panel de botones superiores, pero con lo de arriba ya mejora bastante.
 Si quieres, te doy el bloque final de Vinculador_OnInsertadoOk y Vinculador_OnError ya amarrado a MsnVincular, lblTotalCount y DataGridView1.
+
+
+Perfecto. Aquí tienes el bloque final para amarrar MsnVincular, lblTotalCount y DataGridView1 al flujo de VinculadorService.
+Vinculador_OnError
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+        return;
+    }
+
+    SetMensajeVincular(msg);
+    SetEstado(msg, Color.LightCoral);
+    ReproducirError();
+
+    AlertaManager.MostrarAlerta(msg, pinturaRoja, 3, 5);
+
+    CodBarras.Clear();
+    CodBarras.Focus();
+}
+Vinculador_OnInfo
+C#
+private void Vinculador_OnInfo(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
+        return;
+    }
+
+    SetMensajeVincular(msg);
+    SetEstado(msg, Color.Khaki);
+}
+Vinculador_OnInsertadoOk
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    if (data == null)
+        data = new Dictionary<string, object>();
+
+    if (data.ContainsKey("op"))
+        TextBoxOP.Text = Convert.ToString(data["op"]);
+
+    if (data.ContainsKey("hoja_marcacion"))
+        TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
+
+    SetMensajeVincular("Prenda registrada exitosamente.");
+
+    LlenarPrimeraFilaDataGridView1(data);
+    ActualizarTotalCount();
+
+    ReproducirOk();
+    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5);
+
+    CodBarras.Clear();
+    _ultimoCodigoBarra = "";
+    _ultimoRfid = "";
+    _rfidPendientes.Clear();
+
+    dgvTagList.Rows.Clear();
+    cantidadRFID.Text = "0";
+
+    CodBarras.Focus();
+    SetEstado("OK", Color.LightGreen);
+}
+SetMensajeVincular
+C#
+private void SetMensajeVincular(string mensaje)
+{
+    if (MsnVincular == null)
+        return;
+
+    if (MsnVincular.InvokeRequired)
+    {
+        MsnVincular.Invoke(new Action<string>(SetMensajeVincular), mensaje);
+        return;
+    }
+
+    MsnVincular.Text = mensaje ?? "";
+}
+ActualizarTotalCount
+C#
+private void ActualizarTotalCount()
+{
+    if (lblTotalCount == null || DataGridView1 == null)
+        return;
+
+    int total = DataGridView1.AllowUserToAddRows
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
+
+    if (total < 0)
+        total = 0;
+
+    lblTotalCount.Text = total.ToString();
+}
+LlenarPrimeraFilaDataGridView1
+Este método inserta arriba y llena solo las columnas que existan en tu grilla.
+C#
+private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+{
+    if (DataGridView1 == null || data == null)
+        return;
+
+    if (DataGridView1.InvokeRequired)
+    {
+        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        return;
+    }
+
+    int rowIndex = DataGridView1.Rows.Insert(0);
+
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+}
+SetCellValueIfExists
+C#
+private void SetCellValueIfExists(DataGridView dgv, int rowIndex, string columnName, Dictionary<string, object> data)
+{
+    if (dgv == null || data == null)
+        return;
+
+    if (!dgv.Columns.Contains(columnName))
+        return;
+
+    object value = data.ContainsKey(columnName) ? data[columnName] : "";
+    dgv.Rows[rowIndex].Cells[columnName].Value = value ?? "";
+}
+Recomendación para frmLector_Load
+Asegúrate de llamar también a:
+C#
+ActualizarTotalCount();
+SetMensajeVincular("");
+y que quede algo así dentro del Load:
+C#
+ConfigurarGridRfid();
+EstiloContenedorTablaRFID();
+
+ConfigurarEstiloDataGridView(DataGridView1);
+BloquearColumnasDataGridView1();
+
+ActualizarTotalCount();
+SetMensajeVincular("");
+Si quieres replicar mejor el VB
+En el VB, después del registro correcto hacías:
+llenar DataGridView1
+actualizar cantidad
+limpiar CodBarras
+alerta verde
+Con el bloque que te dejé ya estás replicando eso casi igual.
+Extra útil: limpiar total al botón btnClear
+C#
+private void btnClear_Click(object sender, EventArgs e)
+{
+    _rfidPendientes.Clear();
+    _ultimoRfid = "";
+    _ultimoCodigoBarra = "";
+
+    dgvTagList.Rows.Clear();
+    cantidadRFID.Text = "0";
+    CodBarras.Clear();
+
+    if (DataGridView1 != null)
+    {
+        DataGridView1.Rows.Clear();
+        ActualizarTotalCount();
+    }
+
+    SetMensajeVincular("");
+    SetEstado("Formulario limpiado", Color.LightGreen);
+    CodBarras.Focus();
+}
+Si quieres, el siguiente paso te dejo también el bloque final de estilo visual completo para tabMenu, DataGridView1, dgvTagList, CodBarras, TextBoxHM, TextBoxOP, btnBuscarScanners y cmbScanners con tus nombres reales.
