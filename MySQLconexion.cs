@@ -1,111 +1,154 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
 
 namespace DS9908R_App
 {
     public class MySQLconexion
     {
-        private MySqlConnection myConexion;
-        private string m_ServerName = "";
-        private string m_Port = "";
-        private string m_Database = "";
-        private string m_Usuario = "";
-        private string m_Password = "";
-        private string m_ConnectionLifetime = "300";
+        private MySqlConnection _connection;
+        private string _serverName = "";
+        private string _port = "";
+        private string _database = "";
+        private string _user = "";
+        private string _password = "";
+        private string _connectionLifetime = "300";
 
-        public string s_error = "";
+        public string LastError { get; private set; }
 
         public MySqlConnection Connect()
         {
             try
             {
-                if (!LoadConfig("tsconfig.json"))
-                    throw new Exception("No se pudo cargar la configuración MySQL.");
+                ResetConnection();
+                LoadConfig();
 
-                if (myConexion == null ||
-                    myConexion.State == ConnectionState.Closed ||
-                    myConexion.State == ConnectionState.Broken)
+                string connectionString =
+                    string.Format(
+                        "Database={0};Port={1};Data Source={2};Uid={3};Pwd={4};Connection Lifetime={5};",
+                        _database,
+                        _port,
+                        _serverName,
+                        _user,
+                        _password,
+                        string.IsNullOrWhiteSpace(_connectionLifetime) ? "300" : _connectionLifetime);
+
+                if (_connection == null)
                 {
-                    string connStr =
-                        $"Server={m_ServerName};" +
-                        $"Port={m_Port};" +
-                        $"Database={m_Database};" +
-                        $"Uid={m_Usuario};" +
-                        $"Pwd={m_Password};" +
-                        $"Connection Lifetime={m_ConnectionLifetime};";
-
-                    myConexion = new MySqlConnection(connStr);
-                    myConexion.Open();
+                    _connection = new MySqlConnection(connectionString);
                 }
 
-                return myConexion;
+                if (_connection.State == ConnectionState.Closed)
+                {
+                    _connection.Open();
+                }
+
+                return _connection;
             }
             catch (Exception ex)
             {
-                s_error = ex.Message;
+                LastError = "Error al conectar MySQL: " + ex.Message;
+                LogError("Error al conectar MySQL", ex);
                 throw;
             }
         }
 
-        public int Disconnect()
+        public void Disconnect()
         {
             try
             {
-                if (myConexion != null && myConexion.State == ConnectionState.Open)
-                    myConexion.Close();
+                if (_connection != null)
+                {
+                    if (_connection.State != ConnectionState.Closed)
+                    {
+                        _connection.Close();
+                    }
+                    _connection.Dispose();
+                    _connection = null;
+                }
             }
             catch (Exception ex)
             {
-                s_error = ex.Message;
+                LastError = ex.Message;
+                LogError("Error al cerrar MySQL", ex);
             }
+        }
 
-            return 1;
+        public bool IsConnected()
+        {
+            return _connection != null && _connection.State == ConnectionState.Open;
         }
 
         public string GetError()
         {
-            return s_error;
+            return LastError ?? string.Empty;
         }
 
-        private bool LoadConfig(string filePath)
+        public void ResetConnection()
+        {
+            if (_connection != null &&
+                (_connection.State == ConnectionState.Closed || _connection.State == ConnectionState.Broken))
+            {
+                _connection.Dispose();
+                _connection = null;
+            }
+        }
+
+        public DataTable ExecuteQuery(string query, Dictionary<string, object> parameters)
+        {
+            DataTable table = new DataTable();
+
+            using (MySqlConnection connection = Connect())
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                foreach (KeyValuePair<string, object> param in parameters)
+                {
+                    command.Parameters.AddWithValue("@" + param.Key, param.Value ?? DBNull.Value);
+                }
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    table.Load(reader);
+                }
+            }
+
+            return table;
+        }
+
+        private void LoadConfig()
+        {
+            Dictionary<string, string> config = DBConsultas.LoadJsonConfig("tsconfig.json");
+
+            _serverName = config.ContainsKey("DB_SERVER_MY") ? config["DB_SERVER_MY"] : "";
+            _port = config.ContainsKey("DB_PORT_MY") ? config["DB_PORT_MY"] : "";
+            _database = config.ContainsKey("DB_NAME_MY") ? config["DB_NAME_MY"] : "";
+            _user = config.ContainsKey("DB_USER_MY") ? config["DB_USER_MY"] : "";
+            _password = config.ContainsKey("DB_PASSWORD_MY") ? config["DB_PASSWORD_MY"] : "";
+            _connectionLifetime = config.ContainsKey("Connection Lifetime") ? config["Connection Lifetime"] : "300";
+
+            if (string.IsNullOrWhiteSpace(_serverName) ||
+                string.IsNullOrWhiteSpace(_port) ||
+                string.IsNullOrWhiteSpace(_database) ||
+                string.IsNullOrWhiteSpace(_user))
+            {
+                throw new Exception("La configuración de MySQL está incompleta.");
+            }
+        }
+
+        private void LogError(string message, Exception ex)
         {
             try
             {
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
-                string iniDirectory = Path.Combine(binDirectory, "Ini");
-                string configPath = Path.Combine(iniDirectory, filePath);
-
-                if (!File.Exists(configPath))
-                {
-                    s_error = "No existe el archivo: " + configPath;
-                    return false;
-                }
-
-                string json = File.ReadAllText(configPath);
-                var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-
-                if (config.ContainsKey("DB_SERVER_MY")) m_ServerName = config["DB_SERVER_MY"];
-                if (config.ContainsKey("DB_PORT_MY")) m_Port = config["DB_PORT_MY"];
-                if (config.ContainsKey("DB_NAME_MY")) m_Database = config["DB_NAME_MY"];
-                if (config.ContainsKey("DB_USER_MY")) m_Usuario = config["DB_USER_MY"];
-                if (config.ContainsKey("DB_PASSWORD_MY")) m_Password = config["DB_PASSWORD_MY"];
-                if (config.ContainsKey("Connection Lifetime")) m_ConnectionLifetime = config["Connection Lifetime"];
-
-                return !string.IsNullOrWhiteSpace(m_ServerName)
-                    && !string.IsNullOrWhiteSpace(m_Port)
-                    && !string.IsNullOrWhiteSpace(m_Database)
-                    && !string.IsNullOrWhiteSpace(m_Usuario)
-                    && !string.IsNullOrWhiteSpace(m_Password);
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mysql_errors.log");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine + ex + Environment.NewLine;
+                File.AppendAllText(path, text);
+                Debug.WriteLine(text);
             }
-            catch (Exception ex)
+            catch
             {
-                s_error = ex.Message;
-                return false;
             }
         }
     }

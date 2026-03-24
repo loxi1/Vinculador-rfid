@@ -2,132 +2,123 @@
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using Newtonsoft.Json;
 using Sybase.Data.AseClient;
 
 namespace DS9908R_App
 {
     public class Sybase
     {
-        private AseConnection myConexion;
-        private readonly string m_Usuario = "corporativo";
-        private readonly string m_Password = "c0rp0r@t1v0";
-        private string m_ServerName = "";
-        private string m_Port = "";
-        private string m_DataBase = "";
-        public string s_error = "";
+        private AseConnection _connection;
+        private string _serverName = "";
+        private string _port = "";
+        private string _database = "";
+        private string _user = "corporativo";
+        private string _password = "c0rp0r@t1v0";
 
-        // Método para conectarse a la base de datos
+        public string LastError { get; private set; }
+
         public AseConnection Connect()
         {
             try
             {
-                // Cargar configuración
-                if (!LoadConfig("tsconfig.json"))
+                LoadConfig();
+
+                string connectionString =
+                    string.Format(
+                        "Data Source={0};Port={1};Database={2};Uid={3};Pwd={4};",
+                        _serverName,
+                        _port,
+                        _database,
+                        _user,
+                        _password);
+
+                if (_connection == null)
                 {
-                    throw new Exception("Error al cargar la configuración. Verifique el archivo tsconfig.json.");
+                    _connection = new AseConnection(connectionString);
+                }
+                else if (!string.Equals(_connection.ConnectionString, connectionString, StringComparison.OrdinalIgnoreCase))
+                {
+                    SafeClose();
+                    _connection = new AseConnection(connectionString);
                 }
 
-                // Crear la conexión si es necesario
-                if (myConexion == null || myConexion.State == ConnectionState.Closed || myConexion.State == ConnectionState.Broken)
+                if (_connection.State == ConnectionState.Closed || _connection.State == ConnectionState.Broken)
                 {
-                    string sCadenaConexion = $"Data Source={m_ServerName};Port={m_Port};Database={m_DataBase};Uid={m_Usuario};Pwd={m_Password};";
-                    //Console.WriteLine($"Cadena de conexión generada: {sCadenaConexion}");
-
-                    myConexion = new AseConnection(sCadenaConexion);
-                    myConexion.Open();
+                    _connection.Open();
                 }
+
+                return _connection;
             }
-            catch (AseException ex)
+            catch (Exception ex)
             {
-                s_error = $"Error al conectar: {ex.Message}";
-                LogError("Error al conectar", ex);
+                LastError = ex.Message;
+                LogError("Error al conectar a Sybase", ex);
                 throw;
             }
-
-            Console.WriteLine($"Estado de la conexión después de intentar abrir: {myConexion.State}");
-            return myConexion;
         }
 
-        // Método para desconectarse de la base de datos
-        public int Disconnect()
+        public void Disconnect()
         {
-            try
-            {
-                if (myConexion != null && myConexion.State == ConnectionState.Open)
-                {
-                    myConexion.Close();
-                }
-            }
-            catch (AseException ex)
-            {
-                s_error = ex.Message;
-                LogError("Error al cerrar la conexión a la base de datos", ex);
-            }
-            return 1;
+            SafeClose();
         }
 
-        // Método para obtener errores
         public string GetError()
         {
-            return s_error;
+            return LastError ?? string.Empty;
         }
 
-        // Método para registrar errores en un log
-        private void LogError(string message, Exception ex = null)
+        private void LoadConfig()
         {
-            string logMessage = $"{DateTime.Now}: {message}";
-            if (ex != null)
-            {
-                logMessage += Environment.NewLine + ex.ToString();
-            }
+            Dictionary<string, string> config = DBConsultas.LoadJsonConfig("tsconfig.json");
 
-            File.AppendAllText("db_errors.log", logMessage + Environment.NewLine);
+            _serverName = config.ContainsKey("SERVER_NAME_SY") ? config["SERVER_NAME_SY"] : "";
+            _port = config.ContainsKey("PORT_SY") ? config["PORT_SY"] : "";
+            _database = config.ContainsKey("DATA_BASE_SY") ? config["DATA_BASE_SY"] : "";
+
+            if (config.ContainsKey("DB_USER_SY") && !string.IsNullOrWhiteSpace(config["DB_USER_SY"]))
+                _user = config["DB_USER_SY"];
+
+            if (config.ContainsKey("DB_PASSWORD_SY") && !string.IsNullOrWhiteSpace(config["DB_PASSWORD_SY"]))
+                _password = config["DB_PASSWORD_SY"];
+
+            if (string.IsNullOrWhiteSpace(_serverName) ||
+                string.IsNullOrWhiteSpace(_port) ||
+                string.IsNullOrWhiteSpace(_database))
+            {
+                throw new Exception("La configuración de Sybase está incompleta.");
+            }
         }
 
-        // Método para cargar configuración desde un archivo JSON
-        private bool LoadConfig(string filePath)
+        private void SafeClose()
         {
             try
             {
-                // Obtener el directorio base de ejecución
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                // Subir dos niveles para llegar a "bin"
-                string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
-                // Construir la ruta del archivo tsconfig.json
-                string iniDirectory = Path.Combine(binDirectory, "Ini");
-                string configPath = Path.Combine(iniDirectory, filePath);
-
-                if (File.Exists(configPath))
+                if (_connection != null)
                 {
-                    string json = File.ReadAllText(configPath);
-                    var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-
-                    if (config.ContainsKey("SERVER_NAME_SY")) m_ServerName = config["SERVER_NAME_SY"];
-                    if (config.ContainsKey("PORT_SY")) m_Port = config["PORT_SY"];
-                    if (config.ContainsKey("DATA_BASE_SY")) m_DataBase = config["DATA_BASE_SY"];
-
-                    if (string.IsNullOrEmpty(m_ServerName) || string.IsNullOrEmpty(m_Port) || string.IsNullOrEmpty(m_DataBase))
+                    if (_connection.State != ConnectionState.Closed)
                     {
-                        s_error = "Faltan parámetros en el archivo de configuración.";
-                        Console.WriteLine(s_error);
-                        return false;
+                        _connection.Close();
                     }
-
-                    return true;
-                }
-                else
-                {
-                    s_error = $"El archivo de configuración no existe: {filePath}";
-                    Console.WriteLine(s_error);
-                    return false;
+                    _connection.Dispose();
+                    _connection = null;
                 }
             }
             catch (Exception ex)
             {
-                s_error = $"Error al cargar configuración: {ex.Message}";
-                Console.WriteLine(s_error);
-                return false;
+                LogError("Error al cerrar la conexión Sybase", ex);
+            }
+        }
+
+        private void LogError(string message, Exception ex)
+        {
+            try
+            {
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sybase_errors.log");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine + ex + Environment.NewLine;
+                File.AppendAllText(path, text);
+            }
+            catch
+            {
             }
         }
     }
