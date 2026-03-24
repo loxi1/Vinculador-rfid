@@ -1,2 +1,2 @@
-los nombres son: tabMenu, dgvTagList, BtnBuscarHM, BtnLimpiarHM, TextBoxHM, TextBoxOP, TextBoxOP, btnClear, btnLimpiarRFID y CodBarras en la cabecera tengo esto input: btnBuscarScanners, cmbScanners.
+los nombres son: tabMenu, dgvTagList, BtnBuscarHM, BtnLimpiarHM, TextBoxHM, TextBoxOP, TextBoxOP, btnClear, btnLimpiarRFID y CodBarras en la cabecera tengo esto input: btnBuscarScanners, cmbScanners lo puedes validar aqui: formLector.Designer.txt. no te olvides que el repo es: https://github.com/loxi1/Vinculador-rfid.
 revisar frmLecto.txt para mostrar el campo: MsnVincular, lblTotalCount y llenvar datos a DataGridView1 
