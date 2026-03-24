@@ -1,1 +1,50 @@
-falta la funcion: AdjustTabWidth
+Aquí está la función AdjustTabWidth lista para usar en WinForms:
+C#
+private void AdjustTabWidth()
+{
+    if (tabControl == null || tabControl.TabCount == 0)
+        return;
+
+    int totalWidth = tabControl.Width;
+
+    // pequeño margen para que no se corte
+    int ancho = totalWidth / tabControl.TabCount;
+
+    if (ancho < 120)
+        ancho = 120;
+
+    tabControl.ItemSize = new Size(ancho, 40);
+}
+Y así la llamas en el Load
+C#
+tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+tabControl.DrawItem += TabControl_DrawItem;
+tabControl.SizeMode = TabSizeMode.Fixed;
+AdjustTabWidth();
+También conviene recalcular cuando cambie el tamaño del formulario
+C#
+private void frmLector_Resize(object sender, EventArgs e)
+{
+    AdjustTabWidth();
+}
+Y en el Load o constructor registras:
+C#
+this.Resize += frmLector_Resize;
+Si tu control no se llama tabControl
+En tu proyecto puede llamarse distinto, por ejemplo tabControl1 o tabCtrl.
+Si fuera tabControl1, entonces cambia la función así:
+C#
+private void AdjustTabWidth()
+{
+    if (tabControl1 == null || tabControl1.TabCount == 0)
+        return;
+
+    int totalWidth = tabControl1.Width;
+    int ancho = totalWidth / tabControl1.TabCount;
+
+    if (ancho < 120)
+        ancho = 120;
+
+    tabControl1.ItemSize = new Size(ancho, 40);
+}
+Si quieres, te ordeno todo el bloque visual de frmLector_Load con los nombres reales de tus controles.
