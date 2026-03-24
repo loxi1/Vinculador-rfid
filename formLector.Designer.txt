@@ -56,16 +56,12 @@ namespace DS9908R_App
             this.TableLayoutPanel6 = new System.Windows.Forms.TableLayoutPanel();
             this.dgvTagList = new System.Windows.Forms.DataGridView();
             this.clnEPC = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.nroOP = new System.Windows.Forms.TextBox();
-            this.nroHM = new System.Windows.Forms.TextBox();
-            this.btnLimpiarOPHM = new System.Windows.Forms.Button();
             this.TableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.btnVerConsolidado = new System.Windows.Forms.Button();
             this.lblTotalCount = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.tbContEspacioVertical = new System.Windows.Forms.TableLayoutPanel();
             this.btnStopInventoryEx = new System.Windows.Forms.Button();
-            this.cbxInventory = new System.Windows.Forms.ComboBox();
             this.btnStartInventoryEx = new System.Windows.Forms.Button();
             this.TableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
             this.DataGridView1 = new System.Windows.Forms.DataGridView();
@@ -150,10 +146,10 @@ namespace DS9908R_App
             this.txt_BillToDet = new System.Windows.Forms.Label();
             this.DataGridView3 = new System.Windows.Forms.DataGridView();
             this.lblEstadoConexion = new System.Windows.Forms.Label();
-            this.tablaContenedora = new System.Windows.Forms.TableLayoutPanel();
-            this.tablaCabecera = new System.Windows.Forms.TableLayoutPanel();
             this.cmbScanners = new System.Windows.Forms.ComboBox();
-            this.toolStripStatusLbl = new System.Windows.Forms.StatusStrip();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.pnlConnect = new System.Windows.Forms.Panel();
+            this.lblSdkVersion = new System.Windows.Forms.Label();
             btnBuscarScanners = new System.Windows.Forms.Button();
             this.tabMenu.SuspendLayout();
             this.tabVinculador.SuspendLayout();
@@ -180,8 +176,7 @@ namespace DS9908R_App
             this.tabaCabecera.SuspendLayout();
             this.tableCabecera.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DataGridView3)).BeginInit();
-            this.tablaContenedora.SuspendLayout();
-            this.tablaCabecera.SuspendLayout();
+            this.pnlConnect.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnBuscarScanners
@@ -189,9 +184,9 @@ namespace DS9908R_App
             btnBuscarScanners.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             btnBuscarScanners.BackColor = System.Drawing.Color.WhiteSmoke;
-            btnBuscarScanners.Location = new System.Drawing.Point(116, 3);
+            btnBuscarScanners.Location = new System.Drawing.Point(45, 39);
             btnBuscarScanners.Name = "btnBuscarScanners";
-            btnBuscarScanners.Size = new System.Drawing.Size(120, 25);
+            btnBuscarScanners.Size = new System.Drawing.Size(120, 21);
             btnBuscarScanners.TabIndex = 67;
             btnBuscarScanners.Text = "Buscar";
             btnBuscarScanners.UseVisualStyleBackColor = false;
@@ -199,19 +194,19 @@ namespace DS9908R_App
             // 
             // tabMenu
             // 
-            this.tabMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabMenu.Controls.Add(this.tabVinculador);
             this.tabMenu.Controls.Add(this.tabConsultar);
             this.tabMenu.Controls.Add(this.tabHojaMarcacion);
+            this.tabMenu.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabMenu.ItemSize = new System.Drawing.Size(150, 40);
-            this.tabMenu.Location = new System.Drawing.Point(3, 40);
+            this.tabMenu.Location = new System.Drawing.Point(0, 0);
             this.tabMenu.Name = "tabMenu";
             this.tabMenu.SelectedIndex = 0;
-            this.tabMenu.Size = new System.Drawing.Size(1197, 698);
+            this.tabMenu.Size = new System.Drawing.Size(1359, 680);
             this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabMenu.TabIndex = 4;
+            this.tabMenu.TabStop = false;
+            this.tabMenu.DrawItem += new System.Windows.Forms.DrawItemEventHandler(this.tabMenu_DrawItem);
             // 
             // tabVinculador
             // 
@@ -219,7 +214,7 @@ namespace DS9908R_App
             this.tabVinculador.Location = new System.Drawing.Point(4, 44);
             this.tabVinculador.Name = "tabVinculador";
             this.tabVinculador.Padding = new System.Windows.Forms.Padding(3);
-            this.tabVinculador.Size = new System.Drawing.Size(1189, 650);
+            this.tabVinculador.Size = new System.Drawing.Size(1351, 632);
             this.tabVinculador.TabIndex = 1;
             this.tabVinculador.Text = "Vinculador";
             this.tabVinculador.UseVisualStyleBackColor = true;
@@ -232,7 +227,7 @@ namespace DS9908R_App
             this.gbxInventoryEx.Location = new System.Drawing.Point(3, 3);
             this.gbxInventoryEx.Margin = new System.Windows.Forms.Padding(0);
             this.gbxInventoryEx.Name = "gbxInventoryEx";
-            this.gbxInventoryEx.Size = new System.Drawing.Size(1183, 644);
+            this.gbxInventoryEx.Size = new System.Drawing.Size(1345, 626);
             this.gbxInventoryEx.TabIndex = 10;
             this.gbxInventoryEx.TabStop = false;
             // 
@@ -248,7 +243,7 @@ namespace DS9908R_App
             this.tablaContenedorTimbrado.Name = "tablaContenedorTimbrado";
             this.tablaContenedorTimbrado.RowCount = 1;
             this.tablaContenedorTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tablaContenedorTimbrado.Size = new System.Drawing.Size(1177, 625);
+            this.tablaContenedorTimbrado.Size = new System.Drawing.Size(1339, 607);
             this.tablaContenedorTimbrado.TabIndex = 30;
             // 
             // tabaLadoTimbrado
@@ -268,7 +263,7 @@ namespace DS9908R_App
             this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 6F));
             this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 1F));
             this.tabaLadoTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 72F));
-            this.tabaLadoTimbrado.Size = new System.Drawing.Size(1177, 625);
+            this.tabaLadoTimbrado.Size = new System.Drawing.Size(1339, 607);
             this.tabaLadoTimbrado.TabIndex = 0;
             // 
             // TableLayoutPanel1
@@ -293,15 +288,15 @@ namespace DS9908R_App
             this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 38F));
             this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 24F));
             this.TableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-            this.TableLayoutPanel1.Size = new System.Drawing.Size(1177, 131);
+            this.TableLayoutPanel1.Size = new System.Drawing.Size(1339, 127);
             this.TableLayoutPanel1.TabIndex = 44;
             // 
             // btnLimpiarRFID
             // 
             this.btnLimpiarRFID.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnLimpiarRFID.Location = new System.Drawing.Point(473, 52);
+            this.btnLimpiarRFID.Location = new System.Drawing.Point(538, 51);
             this.btnLimpiarRFID.Name = "btnLimpiarRFID";
-            this.btnLimpiarRFID.Size = new System.Drawing.Size(170, 43);
+            this.btnLimpiarRFID.Size = new System.Drawing.Size(194, 42);
             this.btnLimpiarRFID.TabIndex = 51;
             this.btnLimpiarRFID.Text = "Limpiar";
             this.btnLimpiarRFID.UseVisualStyleBackColor = true;
@@ -312,9 +307,9 @@ namespace DS9908R_App
             this.btnClear.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(59)))), ((int)(((byte)(168)))), ((int)(((byte)(115)))));
             this.btnClear.Dock = System.Windows.Forms.DockStyle.Fill;
             this.btnClear.ForeColor = System.Drawing.Color.White;
-            this.btnClear.Location = new System.Drawing.Point(473, 3);
+            this.btnClear.Location = new System.Drawing.Point(538, 3);
             this.btnClear.Name = "btnClear";
-            this.btnClear.Size = new System.Drawing.Size(170, 43);
+            this.btnClear.Size = new System.Drawing.Size(194, 42);
             this.btnClear.TabIndex = 50;
             this.btnClear.Text = "Nuevo Timbrado";
             this.btnClear.UseVisualStyleBackColor = false;
@@ -329,11 +324,11 @@ namespace DS9908R_App
             this.cantidadRFID.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.cantidadRFID.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.cantidadRFID.ForeColor = System.Drawing.Color.Red;
-            this.cantidadRFID.Location = new System.Drawing.Point(649, 3);
+            this.cantidadRFID.Location = new System.Drawing.Point(738, 3);
             this.cantidadRFID.Margin = new System.Windows.Forms.Padding(3);
             this.cantidadRFID.Name = "cantidadRFID";
             this.TableLayoutPanel1.SetRowSpan(this.cantidadRFID, 2);
-            this.cantidadRFID.Size = new System.Drawing.Size(111, 92);
+            this.cantidadRFID.Size = new System.Drawing.Size(127, 90);
             this.cantidadRFID.TabIndex = 48;
             this.cantidadRFID.Text = "0";
             this.cantidadRFID.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -348,10 +343,10 @@ namespace DS9908R_App
             this.TableLayoutPanel1.SetColumnSpan(this.MsnVincular, 3);
             this.MsnVincular.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.MsnVincular.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(85)))), ((int)(((byte)(85)))), ((int)(((byte)(85)))));
-            this.MsnVincular.Location = new System.Drawing.Point(3, 101);
+            this.MsnVincular.Location = new System.Drawing.Point(3, 99);
             this.MsnVincular.Margin = new System.Windows.Forms.Padding(3);
             this.MsnVincular.Name = "MsnVincular";
-            this.MsnVincular.Size = new System.Drawing.Size(757, 27);
+            this.MsnVincular.Size = new System.Drawing.Size(862, 25);
             this.MsnVincular.TabIndex = 28;
             this.MsnVincular.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
@@ -360,10 +355,10 @@ namespace DS9908R_App
             this.CodBarras.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
             this.CodBarras.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.CodBarras.ForeColor = System.Drawing.Color.Gray;
-            this.CodBarras.Location = new System.Drawing.Point(3, 34);
+            this.CodBarras.Location = new System.Drawing.Point(3, 33);
             this.CodBarras.Name = "CodBarras";
             this.TableLayoutPanel1.SetRowSpan(this.CodBarras, 2);
-            this.CodBarras.Size = new System.Drawing.Size(464, 30);
+            this.CodBarras.Size = new System.Drawing.Size(529, 30);
             this.CodBarras.TabIndex = 25;
             this.CodBarras.Text = "Codigo de Barras...";
             this.CodBarras.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
@@ -376,22 +371,16 @@ namespace DS9908R_App
             this.TableLayoutPanel6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.TableLayoutPanel6.ColumnCount = 3;
-            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 66.66666F));
-            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 22.22222F));
-            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 11.11111F));
+            this.TableLayoutPanel6.ColumnCount = 1;
+            this.TableLayoutPanel6.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.TableLayoutPanel6.Controls.Add(this.dgvTagList, 0, 0);
-            this.TableLayoutPanel6.Controls.Add(this.nroOP, 0, 1);
-            this.TableLayoutPanel6.Controls.Add(this.nroHM, 1, 1);
-            this.TableLayoutPanel6.Controls.Add(this.btnLimpiarOPHM, 2, 1);
-            this.TableLayoutPanel6.Location = new System.Drawing.Point(763, 0);
+            this.TableLayoutPanel6.Location = new System.Drawing.Point(868, 0);
             this.TableLayoutPanel6.Margin = new System.Windows.Forms.Padding(0);
             this.TableLayoutPanel6.Name = "TableLayoutPanel6";
-            this.TableLayoutPanel6.RowCount = 2;
+            this.TableLayoutPanel6.RowCount = 1;
             this.TableLayoutPanel1.SetRowSpan(this.TableLayoutPanel6, 3);
-            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 60F));
-            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            this.TableLayoutPanel6.Size = new System.Drawing.Size(414, 131);
+            this.TableLayoutPanel6.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.TableLayoutPanel6.Size = new System.Drawing.Size(471, 127);
             this.TableLayoutPanel6.TabIndex = 52;
             // 
             // dgvTagList
@@ -415,7 +404,6 @@ namespace DS9908R_App
             this.dgvTagList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvTagList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.clnEPC});
-            this.TableLayoutPanel6.SetColumnSpan(this.dgvTagList, 3);
             dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Window;
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Arial", 9F);
@@ -441,7 +429,7 @@ namespace DS9908R_App
             this.dgvTagList.RowHeadersVisible = false;
             this.dgvTagList.RowTemplate.Height = 24;
             this.dgvTagList.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvTagList.Size = new System.Drawing.Size(408, 72);
+            this.dgvTagList.Size = new System.Drawing.Size(465, 121);
             this.dgvTagList.TabIndex = 47;
             // 
             // clnEPC
@@ -451,46 +439,6 @@ namespace DS9908R_App
             this.clnEPC.HeaderText = "RFID";
             this.clnEPC.Name = "clnEPC";
             this.clnEPC.ReadOnly = true;
-            // 
-            // nroOP
-            // 
-            this.nroOP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.nroOP.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.nroOP.ForeColor = System.Drawing.Color.Gray;
-            this.nroOP.Location = new System.Drawing.Point(3, 93);
-            this.nroOP.Margin = new System.Windows.Forms.Padding(3, 0, 3, 3);
-            this.nroOP.Name = "nroOP";
-            this.nroOP.Size = new System.Drawing.Size(270, 20);
-            this.nroOP.TabIndex = 48;
-            this.nroOP.Text = "Nro OP...";
-            // 
-            // nroHM
-            // 
-            this.nroHM.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.nroHM.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.nroHM.ForeColor = System.Drawing.Color.Gray;
-            this.nroHM.Location = new System.Drawing.Point(279, 94);
-            this.nroHM.Name = "nroHM";
-            this.nroHM.Size = new System.Drawing.Size(86, 20);
-            this.nroHM.TabIndex = 49;
-            this.nroHM.Text = "H. M....";
-            // 
-            // btnLimpiarOPHM
-            // 
-            this.btnLimpiarOPHM.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnLimpiarOPHM.BackColor = System.Drawing.Color.Transparent;
-            this.btnLimpiarOPHM.FlatAppearance.BorderSize = 0;
-            this.btnLimpiarOPHM.FlatAppearance.MouseDownBackColor = System.Drawing.Color.Transparent;
-            this.btnLimpiarOPHM.FlatAppearance.MouseOverBackColor = System.Drawing.Color.Transparent;
-            this.btnLimpiarOPHM.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnLimpiarOPHM.ForeColor = System.Drawing.Color.Transparent;
-            this.btnLimpiarOPHM.Location = new System.Drawing.Point(371, 81);
-            this.btnLimpiarOPHM.Name = "btnLimpiarOPHM";
-            this.btnLimpiarOPHM.Size = new System.Drawing.Size(40, 47);
-            this.btnLimpiarOPHM.TabIndex = 50;
-            this.btnLimpiarOPHM.UseVisualStyleBackColor = false;
             // 
             // TableLayoutPanel2
             // 
@@ -505,19 +453,19 @@ namespace DS9908R_App
             this.TableLayoutPanel2.Controls.Add(this.lblTotalCount, 0, 0);
             this.TableLayoutPanel2.Controls.Add(this.label16, 0, 0);
             this.TableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.TableLayoutPanel2.Location = new System.Drawing.Point(0, 131);
+            this.TableLayoutPanel2.Location = new System.Drawing.Point(0, 127);
             this.TableLayoutPanel2.Margin = new System.Windows.Forms.Padding(0);
             this.TableLayoutPanel2.Name = "TableLayoutPanel2";
             this.TableLayoutPanel2.RowCount = 1;
             this.TableLayoutPanel2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TableLayoutPanel2.Size = new System.Drawing.Size(1177, 37);
+            this.TableLayoutPanel2.Size = new System.Drawing.Size(1339, 36);
             this.TableLayoutPanel2.TabIndex = 46;
             // 
             // btnVerConsolidado
             // 
             this.btnVerConsolidado.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.btnVerConsolidado.Font = new System.Drawing.Font("Microsoft Sans Serif", 15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnVerConsolidado.Location = new System.Drawing.Point(919, 26);
+            this.btnVerConsolidado.Location = new System.Drawing.Point(1051, 25);
             this.btnVerConsolidado.Name = "btnVerConsolidado";
             this.btnVerConsolidado.Size = new System.Drawing.Size(99, 8);
             this.btnVerConsolidado.TabIndex = 0;
@@ -531,9 +479,9 @@ namespace DS9908R_App
             this.lblTotalCount.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.lblTotalCount.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.lblTotalCount.ForeColor = System.Drawing.Color.Red;
-            this.lblTotalCount.Location = new System.Drawing.Point(356, 17);
+            this.lblTotalCount.Location = new System.Drawing.Point(404, 16);
             this.lblTotalCount.Name = "lblTotalCount";
-            this.lblTotalCount.Size = new System.Drawing.Size(52, 20);
+            this.lblTotalCount.Size = new System.Drawing.Size(60, 20);
             this.lblTotalCount.TabIndex = 48;
             this.lblTotalCount.Text = "0";
             this.lblTotalCount.TextAlign = System.Drawing.ContentAlignment.BottomLeft;
@@ -545,9 +493,9 @@ namespace DS9908R_App
             this.label16.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
             this.label16.ForeColor = System.Drawing.Color.Red;
             this.label16.ImageAlign = System.Drawing.ContentAlignment.BottomRight;
-            this.label16.Location = new System.Drawing.Point(3, 17);
+            this.label16.Location = new System.Drawing.Point(3, 16);
             this.label16.Name = "label16";
-            this.label16.Size = new System.Drawing.Size(347, 20);
+            this.label16.Size = new System.Drawing.Size(395, 20);
             this.label16.TabIndex = 47;
             this.label16.Text = "La Cantidad De Prendas Timbradas Es:";
             this.label16.TextAlign = System.Drawing.ContentAlignment.BottomRight;
@@ -560,15 +508,14 @@ namespace DS9908R_App
             this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 34F));
             this.tbContEspacioVertical.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tbContEspacioVertical.Controls.Add(this.btnStopInventoryEx, 0, 0);
-            this.tbContEspacioVertical.Controls.Add(this.cbxInventory, 2, 0);
             this.tbContEspacioVertical.Controls.Add(this.btnStartInventoryEx, 1, 0);
             this.tbContEspacioVertical.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tbContEspacioVertical.Location = new System.Drawing.Point(0, 168);
+            this.tbContEspacioVertical.Location = new System.Drawing.Point(0, 163);
             this.tbContEspacioVertical.Margin = new System.Windows.Forms.Padding(0);
             this.tbContEspacioVertical.Name = "tbContEspacioVertical";
             this.tbContEspacioVertical.RowCount = 1;
             this.tbContEspacioVertical.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tbContEspacioVertical.Size = new System.Drawing.Size(1177, 6);
+            this.tbContEspacioVertical.Size = new System.Drawing.Size(1339, 6);
             this.tbContEspacioVertical.TabIndex = 47;
             // 
             // btnStopInventoryEx
@@ -582,20 +529,9 @@ namespace DS9908R_App
             this.btnStopInventoryEx.UseVisualStyleBackColor = true;
             this.btnStopInventoryEx.Visible = false;
             // 
-            // cbxInventory
-            // 
-            this.cbxInventory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbxInventory.FormattingEnabled = true;
-            this.cbxInventory.Location = new System.Drawing.Point(778, 2);
-            this.cbxInventory.Margin = new System.Windows.Forms.Padding(2);
-            this.cbxInventory.Name = "cbxInventory";
-            this.cbxInventory.Size = new System.Drawing.Size(93, 21);
-            this.cbxInventory.TabIndex = 34;
-            this.cbxInventory.Visible = false;
-            // 
             // btnStartInventoryEx
             // 
-            this.btnStartInventoryEx.Location = new System.Drawing.Point(391, 3);
+            this.btnStartInventoryEx.Location = new System.Drawing.Point(444, 3);
             this.btnStartInventoryEx.Name = "btnStartInventoryEx";
             this.btnStartInventoryEx.Size = new System.Drawing.Size(65, 1);
             this.btnStartInventoryEx.TabIndex = 29;
@@ -614,11 +550,11 @@ namespace DS9908R_App
             this.TableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
             this.TableLayoutPanel3.Controls.Add(this.DataGridView1, 0, 0);
             this.TableLayoutPanel3.Controls.Add(this.TableLayoutPanel7, 1, 0);
-            this.TableLayoutPanel3.Location = new System.Drawing.Point(3, 177);
+            this.TableLayoutPanel3.Location = new System.Drawing.Point(3, 172);
             this.TableLayoutPanel3.Name = "TableLayoutPanel3";
             this.TableLayoutPanel3.RowCount = 1;
             this.TableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.TableLayoutPanel3.Size = new System.Drawing.Size(1171, 445);
+            this.TableLayoutPanel3.Size = new System.Drawing.Size(1333, 432);
             this.TableLayoutPanel3.TabIndex = 48;
             // 
             // DataGridView1
@@ -671,7 +607,7 @@ namespace DS9908R_App
             dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
             this.DataGridView1.RowHeadersDefaultCellStyle = dataGridViewCellStyle8;
             this.DataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.DataGridView1.Size = new System.Drawing.Size(813, 439);
+            this.DataGridView1.Size = new System.Drawing.Size(927, 426);
             this.DataGridView1.TabIndex = 54;
             // 
             // linea
@@ -752,13 +688,13 @@ namespace DS9908R_App
             this.TableLayoutPanel7.ColumnCount = 1;
             this.TableLayoutPanel7.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.TableLayoutPanel7.Controls.Add(this.tbConsolidado, 0, 0);
-            this.TableLayoutPanel7.Location = new System.Drawing.Point(819, 0);
+            this.TableLayoutPanel7.Location = new System.Drawing.Point(933, 0);
             this.TableLayoutPanel7.Margin = new System.Windows.Forms.Padding(0);
             this.TableLayoutPanel7.Name = "TableLayoutPanel7";
             this.TableLayoutPanel7.RowCount = 1;
             this.TableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.TableLayoutPanel7.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 445F));
-            this.TableLayoutPanel7.Size = new System.Drawing.Size(352, 445);
+            this.TableLayoutPanel7.Size = new System.Drawing.Size(400, 432);
             this.TableLayoutPanel7.TabIndex = 55;
             // 
             // tbConsolidado
@@ -778,7 +714,7 @@ namespace DS9908R_App
             this.tbConsolidado.RowCount = 2;
             this.tbConsolidado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 90F));
             this.tbConsolidado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 10F));
-            this.tbConsolidado.Size = new System.Drawing.Size(352, 445);
+            this.tbConsolidado.Size = new System.Drawing.Size(400, 432);
             this.tbConsolidado.TabIndex = 2;
             // 
             // lblTotalDetalle
@@ -790,10 +726,10 @@ namespace DS9908R_App
             this.lblTotalDetalle.BackColor = System.Drawing.Color.LightGray;
             this.lblTotalDetalle.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblTotalDetalle.ForeColor = System.Drawing.Color.Black;
-            this.lblTotalDetalle.Location = new System.Drawing.Point(3, 403);
+            this.lblTotalDetalle.Location = new System.Drawing.Point(3, 391);
             this.lblTotalDetalle.Margin = new System.Windows.Forms.Padding(3);
             this.lblTotalDetalle.Name = "lblTotalDetalle";
-            this.lblTotalDetalle.Size = new System.Drawing.Size(346, 39);
+            this.lblTotalDetalle.Size = new System.Drawing.Size(394, 38);
             this.lblTotalDetalle.TabIndex = 1;
             this.lblTotalDetalle.Text = "TOTAL TIMBRADO";
             this.lblTotalDetalle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -805,7 +741,7 @@ namespace DS9908R_App
             this.panelScroll.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelScroll.Location = new System.Drawing.Point(3, 3);
             this.panelScroll.Name = "panelScroll";
-            this.panelScroll.Size = new System.Drawing.Size(346, 394);
+            this.panelScroll.Size = new System.Drawing.Size(394, 382);
             this.panelScroll.TabIndex = 2;
             // 
             // tbDetalleTimbrado
@@ -819,7 +755,7 @@ namespace DS9908R_App
             this.tbDetalleTimbrado.Name = "tbDetalleTimbrado";
             this.tbDetalleTimbrado.RowCount = 1;
             this.tbDetalleTimbrado.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tbDetalleTimbrado.Size = new System.Drawing.Size(346, 394);
+            this.tbDetalleTimbrado.Size = new System.Drawing.Size(394, 382);
             this.tbDetalleTimbrado.TabIndex = 1;
             // 
             // tabConsultar
@@ -1789,74 +1725,60 @@ namespace DS9908R_App
             // 
             this.lblEstadoConexion.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.lblEstadoConexion.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.lblEstadoConexion.Location = new System.Drawing.Point(960, 0);
+            this.lblEstadoConexion.Location = new System.Drawing.Point(510, 33);
             this.lblEstadoConexion.Name = "lblEstadoConexion";
             this.lblEstadoConexion.Size = new System.Drawing.Size(131, 28);
             this.lblEstadoConexion.TabIndex = 69;
             this.lblEstadoConexion.Text = "Estado: Escaneado OK";
             this.lblEstadoConexion.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // tablaContenedora
-            // 
-            this.tablaContenedora.ColumnCount = 1;
-            this.tablaContenedora.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tablaContenedora.Controls.Add(this.tabMenu, 0, 1);
-            this.tablaContenedora.Controls.Add(this.tablaCabecera, 0, 0);
-            this.tablaContenedora.Controls.Add(this.toolStripStatusLbl, 0, 2);
-            this.tablaContenedora.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tablaContenedora.Location = new System.Drawing.Point(0, 0);
-            this.tablaContenedora.Name = "tablaContenedora";
-            this.tablaContenedora.RowCount = 3;
-            this.tablaContenedora.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 5F));
-            this.tablaContenedora.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 94F));
-            this.tablaContenedora.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 1F));
-            this.tablaContenedora.Size = new System.Drawing.Size(1203, 749);
-            this.tablaContenedora.TabIndex = 6;
-            // 
-            // tablaCabecera
-            // 
-            this.tablaCabecera.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.tablaCabecera.ColumnCount = 3;
-            this.tablaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tablaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 60F));
-            this.tablaCabecera.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tablaCabecera.Controls.Add(this.lblEstadoConexion, 2, 0);
-            this.tablaCabecera.Controls.Add(btnBuscarScanners, 0, 0);
-            this.tablaCabecera.Controls.Add(this.cmbScanners, 1, 0);
-            this.tablaCabecera.Location = new System.Drawing.Point(3, 3);
-            this.tablaCabecera.Name = "tablaCabecera";
-            this.tablaCabecera.RowCount = 1;
-            this.tablaCabecera.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tablaCabecera.Size = new System.Drawing.Size(1197, 31);
-            this.tablaCabecera.TabIndex = 5;
-            // 
             // cmbScanners
             // 
             this.cmbScanners.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.cmbScanners.FormattingEnabled = true;
-            this.cmbScanners.Location = new System.Drawing.Point(448, 5);
+            this.cmbScanners.Location = new System.Drawing.Point(191, 39);
             this.cmbScanners.Name = "cmbScanners";
-            this.cmbScanners.Size = new System.Drawing.Size(300, 21);
+            this.cmbScanners.Size = new System.Drawing.Size(284, 21);
             this.cmbScanners.TabIndex = 70;
             this.cmbScanners.SelectedIndexChanged += new System.EventHandler(this.cmbScanners_SelectedIndexChanged);
             // 
-            // toolStripStatusLbl
+            // panel1
             // 
-            this.toolStripStatusLbl.Location = new System.Drawing.Point(0, 741);
-            this.toolStripStatusLbl.Name = "toolStripStatusLbl";
-            this.toolStripStatusLbl.Size = new System.Drawing.Size(1203, 8);
-            this.toolStripStatusLbl.TabIndex = 6;
-            this.toolStripStatusLbl.Text = "statusStrip1";
+            this.panel1.Location = new System.Drawing.Point(313, 755);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(124, 14);
+            this.panel1.TabIndex = 7;
+            // 
+            // pnlConnect
+            // 
+            this.pnlConnect.Controls.Add(this.lblSdkVersion);
+            this.pnlConnect.Controls.Add(this.lblEstadoConexion);
+            this.pnlConnect.Controls.Add(btnBuscarScanners);
+            this.pnlConnect.Controls.Add(this.cmbScanners);
+            this.pnlConnect.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.pnlConnect.Location = new System.Drawing.Point(0, 680);
+            this.pnlConnect.Name = "pnlConnect";
+            this.pnlConnect.Size = new System.Drawing.Size(1359, 76);
+            this.pnlConnect.TabIndex = 8;
+            // 
+            // lblSdkVersion
+            // 
+            this.lblSdkVersion.AutoSize = true;
+            this.lblSdkVersion.Location = new System.Drawing.Point(42, 13);
+            this.lblSdkVersion.Name = "lblSdkVersion";
+            this.lblSdkVersion.Size = new System.Drawing.Size(83, 13);
+            this.lblSdkVersion.TabIndex = 71;
+            this.lblSdkVersion.Text = "Conectar Lector";
             // 
             // frmLector
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.ClientSize = new System.Drawing.Size(1203, 749);
-            this.Controls.Add(this.tablaContenedora);
+            this.ClientSize = new System.Drawing.Size(1359, 756);
+            this.Controls.Add(this.tabMenu);
+            this.Controls.Add(this.pnlConnect);
+            this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.KeyPreview = true;
             this.Name = "frmLector";
@@ -1873,7 +1795,6 @@ namespace DS9908R_App
             this.TableLayoutPanel1.ResumeLayout(false);
             this.TableLayoutPanel1.PerformLayout();
             this.TableLayoutPanel6.ResumeLayout(false);
-            this.TableLayoutPanel6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvTagList)).EndInit();
             this.TableLayoutPanel2.ResumeLayout(false);
             this.TableLayoutPanel2.PerformLayout();
@@ -1899,9 +1820,8 @@ namespace DS9908R_App
             this.tableCabecera.ResumeLayout(false);
             this.tableCabecera.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.DataGridView3)).EndInit();
-            this.tablaContenedora.ResumeLayout(false);
-            this.tablaContenedora.PerformLayout();
-            this.tablaCabecera.ResumeLayout(false);
+            this.pnlConnect.ResumeLayout(false);
+            this.pnlConnect.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1921,17 +1841,12 @@ namespace DS9908R_App
         internal System.Windows.Forms.Label MsnVincular;
         internal System.Windows.Forms.TextBox CodBarras;
         internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel6;
-        internal System.Windows.Forms.DataGridView dgvTagList;
-        internal System.Windows.Forms.TextBox nroOP;
-        internal System.Windows.Forms.TextBox nroHM;
-        internal System.Windows.Forms.Button btnLimpiarOPHM;
         internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel2;
         internal System.Windows.Forms.Button btnVerConsolidado;
         internal System.Windows.Forms.Label lblTotalCount;
         internal System.Windows.Forms.Label label16;
         internal System.Windows.Forms.TableLayoutPanel tbContEspacioVertical;
         internal System.Windows.Forms.Button btnStopInventoryEx;
-        internal System.Windows.Forms.ComboBox cbxInventory;
         internal System.Windows.Forms.Button btnStartInventoryEx;
         internal System.Windows.Forms.TableLayoutPanel TableLayoutPanel3;
         internal System.Windows.Forms.DataGridView DataGridView1;
@@ -2014,10 +1929,11 @@ namespace DS9908R_App
         internal System.Windows.Forms.Label txt_BillToDet;
         internal System.Windows.Forms.DataGridView DataGridView3;
         private System.Windows.Forms.Label lblEstadoConexion;
-        private System.Windows.Forms.TableLayoutPanel tablaContenedora;
-        private System.Windows.Forms.TableLayoutPanel tablaCabecera;
-        private System.Windows.Forms.StatusStrip toolStripStatusLbl;
         private System.Windows.Forms.ComboBox cmbScanners;
+        internal System.Windows.Forms.DataGridView dgvTagList;
         private System.Windows.Forms.DataGridViewTextBoxColumn clnEPC;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel pnlConnect;
+        internal System.Windows.Forms.Label lblSdkVersion;
     }
 }
