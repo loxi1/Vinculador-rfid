@@ -1,163 +1,151 @@
-🔥 Vamos full modo industrial PRO MAX — primero resolvemos el error y luego te dejo mejoras reales de planta.
-❌ ERROR
+Sí, puedes quitar ToolStripStatusLabel y usar MsnVincular como estado principal. De hecho, con tu diseño nuevo tiene más sentido: ya moviste la conexión a un panel y el tab arriba, así que una barra inferior tipo status strip ya no es obligatoria. Revisé el repo, pero formLector.Designer.txt y frmLector.cs están prácticamente en una sola línea en el raw, así que no se pueden inspeccionar bien por bloques; aun así, por lo que describes, la mejor salida es no recrear ToolStripStatusLabel y centralizar el estado en un solo control visible. �
+GitHub +1
+Te recomiendo esto:
+Opción recomendada
+Usa MsnVincular para:
+mensajes de conexión
+errores de lectura
+estado de guardado
+limpieza automática
+RFID repetido o múltiples RFID
+Y deja el panel de conexión solo para:
+btnBuscarScanners
+cmbScanners
+un label visual de estado, por ejemplo lblEstadoConexion
+Así separas:
+estado técnico de conexión → lblEstadoConexion
+mensajes operativos del usuario → MsnVincular
+Qué cambiar en frmLector.cs
+1) Reemplaza toolStripStatusLbl.Text = ...
+Por esto:
 C#
-int rowIndex = DataGridView1.Rows.Insert(0);
-🔴 Causa
-En WinForms:
-C#
-Rows.Insert(index)
-👉 NO devuelve nada (void)
-Por eso:
-Plain text
-CS0029: Cannot implicitly convert type 'void' to 'int'
-✅ SOLUCIONES
-✔ Opción 1 (RECOMENDADO)
-Inserta y luego usa índice 0:
-C#
-DataGridView1.Rows.Insert(0);
-int rowIndex = 0;
-✔ Opción 2 (más limpio)
-No uses rowIndex:
-C#
-DataGridView1.Rows.Insert(0);
-
-DataGridView1.Rows[0].Cells["op"].Value = data["op"];
-✔ Opción 3 (si quieres índice dinámico)
-C#
-DataGridView1.Rows.Insert(0);
-int rowIndex = DataGridView1.Rows.GetFirstRow(DataGridViewElementStates.Visible);
-🔥 TU FUNCIÓN CORREGIDA
-C#
-private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+private void SetMensajeVincular(string mensaje)
 {
-    if (DataGridView1 == null || data == null)
+    if (MsnVincular == null)
         return;
 
-    if (DataGridView1.InvokeRequired)
+    if (MsnVincular.InvokeRequired)
     {
-        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        MsnVincular.Invoke(new Action<string>(SetMensajeVincular), mensaje);
         return;
     }
 
-    DataGridView1.Rows.Insert(0);
-    int rowIndex = 0;
-
-    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
-
-    ResaltarFilaInsertada(rowIndex);
+    MsnVincular.Text = mensaje ?? "";
 }
-🚀 MODO INDUSTRIAL PRO MAX
-Ahora sí lo bueno 😎
-🟢 1. Highlight automático tipo fábrica
+2) Crea un helper de estado visual
+Así ya no dependes del ToolStripStatusLabel:
 C#
-private void ResaltarFilaInsertada(int rowIndex)
+private void SetEstadoGeneral(string mensaje, Color color)
 {
-    if (rowIndex < 0 || rowIndex >= DataGridView1.Rows.Count)
+    SetMensajeVincular(mensaje);
+
+    if (MsnVincular != null)
+    {
+        MsnVincular.ForeColor = color;
+    }
+}
+3) Cambia SetEstado(...)
+Si hoy tu método usa toolStripStatusLbl, reemplázalo por:
+C#
+private void SetEstado(string mensaje, Color color)
+{
+    SetEstadoGeneral(mensaje, color);
+}
+Dónde se rompe hoy
+Seguramente tienes varias líneas así:
+C#
+toolStripStatusLbl.Text = "..."
+toolStripStatusLbl.BackColor = ...
+Debes cambiarlas por:
+C#
+SetEstado("...", Color.Khaki);
+o si solo quieres texto:
+C#
+SetMensajeVincular("...");
+Ejemplos concretos
+En Vinculador_OnError
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
         return;
-
-    var row = DataGridView1.Rows[rowIndex];
-
-    row.DefaultCellStyle.BackColor = Color.LightGreen;
-
-    Timer t = new Timer();
-    t.Interval = 800;
-
-    t.Tick += (s, e) =>
-    {
-        row.DefaultCellStyle.BackColor = Color.White;
-        t.Stop();
-        t.Dispose();
-    };
-
-    t.Start();
-}
-🔊 2. Sonido tipo scanner REAL
-C#
-private void ReproducirOk()
-{
-    System.Media.SystemSounds.Asterisk.Play();
-}
-
-private void ReproducirError()
-{
-    System.Media.SystemSounds.Hand.Play();
-}
-🧠 3. Anti-duplicados REAL (no solo cache)
-C#
-private bool ExisteRFIDEnGrid(string rfid)
-{
-    foreach (DataGridViewRow row in DataGridView1.Rows)
-    {
-        if (row.Cells["id_rfid"].Value?.ToString() == rfid)
-            return true;
     }
-    return false;
-}
-⚡ 4. Feedback visual inmediato (estado arriba)
-C#
-private void SetEstado(string texto, Color color)
-{
-    toolStripStatusLbl.Text = texto;
-    toolStripStatusLbl.BackColor = color;
-}
-📊 5. Contador dinámico con color
-C#
-private void ActualizarTotalCount()
-{
-    int total = DataGridView1.Rows.Count;
 
-    lblTotalCount.Text = total.ToString();
+    SetEstado(msg, Color.Firebrick);
+    ReproducirError();
 
-    if (total > 400)
-        lblTotalCount.ForeColor = Color.Red;
-    else if (total > 300)
-        lblTotalCount.ForeColor = Color.Orange;
-    else
-        lblTotalCount.ForeColor = Color.Green;
+    AlertaManager.MostrarAlerta(msg, pinturaRoja, 3, 5);
 
-    if (total >= MAX_CACHE_SIZE)
-    {
-        LimpiarTodo();
-    }
-}
-🧹 6. Limpieza EXACTA como VB
-C#
-private void LimpiarTodo()
-{
-    Console.WriteLine("🚨 Limpieza total por límite");
-
-    btnClear.PerformClick();
-    btnLimpiarRFID.PerformClick();
-
+    CodBarras.Clear();
     CodBarras.Focus();
 }
-⚙️ 7. Flujo perfecto de inserción
-Tu flujo final debería ser:
+En Vinculador_OnInfo
 C#
-SetMensajeVincular("Prenda registrada exitosamente");
+private void Vinculador_OnInfo(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
+        return;
+    }
 
-LlenarPrimeraFilaDataGridView1(data);
+    SetEstado(msg, Color.DarkOrange);
+}
+En Vinculador_OnInsertadoOk
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
 
-ActualizarTotalCount();
+    if (data != null)
+    {
+        if (data.ContainsKey("op"))
+            TextBoxOP.Text = Convert.ToString(data["op"]);
 
-ReproducirOk();
+        if (data.ContainsKey("hoja_marcacion"))
+            TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
+    }
 
-SetEstado("OK", Color.LightGreen);
-🧠 CONCLUSIÓN
-El error era simple:
-👉 Insert() NO devuelve índice
-👉 debes usar índice 0 manualmente
-🔥 SI QUIERES NIVEL 10/10
-Te puedo dejar:
-🧠 cola inteligente (evita doble lectura en milisegundos)
-⚡ procesamiento paralelo (lector + DB sin bloquear UI)
-📡 reconexión automática scanner
-🎯 modo "solo código de barras" sin RFID (ya lo empezaste 🔥)
-Solo dime:
-👉 "modo fábrica real 100%"
+    SetEstado("Prenda registrada exitosamente.", Color.Green);
+    LlenarPrimeraFilaDataGridView1(data);
+    ActualizarTotalCount();
+
+    ReproducirOk();
+    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5);
+
+    CodBarras.Clear();
+    _ultimoCodigoBarra = "";
+    _ultimoRfid = "";
+    _rfidPendientes.Clear();
+    dgvTagList.Rows.Clear();
+    cantidadRFID.Text = "0";
+    CodBarras.Focus();
+}
+Para la conexión del scanner
+Mantén lblEstadoConexion en el panel superior, por ejemplo:
+C#
+private void ActualizarEstadoConexion(string texto, Color color)
+{
+    lblEstadoConexion.Text = texto;
+    lblEstadoConexion.BackColor = color;
+    lblEstadoConexion.ForeColor = Color.White;
+    lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
+
+    SetMensajeVincular(texto);
+}
+Así no pierdes feedback.
+Mi recomendación final
+No vuelvas a crear ToolStripStatusLabel.
+Con tu diseño nuevo, queda mejor así:
+arriba izquierda: panel de conexión con btnBuscarScanners, cmbScanners, lblEstadoConexion
+arriba o debajo del panel: MsnVincular como mensaje principal del sistema
+tabs arriba
+grillas abajo
+Eso te deja una UI más limpia y más parecida a un sistema productivo moderno.
+Si quieres, te doy el bloque exacto para buscar y reemplazar todas las referencias a toolStripStatusLbl dentro de frmLector.cs.
