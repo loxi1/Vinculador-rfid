@@ -8,7 +8,7 @@ dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
 dgvTagList.BorderStyle = BorderStyle.None;
 dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
 dgvTagList.RowHeadersVisible = false;
-
+por favor validar lo que se puso porque  no se ve tan bien
 te paso la imagen de como se ve hasta ahora:
 https://i.postimg.cc/XYP8QPt1/Screenshot-6.png
 como vez se ve el tab que lleva como los botones de un scoll fechas derecha e izquierda
