@@ -1,50 +1,31 @@
-Aquí está la función AdjustTabWidth lista para usar en WinForms:
+Sí. Hazla recibir el TabControl como parámetro.
 C#
-private void AdjustTabWidth()
+private void AdjustTabWidth(TabControl tabCtrl)
 {
-    if (tabControl == null || tabControl.TabCount == 0)
+    if (tabCtrl == null || tabCtrl.TabCount == 0)
         return;
 
-    int totalWidth = tabControl.Width;
+    int totalWidth = tabCtrl.Width;
+    int tabCount = tabCtrl.TabCount;
 
-    // pequeño margen para que no se corte
-    int ancho = totalWidth / tabControl.TabCount;
+    int tabWidth = totalWidth / tabCount;
+    if (tabWidth < 100)
+        tabWidth = 100;
 
-    if (ancho < 120)
-        ancho = 120;
-
-    tabControl.ItemSize = new Size(ancho, 40);
+    tabCtrl.ItemSize = new Size(tabWidth, 40);
 }
-Y así la llamas en el Load
+Y la llamas así:
 C#
-tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
-tabControl.DrawItem += TabControl_DrawItem;
-tabControl.SizeMode = TabSizeMode.Fixed;
-AdjustTabWidth();
-También conviene recalcular cuando cambie el tamaño del formulario
+AdjustTabWidth(this.tabControl);
+Si quieres que también se recalcule cuando cambie el tamaño del formulario:
 C#
 private void frmLector_Resize(object sender, EventArgs e)
 {
-    AdjustTabWidth();
+    AdjustTabWidth(this.tabControl);
 }
-Y en el Load o constructor registras:
+Y en el Load:
 C#
-this.Resize += frmLector_Resize;
-Si tu control no se llama tabControl
-En tu proyecto puede llamarse distinto, por ejemplo tabControl1 o tabCtrl.
-Si fuera tabControl1, entonces cambia la función así:
-C#
-private void AdjustTabWidth()
-{
-    if (tabControl1 == null || tabControl1.TabCount == 0)
-        return;
-
-    int totalWidth = tabControl1.Width;
-    int ancho = totalWidth / tabControl1.TabCount;
-
-    if (ancho < 120)
-        ancho = 120;
-
-    tabControl1.ItemSize = new Size(ancho, 40);
-}
-Si quieres, te ordeno todo el bloque visual de frmLector_Load con los nombres reales de tus controles.
+tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+tabControl.SizeMode = TabSizeMode.Fixed;
+AdjustTabWidth(this.tabControl);
+Si deseas, también te la adapto para que el ancho se calcule según el texto de cada pestaña y no repartido igual.
