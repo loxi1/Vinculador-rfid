@@ -1,21 +1,69 @@
-falta esto:
-Private Sub EstiloContenedorTablaRFID()
-        With dgvTagList
-            .BackgroundColor = pinturaBlanca
-            .GridColor = pinturaGris
-            .DefaultCellStyle.BackColor = pinturaBlanca
-            .DefaultCellStyle.ForeColor = pinturaNegra
-            .DefaultCellStyle.Font = New Font("Arial", 10)
-            .DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-            .ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca
-            .ColumnHeadersDefaultCellStyle.Font = New Font("Arial", 12, FontStyle.Bold)
-            .ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-            .AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo ' Fondo gris muy claro para filas alternas
-            .RowTemplate.Height = 30
+Perfecto 👍 esa función es clave para el lector RFID (lista de tags). Te la convierto correctamente a C# WinForms, respetando tu estilo.
+✅ Versión en C# (equivalente exacto VB)
+C#
+private void EstiloContenedorTablaRFID(DataGridView dgvTagList)
+{
+    if (dgvTagList == null) return;
 
-            ' Ocultar la columna clnTID
-            If .Columns.Contains("clnTID") Then
-                .Columns("clnTID").Visible = False
-            End If
-        End With
-    End Sub
+    dgvTagList.BackgroundColor = pinturaBlanca;
+    dgvTagList.GridColor = pinturaGris;
+
+    dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
+    dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
+    dgvTagList.DefaultCellStyle.Font = new Font("Arial", 10);
+    dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+    dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
+    dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 12, FontStyle.Bold);
+    dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+
+    dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
+
+    dgvTagList.RowTemplate.Height = 30;
+
+    // Ocultar columna clnTID si existe
+    if (dgvTagList.Columns.Contains("clnTID"))
+    {
+        dgvTagList.Columns["clnTID"].Visible = false;
+    }
+}
+🎯 Cómo llamarlo (IMPORTANTE)
+C#
+EstiloContenedorTablaRFID(dgvTagList);
+⚠️ Posible problema (te adelanto)
+Si haces esto en Load:
+C#
+EstiloContenedorTablaRFID(dgvTagList);
+👉 pero las columnas aún no existen (porque se cargan después), entonces:
+C#
+.Columns.Contains("clnTID")
+👉 te dará FALSE y no ocultará la columna
+🔥 SOLUCIÓN PRO (industrial)
+Aplica el estilo después de cargar datos:
+C#
+private void dgvTagList_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+{
+    EstiloContenedorTablaRFID(dgvTagList);
+}
+Y registras el evento:
+C#
+dgvTagList.DataBindingComplete += dgvTagList_DataBindingComplete;
+💎 Mejora visual (te recomiendo agregar esto)
+Para que se vea más moderno:
+C#
+dgvTagList.EnableHeadersVisualStyles = false;
+dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
+dgvTagList.BorderStyle = BorderStyle.None;
+dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+dgvTagList.RowHeadersVisible = false;
+🚀 Resultado
+Con esto tu tabla RFID queda:
+✔ Centrada (lectura rápida)
+✔ Limpia (sin ruido visual)
+✔ Tipo sistema industrial
+✔ Preparada para alto flujo de lectura
+Si quieres en el siguiente paso te hago:
+👉 highlight automático del último tag leído (tipo scanner profesional)
+👉 sonido + color verde/rojo según lectura
+👉 contador en tiempo real
+Solo dime: “modo lector industrial PRO” 😎
