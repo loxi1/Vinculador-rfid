@@ -1,157 +1,260 @@
-se tiene este avance por favor integrar o midificar lo que ya se tiene en este repo: https://github.com/loxi1/Vinculador-rfid sino enentras los link busca los archivos dentro de esete repo
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/BDPrendaScm.cs
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/BDPrenda.cs
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/DBConsultarPrenda.cs
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/DBConsultas.cs
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/Sybase.cs
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/SybaseHelper.cs
-https://raw.githubusercontent.com/loxi1/Vinculador-rfid/refs/heads/main/MySQLconexion.cs
-y mostrarme el codigo final de cada uno de ellos
-tener como base en este repo: https://github.com/loxi1/Lector_mesa si no encuentras como link busca los archivos dentro de este proyecto 
-https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/BDPrenda.vb
-https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/BDPrendaScm.vb
-https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/DBConsultas.vb
-https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/Sybase.vb
-https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/MySQLconexion.vb
-https://raw.githubusercontent.com/loxi1/Lector_mesa/refs/heads/main/UHFLib/UHFSample/SybaseHelper.vb
+Sí. El problema principal en tu repo actual está en BDPrenda.cs: hoy está llamando USP_SAL_EMB_CON_RFID con nombres de parámetros que no existen en tu SP (@CodigoBarra, @Empresa, @Trabajador, @RFID, @HojaMarcacion) y además usa ExecuteNonQuery() en vez de leer la fila codigo/mensaje que el SP devuelve al final. Por eso te aparece el error del parámetro faltante y no se respeta el flujo del VB. �
+GitHub
+Abajo te dejo el código final de los archivos que pediste, adaptado a:
+tsconfig.json en bin\x64\Ini
+Sybase con Sybase.Data.AseClient
+MySQL con MySql.Data.MySqlClient
+el flujo real del VB: SaveRFID en Sybase, GetTimbradasByWorkerAndEtiqueta, luego Insert en MySQL, y retorno de Tuple<int,string> para que VinculadorService y frmLector muestren alertas correctas. El SP que pegaste exige exactamente @etqt, @empresa, @usr, @rfid, @nHoja, y devuelve codigo y mensaje; esta versión ya lo respeta. �
+GitHub
+DBConsultas.cs
+C#
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using Newtonsoft.Json;
 
+namespace DS9908R_App
+{
+    public class DBConsultas
+    {
+        private string _secretKey;
+        private string _secretIv;
+        private string _method;
+        private byte[] _key;
+        private byte[] _iv;
+
+        public DBConsultas()
+        {
+            LoadCryptoConfig();
+        }
+
+        public string Encrypt(string plainText)
+        {
+            if (string.IsNullOrEmpty(plainText))
+                return string.Empty;
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = _key;
+                aes.IV = _iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+                    byte[] cipherBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
+                    return Convert.ToBase64String(cipherBytes);
+                }
+            }
+        }
+
+        public string Decrypt(string cipherText)
+        {
+            if (string.IsNullOrEmpty(cipherText))
+                return string.Empty;
+
+            using (Aes aes = Aes.Create())
+            {
+                aes.Key = _key;
+                aes.IV = _iv;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+
+                using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                {
+                    byte[] cipherBytes = Convert.FromBase64String(cipherText);
+                    byte[] plainBytes = decryptor.TransformFinalBlock(cipherBytes, 0, cipherBytes.Length);
+                    return Encoding.UTF8.GetString(plainBytes);
+                }
+            }
+        }
+
+        public static string GetConfigPath(string fileName)
+        {
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string parent1 = Directory.GetParent(baseDirectory) != null
+                ? Directory.GetParent(baseDirectory).FullName
+                : baseDirectory;
+
+            string parent2 = Directory.GetParent(parent1) != null
+                ? Directory.GetParent(parent1).FullName
+                : parent1;
+
+            string iniDirectory = Path.Combine(parent2, "Ini");
+            return Path.Combine(iniDirectory, fileName);
+        }
+
+        public static Dictionary<string, string> LoadJsonConfig(string fileName)
+        {
+            string configPath = GetConfigPath(fileName);
+
+            if (!File.Exists(configPath))
+            {
+                throw new FileNotFoundException("No se encontró el archivo de configuración.", configPath);
+            }
+
+            string json = File.ReadAllText(configPath);
+            Dictionary<string, string> config = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+            if (config == null)
+            {
+                throw new Exception("No se pudo leer la configuración JSON.");
+            }
+
+            return config;
+        }
+
+        private void LoadCryptoConfig()
+        {
+            Dictionary<string, string> config = LoadJsonConfig("tsconfig.json");
+
+            _secretKey = config.ContainsKey("SECRET_KEY") ? config["SECRET_KEY"] : string.Empty;
+            _secretIv = config.ContainsKey("SECRET_IV") ? config["SECRET_IV"] : string.Empty;
+            _method = config.ContainsKey("METHOD") ? config["METHOD"] : "AES-256-CBC";
+
+            if (string.IsNullOrWhiteSpace(_secretKey) || string.IsNullOrWhiteSpace(_secretIv))
+            {
+                throw new Exception("Faltan SECRET_KEY o SECRET_IV en tsconfig.json.");
+            }
+
+            _key = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(_secretKey));
+            _iv = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(_secretIv)).Take(16).ToArray();
+        }
+    }
+}
 Sybase.cs
+C#
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
-using Newtonsoft.Json;
 using Sybase.Data.AseClient;
 
 namespace DS9908R_App
 {
     public class Sybase
     {
-        private AseConnection myConexion;
-        private readonly string m_Usuario = "corporativo";
-        private readonly string m_Password = "c0rp0r@t1v0";
-        private string m_ServerName = "";
-        private string m_Port = "";
-        private string m_DataBase = "";
-        public string s_error = "";
+        private AseConnection _connection;
+        private string _serverName = "";
+        private string _port = "";
+        private string _database = "";
+        private string _user = "corporativo";
+        private string _password = "c0rp0r@t1v0";
 
-        // Método para conectarse a la base de datos
+        public string LastError { get; private set; }
+
         public AseConnection Connect()
         {
             try
             {
-                // Cargar configuración
-                if (!LoadConfig("tsconfig.json"))
+                LoadConfig();
+
+                string connectionString =
+                    string.Format(
+                        "Data Source={0};Port={1};Database={2};Uid={3};Pwd={4};",
+                        _serverName,
+                        _port,
+                        _database,
+                        _user,
+                        _password);
+
+                if (_connection == null)
                 {
-                    throw new Exception("Error al cargar la configuración. Verifique el archivo tsconfig.json.");
+                    _connection = new AseConnection(connectionString);
+                }
+                else if (!string.Equals(_connection.ConnectionString, connectionString, StringComparison.OrdinalIgnoreCase))
+                {
+                    SafeClose();
+                    _connection = new AseConnection(connectionString);
                 }
 
-                // Crear la conexión si es necesario
-                if (myConexion == null || myConexion.State == ConnectionState.Closed || myConexion.State == ConnectionState.Broken)
+                if (_connection.State == ConnectionState.Closed || _connection.State == ConnectionState.Broken)
                 {
-                    string sCadenaConexion = $"Data Source={m_ServerName};Port={m_Port};Database={m_DataBase};Uid={m_Usuario};Pwd={m_Password};";
-                    //Console.WriteLine($"Cadena de conexión generada: {sCadenaConexion}");
-
-                    myConexion = new AseConnection(sCadenaConexion);
-                    myConexion.Open();
+                    _connection.Open();
                 }
+
+                return _connection;
             }
-            catch (AseException ex)
+            catch (Exception ex)
             {
-                s_error = $"Error al conectar: {ex.Message}";
-                LogError("Error al conectar", ex);
+                LastError = ex.Message;
+                LogError("Error al conectar a Sybase", ex);
                 throw;
             }
-
-            Console.WriteLine($"Estado de la conexión después de intentar abrir: {myConexion.State}");
-            return myConexion;
         }
 
-        // Método para desconectarse de la base de datos
-        public int Disconnect()
+        public void Disconnect()
         {
-            try
-            {
-                if (myConexion != null && myConexion.State == ConnectionState.Open)
-                {
-                    myConexion.Close();
-                }
-            }
-            catch (AseException ex)
-            {
-                s_error = ex.Message;
-                LogError("Error al cerrar la conexión a la base de datos", ex);
-            }
-            return 1;
+            SafeClose();
         }
 
-        // Método para obtener errores
         public string GetError()
         {
-            return s_error;
+            return LastError ?? string.Empty;
         }
 
-        // Método para registrar errores en un log
-        private void LogError(string message, Exception ex = null)
+        private void LoadConfig()
         {
-            string logMessage = $"{DateTime.Now}: {message}";
-            if (ex != null)
-            {
-                logMessage += Environment.NewLine + ex.ToString();
-            }
+            Dictionary<string, string> config = DBConsultas.LoadJsonConfig("tsconfig.json");
 
-            File.AppendAllText("db_errors.log", logMessage + Environment.NewLine);
+            _serverName = config.ContainsKey("SERVER_NAME_SY") ? config["SERVER_NAME_SY"] : "";
+            _port = config.ContainsKey("PORT_SY") ? config["PORT_SY"] : "";
+            _database = config.ContainsKey("DATA_BASE_SY") ? config["DATA_BASE_SY"] : "";
+
+            if (config.ContainsKey("DB_USER_SY") && !string.IsNullOrWhiteSpace(config["DB_USER_SY"]))
+                _user = config["DB_USER_SY"];
+
+            if (config.ContainsKey("DB_PASSWORD_SY") && !string.IsNullOrWhiteSpace(config["DB_PASSWORD_SY"]))
+                _password = config["DB_PASSWORD_SY"];
+
+            if (string.IsNullOrWhiteSpace(_serverName) ||
+                string.IsNullOrWhiteSpace(_port) ||
+                string.IsNullOrWhiteSpace(_database))
+            {
+                throw new Exception("La configuración de Sybase está incompleta.");
+            }
         }
 
-        // Método para cargar configuración desde un archivo JSON
-        private bool LoadConfig(string filePath)
+        private void SafeClose()
         {
             try
             {
-                // Obtener el directorio base de ejecución
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                // Subir dos niveles para llegar a "bin"
-                string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
-                // Construir la ruta del archivo tsconfig.json
-                string iniDirectory = Path.Combine(binDirectory, "Ini");
-                string configPath = Path.Combine(iniDirectory, filePath);
-
-                if (File.Exists(configPath))
+                if (_connection != null)
                 {
-                    string json = File.ReadAllText(configPath);
-                    var config = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-
-                    if (config.ContainsKey("SERVER_NAME_SY")) m_ServerName = config["SERVER_NAME_SY"];
-                    if (config.ContainsKey("PORT_SY")) m_Port = config["PORT_SY"];
-                    if (config.ContainsKey("DATA_BASE_SY")) m_DataBase = config["DATA_BASE_SY"];
-
-                    if (string.IsNullOrEmpty(m_ServerName) || string.IsNullOrEmpty(m_Port) || string.IsNullOrEmpty(m_DataBase))
+                    if (_connection.State != ConnectionState.Closed)
                     {
-                        s_error = "Faltan parámetros en el archivo de configuración.";
-                        Console.WriteLine(s_error);
-                        return false;
+                        _connection.Close();
                     }
-
-                    return true;
-                }
-                else
-                {
-                    s_error = $"El archivo de configuración no existe: {filePath}";
-                    Console.WriteLine(s_error);
-                    return false;
+                    _connection.Dispose();
+                    _connection = null;
                 }
             }
             catch (Exception ex)
             {
-                s_error = $"Error al cargar configuración: {ex.Message}";
-                Console.WriteLine(s_error);
-                return false;
+                LogError("Error al cerrar la conexión Sybase", ex);
+            }
+        }
+
+        private void LogError(string message, Exception ex)
+        {
+            try
+            {
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "sybase_errors.log");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine + ex + Environment.NewLine;
+                File.AppendAllText(path, text);
+            }
+            catch
+            {
             }
         }
     }
 }
-
 SybaseHelper.cs
+C#
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -161,80 +264,76 @@ namespace DS9908R_App
 {
     public class SybaseHelper
     {
-        private readonly Sybase sybase = new Sybase(); // Instancia de la clase Sybase para manejar la conexión
-        private string errorMessage; // Para almacenar errores
+        private readonly Sybase _sybase = new Sybase();
+        private string _errorMessage = string.Empty;
 
-        // Método para validar usuario en la base de datos
+        public static AseConnection GetConnection()
+        {
+            Sybase sybase = new Sybase();
+            return sybase.Connect();
+        }
+
         public DataRow ValidateUser(string codigo, string claveEncriptada)
         {
-            string query = "SELECT identificador, codigo, datos, empresa, estado, clave, turno " +
-                           "FROM usuario_timbrado WHERE codigo = @codigo AND clave = @clave";
             DataTable result = new DataTable();
+            const string query =
+                "SELECT identificador, codigo, datos, empresa, estado, clave, turno " +
+                "FROM usuario_timbrado " +
+                "WHERE codigo = @codigo AND clave = @clave";
 
             try
             {
-                // Establecer conexión
-                AseConnection connection = sybase.Connect();
-
-                // Configurar comando SQL
+                using (AseConnection connection = _sybase.Connect())
                 using (AseCommand command = new AseCommand(query, connection))
                 {
-                    // Agregar parámetros
                     command.Parameters.AddWithValue("@codigo", codigo);
                     command.Parameters.AddWithValue("@clave", claveEncriptada);
 
-                    // Ejecutar consulta
                     using (AseDataReader reader = command.ExecuteReader())
                     {
-                        result.Load(reader); // Cargar los resultados en un DataTable
+                        result.Load(reader);
                     }
                 }
-
-                // Cerrar conexión
-                sybase.Disconnect();
             }
             catch (Exception ex)
             {
-                errorMessage = $"Error al validar usuario: {ex.Message}";
-                sybase.Disconnect();
+                _errorMessage = "Error al validar usuario: " + ex.Message;
+            }
+            finally
+            {
+                _sybase.Disconnect();
             }
 
-            // Retornar la primera fila si existe, de lo contrario null
             return result.Rows.Count > 0 ? result.Rows[0] : null;
         }
 
-        // Método para validar usuario basado en un diccionario de parámetros
         public DataTable ValidateUser(Dictionary<string, object> whereParameters)
         {
             DataTable result = new DataTable();
 
             try
             {
-                // Construir la consulta dinámica
-                string query = "SELECT identificador, codigo, datos, empresa, estado, clave, turno FROM usuario_timbrado";
-                List<string> whereClause = new List<string>();
+                string query =
+                    "SELECT identificador, codigo, datos, empresa, estado, clave, turno " +
+                    "FROM usuario_timbrado";
 
-                foreach (var param in whereParameters)
+                List<string> whereClause = new List<string>();
+                foreach (KeyValuePair<string, object> param in whereParameters)
                 {
-                    whereClause.Add($"{param.Key} = @{param.Key}");
+                    whereClause.Add(param.Key + " = @" + param.Key);
                 }
 
                 if (whereClause.Count > 0)
                 {
-                    query += " WHERE " + string.Join(" AND ", whereClause);
+                    query += " WHERE " + string.Join(" AND ", whereClause.ToArray());
                 }
 
-                Console.WriteLine($"Query->{query}");
-
-                // Establecer conexión
-                AseConnection connection = sybase.Connect();
-
-                // Configurar comando SQL
+                using (AseConnection connection = _sybase.Connect())
                 using (AseCommand command = new AseCommand(query, connection))
                 {
-                    foreach (var param in whereParameters)
+                    foreach (KeyValuePair<string, object> param in whereParameters)
                     {
-                        command.Parameters.AddWithValue($"@{param.Key}", param.Value);
+                        command.Parameters.AddWithValue("@" + param.Key, param.Value ?? DBNull.Value);
                     }
 
                     using (AseDataReader reader = command.ExecuteReader())
@@ -242,880 +341,537 @@ namespace DS9908R_App
                         result.Load(reader);
                     }
                 }
-
-                sybase.Disconnect();
             }
             catch (Exception ex)
             {
-                errorMessage = $"Error al validar usuario: {ex.Message}";
-                sybase.Disconnect();
+                _errorMessage = "Error al validar usuario: " + ex.Message;
+            }
+            finally
+            {
+                _sybase.Disconnect();
             }
 
             return result;
         }
 
-        // Método para actualizar la contraseña
         public int UpdatePassword(string codigo, string claveEncriptada)
         {
-            string query = "UPDATE usuario_timbrado SET clave = @clave WHERE codigo = @codigo";
             int rowsAffected = 0;
+            const string query = "UPDATE usuario_timbrado SET clave = @clave WHERE codigo = @codigo";
 
             try
             {
-                AseConnection connection = sybase.Connect();
-
+                using (AseConnection connection = _sybase.Connect())
                 using (AseCommand command = new AseCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@codigo", codigo);
                     command.Parameters.AddWithValue("@clave", claveEncriptada);
-
                     rowsAffected = command.ExecuteNonQuery();
                 }
-
-                sybase.Disconnect();
-                return rowsAffected;
             }
             catch (Exception ex)
             {
-                errorMessage = $"Error al actualizar la contraseña: {ex.Message}";
-                sybase.Disconnect();
-                return -1; // Indica que ocurrió un error
+                _errorMessage = "Error al actualizar la contraseña: " + ex.Message;
+                rowsAffected = -1;
             }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return rowsAffected;
         }
 
-        // Método para obtener errores
         public string GetLastError()
         {
-            return !string.IsNullOrEmpty(errorMessage) ? errorMessage : sybase.GetError();
+            return !string.IsNullOrWhiteSpace(_errorMessage) ? _errorMessage : _sybase.GetError();
         }
     }
 }
-si funciona el public DataTable ValidateUser con eso digo que si existe conexion a Sybase
-
-dado formLect.txt existe la funcion despues del encolamiento hace m_BDPrenda.SaveRFID (sybase) y m_BDPrendaScm.Insert(Mysql) aparte de llenar al DataGridView1:
-...
-Private Sub SaveCodigoRFID(cadena As String)
-        Dim partes() As String = cadena.Split("~"c) ' Divide la cadena por el símbolo ~
-        Dim mCodBarra As String = partes(0)
-        Dim sCodigoRFID As String = partes(1)
-        Dim hm As String = partes(2)
-        sCodigoRFID = sCodigoRFID.Trim().Replace(" ", "")
-        sCodigoRFID = If(sCodigoRFID.Length > 24, sCodigoRFID.Substring(sCodigoRFID.Length - 24), sCodigoRFID)
-
-        Dim M_S_N As String = ""
-
-        Dim cantLeidas As Integer = CantidadFilasLeidas()
-        ' Evitar consulta si ya sabemos que este RFID está registrado
-        If cacheRFID.ContainsKey(sCodigoRFID) Then
-            SafeUpdateLabel(MsnVincular, "")
-            SafeUpdateTextBox(CodBarras, "")
-            AlertaManager.MostrarAlerta($"Error: El RFID ya existe. Verifique.", pinturaRoja, 3, 5)
-            'MostrarAlerta($"Error: El RFID ya existe. Verifique.")
-            Exit Sub
-        End If
-
-        'Prueba
-        'sCodigoRFID = GenerarCadenaAleatoria(24)
-
-        'Console.WriteLine($"Código de Barras: {mCodBarra}, Código RFID: {sCodigoRFID}")
-
-        'Se intertan los valores al procedimento almacenado USP_SAL_EMB_CON_RFID
-        'El procediento valida y muestra msn con codigo de error lugo se actualiza la taba ordenacabadostallasmov y inserta en tmp_etiq_timbradas
-        Console.WriteLine($"Se envia este valor de :{sCodigoRFID}:")
-        Dim lsResult = m_BDPrenda.SaveRFID(mCodBarra, mEmpresa, mCodTrabajador, sCodigoRFID, hm)
-        ' Actualizar el control 'MsnVincular' de forma segura
-        SafeUpdateLabel(MsnVincular, lsResult.Item2)
-        If lsResult.Item1 <> 0 Then
-            If lsResult.Item1 = 3 And sCodigoRFID.Length > 0 Then
-                cacheRFID(sCodigoRFID) = True
-            End If
-            AlertaManager.MostrarAlerta($"{lsResult.Item2}", pinturaRoja, 3, 5)
-            SafeUpdateLabel(MsnVincular, lsResult.Item2)
-            SafeUpdateTextBox(CodBarras, "")
-            Exit Sub
-        End If
-
-        If sCodigoRFID.Length > 0 Then
-            ' Guardar el RFID en caché después de una inserción exitosa
-            cacheRFID(sCodigoRFID) = True
-        End If
-
-        Try
-            Dim dataTimbrado = m_BDPrenda.GetTimbradasByWorkerAndEtiqueta(mCodTrabajador, mCodBarra)
-            If dataTimbrado.Rows.Count = 0 Then
-                M_S_N = "No se registraron datos en la tabla timbrada. Verifique con el administrador."
-                MostrarAlerta(M_S_N)
-                Exit Sub
-            End If
-
-            Dim row As DataRow = dataTimbrado.Rows(0)
-            Dim insertData As New Dictionary(Of String, Object) From {
-                {"id_rfid", sCodigoRFID},
-                {"id_barras", row("etiqueta")},
-                {"op", row("op")},
-                {"corte", row("corte")},
-                {"subcorte", row("sub_corte")},
-                {"cod_talla", row("cod_talla")},
-                {"id_talla", row("id_talla")},
-                {"talla", row("talla")},
-                {"cod_combinacion", row("cod_comb")},
-                {"color", row("color")},
-                {"cod_trabajador", row("fotocheck")},
-                {"hoja_marcacion", hm}
-            }
-            Console.WriteLine($"sCodigoRFID-->{sCodigoRFID}")
-
-            Dim llReturn = m_BDPrendaScm.Insert(insertData)
-            If llReturn <> 1 Then
-                M_S_N = Msn(llReturn)
-                MostrarAlerta(M_S_N)
-                Exit Sub
-            Else
-                SafeUpdateLabel(MsnVincular, "Prenda registrada exitosamente.")
-                ' Eliminar el elemento "id_barras" del diccionario insertData
-                insertData("fecha") = DateTime.Now
-                If insertData.ContainsKey("id_barras") Then
-                    insertData.Remove("id_barras")
-                    insertData.Remove("cod_combinacion")
-                    insertData.Remove("cod_trabajador")
-                End If
-                insertData.Add("linea", row("linea"))
-                'LlenarDataGridView(DataGridView1, insertData)
-                LlenarPrimeraFila(DataGridView1, insertData)
-                CantidadFilas()
-                SafeUpdateTextBox(CodBarras, "")
-                AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5)
-            End If
-        Catch ex As Exception
-            Console.WriteLine($"Error en el flujo de registro: {ex.Message}")
-            SafeUpdateLabel(MsnVincular, "Error inesperado al registrar la prenda. Consulte con el administrador.")
-        End Try
-    End Sub
-...
-funiones axuiliares:
-Public Function SaveRFID(sCodBarra As String, sCompania As String, sCodTrabajador As String, sIDRfid As String, nHoja As String) As Tuple(Of Integer, String)
-        Dim li_return As Integer = 0
-        Dim s_mensaje As String = ""
-        Dim tabla As New DataTable()
-
-        Try
-            Using connectionAse = myConexion.Connect()
-                If connectionAse Is Nothing OrElse connectionAse.State <> ConnectionState.Open Then
-                    Throw New Exception("Error en conexión con la base de datos.")
-                End If
-
-                Using trans = connectionAse.BeginTransaction()
-                    Try
-                        Using command As New AseCommand("USP_SAL_EMB_CON_RFID", connectionAse, trans)
-                            command.CommandType = CommandType.StoredProcedure
-                            command.Parameters.Add(New AseParameter("@etqt", AseDbType.VarChar)).Value = sCodBarra
-                            command.Parameters.Add(New AseParameter("@empresa", AseDbType.VarChar)).Value = sCompania
-                            command.Parameters.Add(New AseParameter("@usr", AseDbType.VarChar)).Value = sCodTrabajador
-                            command.Parameters.Add(New AseParameter("@rfid", AseDbType.VarChar)).Value = sIDRfid
-                            command.Parameters.Add(New AseParameter("@nHoja", AseDbType.VarChar)).Value = nHoja
-
-                            Using reader As AseDataReader = command.ExecuteReader()
-                                tabla.Load(reader)
-                                If tabla.Rows.Count > 0 Then
-                                    li_return = Convert.ToInt32(tabla.Rows(0)(0))
-                                    s_mensaje = If(tabla.Columns.Count > 1, tabla.Rows(0)(1).ToString(), "")
-                                End If
-                            End Using
-                        End Using
-
-                        trans.Commit()
-                    Catch ex As Exception
-                        trans.Rollback()
-                        Throw
-                    End Try
-                End Using
-            End Using
-        Catch ex As Exception
-            ss_error = ex.Message
-            LogError("Error en SaveRFID", ex)
-            li_return = -1
-        End Try
-
-        Return Tuple.Create(li_return, s_mensaje)
-    End Function
-
-    Public Function Insert(columns As Dictionary(Of String, Object)) As Long
-        Dim ll_return As Long = 0
-        'Debug.Print("Iniciando Insert...")
-        'Debug.Print($"Datos a insertar: {String.Join(", ", columns.Select(Function(kv) $"{kv.Key}={kv.Value}"))}")
-
-        Try
-            ' Asegúrate de que la conexión esté siempre abierta para cada operación
-            Using connection = conexion.Connect()
-                If connection.State <> ConnectionState.Open Then
-                    connection.Open()
-                End If
-
-                Dim tableName As String = "`prenda`"
-                Dim columnNames As String = String.Join(", ", columns.Keys.Select(Function(key) $"`{key}`"))
-                Dim parameterNames As String = String.Join(", ", columns.Keys.Select(Function(key) $"@{key}"))
-
-                Dim sql As String = $"INSERT INTO {tableName} ({columnNames}) VALUES ({parameterNames})"
-                'Debug.Print($"Consulta generada: {sql}")
-
-                Using comando As New MySqlCommand(sql, connection)
-                    For Each param In columns
-                        comando.Parameters.AddWithValue($"@{param.Key}", If(param.Value, DBNull.Value))
-                    Next
-
-                    ll_return = comando.ExecuteNonQuery()
-                    'Debug.Print($"Número de filas afectadas: {ll_return}")
-                End Using
-            End Using
-        Catch ex As Exception
-            ss_error = ex.Message
-            Debug.Print($"Error en Insert: {ex.Message}")
-            LogError("Error en Insert", ex)
-            ll_return = -1
-        End Try
-        Return ll_return
-    End Function
-
-MySQLconexion.vb
-Imports System.Data
-Imports System.IO
-Imports MySql.Data.MySqlClient
-Imports Newtonsoft.Json
-
-Public Class MySQLconexion
-    Private myConexion As MySqlConnection
-    Private m_ServerName As String = ""
-    Private m_Port As String = ""
-    Private m_DataBase As String = ""
-    Private m_Usuario As String = ""
-    Private m_Password As String = ""
-    Private m_ConnectionLifetime As String = "" 'Connection Lifetime
-    Public s_error As String
-
-    ' Singleton para conexión única
-    Private Shared _instance As MySQLconexion
-    Public Shared ReadOnly Property Instance As MySQLconexion
-        Get
-            If _instance Is Nothing Then
-                _instance = New MySQLconexion()
-            End If
-            Return _instance
-        End Get
-    End Property
-
-    ' Conectar a la base de datos
-    Public Function Connect() As MySqlConnection
-        ResetConnection() ' Reinicia la conexión si está cerrada o desechada
-
-        If LoadConfig("tsconfig.json") Then
-            Dim sCadenaConexion As String = $"Database={m_DataBase};Port={m_Port};Data Source={m_ServerName};Uid={m_Usuario};Pwd={m_Password};Connection Lifetime={If(String.IsNullOrEmpty(m_ConnectionLifetime), "300", m_ConnectionLifetime)};"
-            Try
-                If myConexion Is Nothing Then
-                    myConexion = New MySqlConnection(sCadenaConexion)
-                End If
-
-                If myConexion.State = ConnectionState.Closed Then
-                    myConexion.Open()
-                End If
-            Catch ex As MySqlException
-                s_error = $"Error de conexión: {ex.Message}"
-                Debug.Print(s_error)
-                Throw New Exception($"Error al conectar con la base de datos: {ex.Message}")
-            End Try
-        Else
-            Throw New Exception("No se pudo cargar la configuración de la base de datos.")
-        End If
-
-        Return myConexion
-    End Function
-
-    ' Desconectar de la base de datos
-    Public Function Disconnect() As MySqlConnection
-        Try
-            If myConexion IsNot Nothing AndAlso myConexion.State = ConnectionState.Open Then
-                myConexion.Close()
-            End If
-            myConexion?.Dispose()
-            myConexion = Nothing
-        Catch ex As MySqlException
-            LogError(ex)
-            s_error = $"Error de conexión: {ex.Message}"
-            Debug.Print(s_error)
-            Throw New Exception($"Error al conectar con la base de datos: {ex.Message}")
-        End Try
-        Return myConexion
-    End Function
-
-    ' Validar estado de conexión
-    Public Function IsConnected() As Boolean
-        Return myConexion IsNot Nothing AndAlso myConexion.State = ConnectionState.Open
-    End Function
-
-    ' Obtener errores
-    Public Function GetError() As String
-        Return s_error
-    End Function
-
-    ' Método para cargar configuración desde un archivo JSON
-    Private Function LoadConfig(filePath As String) As Boolean
-        Try
-            ' Obtener el directorio base de ejecución
-            Dim baseDirectory As String = AppDomain.CurrentDomain.BaseDirectory
-
-            ' Subir dos niveles para llegar a "bin"
-            Dim binDirectory As String = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName
-
-            ' Construir la ruta del archivo tsconfig.json
-            Dim iniDirectory As String = Path.Combine(binDirectory, "Ini")
-
-            Dim configPath As String = Path.Combine(iniDirectory, filePath)
-
-            If File.Exists(configPath) Then
-                Dim json As String = File.ReadAllText(configPath)
-                Debug.Print($"Contenido del archivo JSON: {json}")
-                Dim config As Dictionary(Of String, String) = JsonConvert.DeserializeObject(Of Dictionary(Of String, String))(json)
-
-                ' Validar que todas las claves estén presentes
-                If config.ContainsKey("DB_SERVER_MY") Then m_ServerName = config("DB_SERVER_MY")
-                If config.ContainsKey("DB_PORT_MY") Then m_Port = config("DB_PORT_MY")
-                If config.ContainsKey("DB_NAME_MY") Then m_DataBase = config("DB_NAME_MY")
-                If config.ContainsKey("DB_USER_MY") Then m_Usuario = config("DB_USER_MY")
-                If config.ContainsKey("DB_PASSWORD_MY") Then m_Password = config("DB_PASSWORD_MY")
-                If config.ContainsKey("Connection Lifetime") Then m_ConnectionLifetime = config("Connection Lifetime")
-
-                Debug.Print($"Configuración cargada: Server={m_ServerName}, Port={m_Port}, Database={m_DataBase}, User={m_Usuario}")
-
-                If String.IsNullOrEmpty(m_ServerName) OrElse String.IsNullOrEmpty(m_Port) OrElse
-                   String.IsNullOrEmpty(m_DataBase) OrElse String.IsNullOrEmpty(m_Usuario) OrElse
-                   String.IsNullOrEmpty(m_Password) Then
-                    Throw New Exception("La configuración de la base de datos está incompleta o inválida.")
-                End If
-                Return True
-            Else
-                s_error = $"Archivo de configuración no encontrado: {filePath}"
-                Debug.Print(s_error)
-                Return False
-            End If
-        Catch ex As Exception
-            s_error = $"Error al cargar configuración: {ex.Message}"
-            Debug.Print(s_error)
-            Return False
-        End Try
-    End Function
-
-    Public Sub ResetConnection()
-        If myConexion IsNot Nothing AndAlso (myConexion.State = ConnectionState.Closed OrElse myConexion.State = ConnectionState.Broken) Then
-            myConexion.Dispose()
-            myConexion = Nothing
-        End If
-    End Sub
-
-    ' Método para ejecutar consultas
-    Public Function ExecuteQuery(query As String, parameters As Dictionary(Of String, Object)) As DataTable
-        Dim table As New DataTable()
-        Try
-            Using connection = Connect()
-                If connection.State <> ConnectionState.Open Then
-                    Throw New Exception("La conexión con la base de datos no está abierta.")
-                End If
-                Using command As New MySqlCommand(query, connection)
-                    For Each param In parameters
-                        command.Parameters.AddWithValue($"@{param.Key}", If(param.Value, DBNull.Value))
-                    Next
-                    Using reader = command.ExecuteReader()
-                        table.Load(reader)
-                    End Using
-                End Using
-            End Using
-        Catch ex As Exception
-            LogError(ex)
-            Throw New Exception($"Error al ejecutar consulta: {ex.Message}")
-        End Try
-        Return table
-    End Function
-
-    ' Registrar errores
-    Private Sub LogError(ex As Exception)
-        s_error = ex.Message
-        Debug.Print($"Error: {ex.Message}")
-    End Sub
-End Class
-
-
-por favor modificar o integer a lo que ya se tiene
-Perfecto, ahora sí vamos a hacerlo bien hecho nivel producción y además te corrijo exactamente lo que está fallando en tu repo 👇
-🚨 1. ERROR REAL: @tqr
-expects parameter @tqr
-🔥 Diagnóstico exacto
-Tu SP espera:
-SQL
-@etqt
-Pero tu código VB original (o conversión) está usando:
-VB
-@tqr
-👉 Eso viene de tus archivos VB (BDPrenda.vb)
-✅ SOLUCIÓN DEFINITIVA
-Busca en TODO tu proyecto:
-
-@tqr
-y reemplaza por:
-
-@etqt
-🔍 Dónde está el error
-En tu conversión probablemente quedó algo así:
+MySQLconexion.cs
 C#
-cmd.Parameters.AddWithValue("@tqr", codigoBarra); // ❌
-✔ Debe quedar:
-C#
-cmd.Parameters.AddWithValue("@etqt", codigoBarra); // ✅
-❌ 2. ERROR: OnInsertadoOk(...);
-Eso viene del VB:
-VB
-RaiseEvent OnInsertadoOk(...)
-Pero en C# eso NO existe así.
-✅ SOLUCIÓN
-Define el evento:
-C#
-public event Action<Dictionary<string, object>> OnInsertadoOk;
-Y úsalo así:
-C#
-OnInsertadoOk?.Invoke(new Dictionary<string, object>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
+using System.IO;
+using MySql.Data.MySqlClient;
+
+namespace DS9908R_App
 {
-    { "op", codigoBarra.Substring(0,10) },
-    { "hoja_marcacion", nHoja }
-});
-🚀 3. CONVERSIÓN CORRECTA DE BDPrenda.vb → C#
-Te dejo la versión limpia, integrada con tu estructura (SybaseHelper)
-✅ BDPrenda.cs (FINAL PRODUCCIÓN)
-C#
-public class BDPrenda
-{
-    public (int codigo, string mensaje) GuardarPrenda(
-        string etqt,
-        string empresa,
-        string usr,
-        string rfid,
-        string nHoja)
+    public class MySQLconexion
     {
-        try
+        private MySqlConnection _connection;
+        private string _serverName = "";
+        private string _port = "";
+        private string _database = "";
+        private string _user = "";
+        private string _password = "";
+        private string _connectionLifetime = "300";
+
+        public string LastError { get; private set; }
+
+        public MySqlConnection Connect()
         {
-            using (var conn = SybaseHelper.GetConnection())
+            try
             {
-                conn.Open();
+                ResetConnection();
+                LoadConfig();
 
-                using (var cmd = conn.CreateCommand())
+                string connectionString =
+                    string.Format(
+                        "Database={0};Port={1};Data Source={2};Uid={3};Pwd={4};Connection Lifetime={5};",
+                        _database,
+                        _port,
+                        _serverName,
+                        _user,
+                        _password,
+                        string.IsNullOrWhiteSpace(_connectionLifetime) ? "300" : _connectionLifetime);
+
+                if (_connection == null)
                 {
-                    cmd.CommandText = "USP_SAL_EMB_CON_RFID";
-                    cmd.CommandType = CommandType.StoredProcedure;
+                    _connection = new MySqlConnection(connectionString);
+                }
 
-                    cmd.Parameters.Add(new AseParameter("@etqt", etqt));
-                    cmd.Parameters.Add(new AseParameter("@empresa", empresa));
-                    cmd.Parameters.Add(new AseParameter("@usr", usr));
-                    cmd.Parameters.Add(new AseParameter("@rfid", rfid ?? ""));
-                    cmd.Parameters.Add(new AseParameter("@nHoja", nHoja ?? ""));
+                if (_connection.State == ConnectionState.Closed)
+                {
+                    _connection.Open();
+                }
 
-                    using (var reader = cmd.ExecuteReader())
+                return _connection;
+            }
+            catch (Exception ex)
+            {
+                LastError = "Error al conectar MySQL: " + ex.Message;
+                LogError("Error al conectar MySQL", ex);
+                throw;
+            }
+        }
+
+        public void Disconnect()
+        {
+            try
+            {
+                if (_connection != null)
+                {
+                    if (_connection.State != ConnectionState.Closed)
                     {
-                        if (reader.Read())
-                        {
-                            int codigo = Convert.ToInt32(reader["codigo"]);
-                            string mensaje = reader["mensaje"].ToString();
+                        _connection.Close();
+                    }
+                    _connection.Dispose();
+                    _connection = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                LogError("Error al cerrar MySQL", ex);
+            }
+        }
 
-                            return (codigo, mensaje);
+        public bool IsConnected()
+        {
+            return _connection != null && _connection.State == ConnectionState.Open;
+        }
+
+        public string GetError()
+        {
+            return LastError ?? string.Empty;
+        }
+
+        public void ResetConnection()
+        {
+            if (_connection != null &&
+                (_connection.State == ConnectionState.Closed || _connection.State == ConnectionState.Broken))
+            {
+                _connection.Dispose();
+                _connection = null;
+            }
+        }
+
+        public DataTable ExecuteQuery(string query, Dictionary<string, object> parameters)
+        {
+            DataTable table = new DataTable();
+
+            using (MySqlConnection connection = Connect())
+            using (MySqlCommand command = new MySqlCommand(query, connection))
+            {
+                foreach (KeyValuePair<string, object> param in parameters)
+                {
+                    command.Parameters.AddWithValue("@" + param.Key, param.Value ?? DBNull.Value);
+                }
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    table.Load(reader);
+                }
+            }
+
+            return table;
+        }
+
+        private void LoadConfig()
+        {
+            Dictionary<string, string> config = DBConsultas.LoadJsonConfig("tsconfig.json");
+
+            _serverName = config.ContainsKey("DB_SERVER_MY") ? config["DB_SERVER_MY"] : "";
+            _port = config.ContainsKey("DB_PORT_MY") ? config["DB_PORT_MY"] : "";
+            _database = config.ContainsKey("DB_NAME_MY") ? config["DB_NAME_MY"] : "";
+            _user = config.ContainsKey("DB_USER_MY") ? config["DB_USER_MY"] : "";
+            _password = config.ContainsKey("DB_PASSWORD_MY") ? config["DB_PASSWORD_MY"] : "";
+            _connectionLifetime = config.ContainsKey("Connection Lifetime") ? config["Connection Lifetime"] : "300";
+
+            if (string.IsNullOrWhiteSpace(_serverName) ||
+                string.IsNullOrWhiteSpace(_port) ||
+                string.IsNullOrWhiteSpace(_database) ||
+                string.IsNullOrWhiteSpace(_user))
+            {
+                throw new Exception("La configuración de MySQL está incompleta.");
+            }
+        }
+
+        private void LogError(string message, Exception ex)
+        {
+            try
+            {
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "mysql_errors.log");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine + ex + Environment.NewLine;
+                File.AppendAllText(path, text);
+                Debug.WriteLine(text);
+            }
+            catch
+            {
+            }
+        }
+    }
+}
+BDPrenda.cs
+C#
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using Sybase.Data.AseClient;
+
+namespace DS9908R_App
+{
+    public class BDPrenda
+    {
+        private readonly Sybase _sybase = new Sybase();
+        public string ss_error = string.Empty;
+
+        public Tuple<int, string> SaveRFID(
+            string sCodBarra,
+            string sCompania,
+            string sCodTrabajador,
+            string sIDRfid,
+            string nHoja)
+        {
+            int li_return = -1;
+            string s_mensaje = string.Empty;
+            DataTable tabla = new DataTable();
+
+            try
+            {
+                if (sIDRfid == null) sIDRfid = string.Empty;
+                sIDRfid = sIDRfid.Trim().Replace(" ", "");
+                if (sIDRfid.Length > 24)
+                {
+                    sIDRfid = sIDRfid.Substring(sIDRfid.Length - 24);
+                }
+
+                using (AseConnection connectionAse = _sybase.Connect())
+                {
+                    if (connectionAse == null || connectionAse.State != ConnectionState.Open)
+                    {
+                        throw new Exception("Error en conexión con la base de datos Sybase.");
+                    }
+
+                    using (AseTransaction trans = connectionAse.BeginTransaction())
+                    {
+                        try
+                        {
+                            using (AseCommand command = new AseCommand("USP_SAL_EMB_CON_RFID", connectionAse, trans))
+                            {
+                                command.CommandType = CommandType.StoredProcedure;
+
+                                command.Parameters.Add(new AseParameter("@etqt", AseDbType.VarChar)).Value = sCodBarra;
+                                command.Parameters.Add(new AseParameter("@empresa", AseDbType.VarChar)).Value = sCompania;
+                                command.Parameters.Add(new AseParameter("@usr", AseDbType.VarChar)).Value = sCodTrabajador;
+                                command.Parameters.Add(new AseParameter("@rfid", AseDbType.VarChar)).Value = sIDRfid;
+                                command.Parameters.Add(new AseParameter("@nHoja", AseDbType.VarChar)).Value = nHoja ?? "";
+
+                                using (AseDataReader reader = command.ExecuteReader())
+                                {
+                                    tabla.Load(reader);
+                                }
+                            }
+
+                            trans.Commit();
+                        }
+                        catch
+                        {
+                            trans.Rollback();
+                            throw;
                         }
                     }
                 }
-            }
 
-            return (1, "Sin respuesta del SP");
-        }
-        catch (Exception ex)
-        {
-            return (99, "Error BD: " + ex.Message);
-        }
-    }
-}
-🧱 4. BDPrendaScm.cs (versión limpia)
-Si solo cambia conexión:
-C#
-public class BDPrendaScm
-{
-    public DataTable Consultar(string query)
-    {
-        using (var conn = SybaseHelper.GetConnectionScm())
-        {
-            conn.Open();
-
-            using (var cmd = conn.CreateCommand())
-            {
-                cmd.CommandText = query;
-
-                using (var da = new AseDataAdapter((AseCommand)cmd))
+                if (tabla.Rows.Count > 0)
                 {
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    return dt;
-                }
-            }
-        }
-    }
-}
-🔍 5. DBConsultarPrenda.cs
-C#
-public class DBConsultarPrenda
-{
-    public DataTable ObtenerPrenda(string etqt)
-    {
-        string sql = "SELECT TOP 1 * FROM ordenacabadostallasmov WHERE etiqueta = @etqt";
-
-        using (var conn = SybaseHelper.GetConnection())
-        {
-            conn.Open();
-
-            using (var cmd = new AseCommand(sql, conn))
-            {
-                cmd.Parameters.Add(new AseParameter("@etqt", etqt));
-
-                using (var da = new AseDataAdapter(cmd))
-                {
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    return dt;
-                }
-            }
-        }
-    }
-}
-🔍 6. DBConsultas.cs
-C#
-public class DBConsultas
-{
-    public DataTable Ejecutar(string sql)
-    {
-        using (var conn = SybaseHelper.GetConnection())
-        {
-            conn.Open();
-
-            using (var cmd = new AseCommand(sql, conn))
-            {
-                using (var da = new AseDataAdapter(cmd))
-                {
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    return dt;
-                }
-            }
-        }
-    }
-}
-⚙️ 7. VinculadorService.cs (FINAL)
-C#
-public class VinculadorService
-{
-    public event Action<Dictionary<string, object>> OnInsertadoOk;
-    public event Action<string> OnError;
-
-    private readonly BDPrenda bd = new BDPrenda();
-
-    public void Procesar(string codigoBarra, string rfid, string empresa, string usuario, string nHoja)
-    {
-        var resultado = bd.GuardarPrenda(codigoBarra, empresa, usuario, rfid, nHoja);
-
-        if (resultado.codigo == 0)
-        {
-            OnInsertadoOk?.Invoke(new Dictionary<string, object>
-            {
-                { "op", codigoBarra.Substring(0,10) },
-                { "hoja_marcacion", nHoja }
-            });
-        }
-        else
-        {
-            OnError?.Invoke(resultado.mensaje);
-        }
-    }
-}
-🧠 8. FLUJO COMPLETO FINAL (YA CORRECTO)
-RFID o código barras
-
-Scanner → VinculadorService → BDPrenda → SP
-                                   ↓
-                          (codigo, mensaje)
-                                   ↓
-             OK → OnInsertadoOk → alerta verde
-             ERROR → OnError → alerta roja
-🔥 9. CHECKLIST FINAL (IMPORTANTE)
-✔ Cambiar @tqr → @etqt
-✔ No usar ... en C#
-✔ Usar eventos correctamente
-✔ Leer codigo del SP
-✔ Manejar errores correctamente
-🚀 SI QUIERES EL SIGUIENTE NIVEL
-Te puedo dejar listo:
-🔄 reconexión automática Sybase
-🧠 cache local si falla red
-📊 logging de errores
-⚡ procesamiento en cola (para alto volumen RFID)
-Solo dime:
-👉 “modo industrial completo con resiliencia”
-
-Perfecto. Vamos a llevar tu lector a nivel industrial real: tolerante a fallos, rápido, con cola, reconexión y sin perder datos aunque Sybase falle.
-🧠 ARQUITECTURA FINAL
-
-Scanner (RFID / Código)
-        ↓
-Buffer en memoria (Queue)
-        ↓
-Worker en background
-        ↓
-BDPrenda (Sybase)
-        ↓
-SP
-        ↓
-UI (alertas + estado)
-👉 Si falla Sybase → NO pierdes lecturas
-🚀 1. COMPONENTES CLAVE
-✔ 1. Cola en memoria (buffer)
-✔ 2. Worker en segundo plano
-✔ 3. Retry automático
-✔ 4. Persistencia local (archivo JSON)
-✔ 5. Reconexión Sybase
-✔ 6. UI desacoplada
-📦 2. MODELO DE DATOS
-C#
-public class LecturaItem
-{
-    public string CodigoBarra { get; set; }
-    public string RFID { get; set; }
-    public string Empresa { get; set; }
-    public string Usuario { get; set; }
-    public string NHoja { get; set; }
-    public DateTime Fecha { get; set; } = DateTime.Now;
-
-    public int Intentos { get; set; } = 0;
-}
-🧱 3. COLA CENTRAL (BUFFER)
-C#
-using System.Collections.Concurrent;
-
-public class ColaLecturas
-{
-    private readonly ConcurrentQueue<LecturaItem> _cola = new();
-
-    public void Enqueue(LecturaItem item)
-    {
-        _cola.Enqueue(item);
-    }
-
-    public bool TryDequeue(out LecturaItem item)
-    {
-        return _cola.TryDequeue(out item);
-    }
-
-    public int Count => _cola.Count;
-}
-⚙️ 4. WORKER BACKGROUND (EL CORAZÓN)
-C#
-public class WorkerProcesador
-{
-    private readonly ColaLecturas _cola;
-    private readonly BDPrenda _bd;
-
-    public event Action<string> OnError;
-    public event Action<LecturaItem> OnOk;
-
-    private bool _activo = true;
-
-    public WorkerProcesador(ColaLecturas cola)
-    {
-        _cola = cola;
-        _bd = new BDPrenda();
-    }
-
-    public void Iniciar()
-    {
-        Task.Run(async () =>
-        {
-            while (_activo)
-            {
-                if (_cola.TryDequeue(out var item))
-                {
-                    ProcesarItem(item);
+                    li_return = Convert.ToInt32(tabla.Rows[0]["codigo"]);
+                    s_mensaje = tabla.Columns.Contains("mensaje")
+                        ? Convert.ToString(tabla.Rows[0]["mensaje"])
+                        : string.Empty;
                 }
                 else
                 {
-                    await Task.Delay(100); // no CPU al 100%
+                    li_return = -1;
+                    s_mensaje = "El procedimiento no devolvió datos.";
                 }
             }
-        });
-    }
-
-    private void ProcesarItem(LecturaItem item)
-    {
-        var resultado = _bd.GuardarPrenda(
-            item.CodigoBarra,
-            item.Empresa,
-            item.Usuario,
-            item.RFID,
-            item.NHoja);
-
-        if (resultado.codigo == 0)
-        {
-            OnOk?.Invoke(item);
-        }
-        else
-        {
-            item.Intentos++;
-
-            if (item.Intentos < 3)
+            catch (Exception ex)
             {
-                _cola.Enqueue(item); // retry
+                ss_error = ex.Message;
+                LogError("Error en SaveRFID", ex);
+                li_return = -1;
+                s_mensaje = ex.Message;
             }
-            else
+            finally
             {
-                GuardarOffline(item);
-                OnError?.Invoke(resultado.mensaje);
+                _sybase.Disconnect();
             }
+
+            return Tuple.Create(li_return, s_mensaje);
         }
-    }
-💾 5. MODO OFFLINE (CRÍTICO)
-C#
-private void GuardarOffline(LecturaItem item)
-{
-    string path = "offline_queue.json";
 
-    var lista = new List<LecturaItem>();
-
-    if (File.Exists(path))
-    {
-        var json = File.ReadAllText(path);
-        lista = JsonSerializer.Deserialize<List<LecturaItem>>(json);
-    }
-
-    lista.Add(item);
-
-    File.WriteAllText(path, JsonSerializer.Serialize(lista, new JsonSerializerOptions
-    {
-        WriteIndented = true
-    }));
-}
-🔄 6. REPROCESAR OFFLINE AL INICIAR
-C#
-public void ReprocesarOffline()
-{
-    string path = "offline_queue.json";
-
-    if (!File.Exists(path)) return;
-
-    var json = File.ReadAllText(path);
-    var lista = JsonSerializer.Deserialize<List<LecturaItem>>(json);
-
-    foreach (var item in lista)
-    {
-        _cola.Enqueue(item);
-    }
-
-    File.Delete(path);
-}
-🔌 7. RECONEXIÓN SYBASE AUTOMÁTICA
-En BDPrenda.cs:
-C#
-public (int codigo, string mensaje) GuardarPrenda(...)
-{
-    for (int i = 0; i < 3; i++)
-    {
-        try
+        public DataTable GetTimbradasByWorkerAndEtiqueta(string codTrabajador, string etiqueta)
         {
-            using (var conn = SybaseHelper.GetConnection())
+            DataTable dt = new DataTable();
+            const string sql =
+                "SELECT etiqueta, op, corte, sub_corte, cod_talla, id_talla, talla, fotocheck, linea, fecha, color, cod_comb, rfid, nhoja " +
+                "FROM tmp_etiq_timbradas " +
+                "WHERE fotocheck = @worker AND etiqueta = @etiqueta " +
+                "ORDER BY fecha DESC";
+
+            try
             {
-                conn.Open();
+                using (AseConnection conn = _sybase.Connect())
+                using (AseCommand cmd = new AseCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@worker", codTrabajador);
+                    cmd.Parameters.AddWithValue("@etiqueta", etiqueta);
 
-                // ejecutar SP
-                ...
+                    using (AseDataAdapter da = new AseDataAdapter(cmd))
+                    {
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en GetTimbradasByWorkerAndEtiqueta", ex);
+                throw;
+            }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return dt;
+        }
+
+        public int NuevoTimbrado(Dictionary<string, object> whereParameters)
+        {
+            int rowsAffected = 0;
+
+            try
+            {
+                List<string> whereClause = new List<string>();
+                foreach (KeyValuePair<string, object> item in whereParameters)
+                {
+                    whereClause.Add(item.Key + " = @" + item.Key);
+                }
+
+                string sql = "DELETE FROM tmp_etiq_timbradas";
+                if (whereClause.Count > 0)
+                {
+                    sql += " WHERE " + string.Join(" AND ", whereClause.ToArray());
+                }
+
+                using (AseConnection conn = _sybase.Connect())
+                using (AseCommand cmd = new AseCommand(sql, conn))
+                {
+                    foreach (KeyValuePair<string, object> item in whereParameters)
+                    {
+                        cmd.Parameters.AddWithValue("@" + item.Key, item.Value ?? DBNull.Value);
+                    }
+
+                    rowsAffected = cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en NuevoTimbrado", ex);
+                rowsAffected = -1;
+            }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return rowsAffected;
+        }
+
+        private void LogError(string message, Exception ex)
+        {
+            try
+            {
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bdprenda_errors.log");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine + ex + Environment.NewLine;
+                File.AppendAllText(path, text);
+            }
+            catch
+            {
             }
         }
-        catch
+    }
+}
+BDPrendaScm.cs
+C#
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using MySql.Data.MySqlClient;
+
+namespace DS9908R_App
+{
+    public class BDPrendaScm
+    {
+        private readonly MySQLconexion _conexion = new MySQLconexion();
+        public string ss_error = string.Empty;
+
+        public long Insert(Dictionary<string, object> columns)
         {
-            Thread.Sleep(500); // retry
+            long ll_return = 0;
+
+            try
+            {
+                using (MySqlConnection connection = _conexion.Connect())
+                {
+                    string tableName = "`prenda`";
+                    string columnNames = string.Join(", ", columns.Keys.Select(delegate (string key) { return "`" + key + "`"; }).ToArray());
+                    string parameterNames = string.Join(", ", columns.Keys.Select(delegate (string key) { return "@" + key; }).ToArray());
+
+                    string sql = "INSERT INTO " + tableName + " (" + columnNames + ") VALUES (" + parameterNames + ")";
+
+                    using (MySqlCommand comando = new MySqlCommand(sql, connection))
+                    {
+                        foreach (KeyValuePair<string, object> param in columns)
+                        {
+                            comando.Parameters.AddWithValue("@" + param.Key, param.Value ?? DBNull.Value);
+                        }
+
+                        ll_return = comando.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en Insert", ex);
+                ll_return = -1;
+            }
+            finally
+            {
+                _conexion.Disconnect();
+            }
+
+            return ll_return;
+        }
+
+        public string GetError()
+        {
+            return ss_error;
+        }
+
+        private void LogError(string message, Exception ex)
+        {
+            try
+            {
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bdprendascm_errors.log");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + " | " + message + Environment.NewLine + ex + Environment.NewLine;
+                File.AppendAllText(path, text);
+            }
+            catch
+            {
+            }
         }
     }
-
-    return (99, "No se pudo conectar a Sybase");
 }
-🖥️ 8. INTEGRACIÓN EN frmLector
-Inicialización
+DBConsultarPrenda.cs
 C#
-private ColaLecturas cola = new ColaLecturas();
-private WorkerProcesador worker;
+using System;
+using System.Data;
+using MySql.Data.MySqlClient;
 
-private void Form_Load(...)
+namespace DS9908R_App
 {
-    worker = new WorkerProcesador(cola);
-
-    worker.OnOk += Worker_OnOk;
-    worker.OnError += Worker_OnError;
-
-    worker.Iniciar();
-    worker.ReprocesarOffline();
-}
-Lectura RFID o código
-C#
-private void ProcesarLectura(string codigo, string rfid)
-{
-    var item = new LecturaItem
+    public class DBConsultarPrenda
     {
-        CodigoBarra = codigo,
-        RFID = rfid,
-        Empresa = empresa,
-        Usuario = usuario,
-        NHoja = nHoja
-    };
+        private readonly MySQLconexion _mysql = new MySQLconexion();
+        public string ss_error = string.Empty;
 
-    cola.Enqueue(item);
+        public DataTable BuscarPorCodigo(string codigo)
+        {
+            return Buscar("SELECT * FROM prenda WHERE id_barras = @valor ORDER BY fecha DESC", codigo);
+        }
 
-    SetEstado("En cola...", Color.LightBlue);
+        public DataTable BuscarPorRfid(string rfid)
+        {
+            return Buscar("SELECT * FROM prenda WHERE id_rfid = @valor ORDER BY fecha DESC", rfid);
+        }
+
+        public DataTable BuscarPorOp(string op)
+        {
+            return Buscar("SELECT * FROM prenda WHERE op = @valor ORDER BY fecha DESC", op);
+        }
+
+        private DataTable Buscar(string sql, string valor)
+        {
+            DataTable dt = new DataTable();
+
+            try
+            {
+                using (MySqlConnection conn = _mysql.Connect())
+                using (MySqlCommand cmd = new MySqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@valor", valor);
+
+                    using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                    {
+                        da.Fill(dt);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                throw;
+            }
+            finally
+            {
+                _mysql.Disconnect();
+            }
+
+            return dt;
+        }
+    }
 }
-OK
-C#
-private void Worker_OnOk(LecturaItem item)
-{
-    BeginInvoke(() =>
-    {
-        ReproducirOk();
-
-        AlertaManager.MostrarAlerta("Registrado OK", pinturaVerdeMedio, 1, 5);
-
-        LimpiarTodo();
-    });
-}
-ERROR
-C#
-private void Worker_OnError(string msg)
-{
-    BeginInvoke(() =>
-    {
-        ReproducirError();
-        MostrarAlerta(msg);
-    });
-}
-🔥 9. BENEFICIOS (ESTO YA ES INDUSTRIAL)
-✔ No se pierde data
-✔ Funciona sin red
-✔ Retry automático
-✔ No bloquea UI
-✔ Escalable (100+ lecturas/seg)
-✔ Control de errores real
-⚠️ 10. ERRORES QUE YA NO TENDRÁS
-❌ caída de Sybase → ya no bloquea
-❌ doble lectura → controlable
-❌ pérdida de RFID → persistido
-❌ UI congelada → async
-🚀 SIGUIENTE NIVEL (SI QUIERES)
-Te puedo llevar a:
-🔥 WebSocket realtime (monitor de lecturas)
-📊 dashboard producción
-🧠 detección de duplicados en memoria
-⚡ multihilo por lector
-Solo dime:
-👉 “modo fábrica completa”
-
+Lo crítico que cambia respecto a tu repo actual
+Tu BDPrenda.cs en el repo hoy llama el SP con parámetros incorrectos y no lee la tabla de retorno; por eso falla aunque la conexión a Sybase sí funcione. Esta versión ya usa @etqt, @empresa, @usr, @rfid, @nHoja y carga la fila codigo/mensaje con AseDataReader + DataTable, igual que el VB. �
+GitHub
+Pega luego tu VinculadorService.cs actual y te lo dejo amarrado exactamente a estas clases, con el flujo completo SaveRFID -> GetTimbradasByWorkerAndEtiqueta -> Insert -> alerta + DataGridView1.
