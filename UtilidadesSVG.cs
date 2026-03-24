@@ -16,82 +16,62 @@ namespace DS9908R_App
         {
             try
             {
-                // Obtener la ruta base de la aplicación
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return string.Empty;
+
                 string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
 
-                // Subir dos niveles para llegar a la carpeta "bin"
-                //string binDirectory = Directory.GetParent(Directory.GetParent(baseDirectory).FullName).FullName;
+                string parent1 = Directory.GetParent(baseDirectory) != null
+                    ? Directory.GetParent(baseDirectory).FullName
+                    : baseDirectory;
 
-                // Construir la ruta de la carpeta "Ini"
-                string iniDirectory = Path.Combine(baseDirectory, "Ini");
-
-                // Construir la ruta completa del archivo SVG
+                string iniDirectory = Path.Combine(parent1, "Ini");
                 string svgFilePath = Path.Combine(iniDirectory, fileName);
 
-                System.Diagnostics.Debug.WriteLine("fileName->"+ fileName + " base->" + baseDirectory + " inDirectory->"+ iniDirectory+ " svgFilePath->"+ svgFilePath);
+                System.Diagnostics.Debug.WriteLine(
+                    "fileName->" + fileName +
+                    " base->" + baseDirectory +
+                    " iniDirectory->" + iniDirectory +
+                    " svgFilePath->" + svgFilePath);
 
-                // Verificar si el archivo existe
                 if (File.Exists(svgFilePath))
                 {
                     return svgFilePath;
                 }
-                else
-                {
-                    Console.WriteLine($"⚠️ Archivo SVG no encontrado: {svgFilePath}");
-                    return string.Empty;
-                }
+
+                return string.Empty;
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine($"❌ Error obteniendo la ruta SVG: {ex.Message}");
                 return string.Empty;
             }
         }
 
         public void CargarIconoSVG(PictureBox pictureBox, string svgFileName)
         {
-            if (pictureBox == null)
-            {
-                MessageBox.Show("❌ El PictureBox es NULL", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            if (pictureBox == null || string.IsNullOrWhiteSpace(svgFileName))
                 return;
-            }
-
-            if (string.IsNullOrWhiteSpace(svgFileName))
-            {
-                MessageBox.Show("⚠️ El nombre del archivo SVG está vacío.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
 
             string svgPath = ObtenerRutaSVG(svgFileName);
 
-            if (string.IsNullOrEmpty(svgPath))
-            {
-                MessageBox.Show($"⚠️ Archivo SVG no encontrado: {svgFileName}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (string.IsNullOrWhiteSpace(svgPath) || !File.Exists(svgPath))
                 return;
-            }
 
             try
             {
                 SvgDocument svgDocument = SvgDocument.Open(svgPath);
                 if (svgDocument == null)
-                {
-                    MessageBox.Show("⚠️ No se pudo cargar el SVG.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
-                }
 
                 Bitmap bitmap = svgDocument.Draw();
                 if (bitmap == null)
-                {
-                    MessageBox.Show("⚠️ Error al convertir SVG a Bitmap.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
-                }
 
                 pictureBox.Image = bitmap;
                 pictureBox.SizeMode = PictureBoxSizeMode.Zoom;
             }
-            catch (Exception ex)
+            catch
             {
-                MessageBox.Show("❌ Error cargando SVG: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
