@@ -115,7 +115,7 @@ namespace DS9908R_App
                 EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
                 EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
                 EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
-                //EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+                EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
 
                 EstiloTextBox(CodBarras);
                 EstiloTextBox(TextBoxHM);
@@ -127,9 +127,7 @@ namespace DS9908R_App
 
                 // tabMenu
                 tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
-                tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-                tabMenu.Multiline = true;
-                tabMenu.DrawItem -= tabMenu_DrawItem;
+                tabMenu.SizeMode = TabSizeMode.Fixed;
                 tabMenu.DrawItem += tabMenu_DrawItem;
                 AdjustTabWidth(tabMenu);
 
@@ -194,59 +192,6 @@ namespace DS9908R_App
             if (tabVinculador != null) tabVinculador.Enabled = habilitar;
             if (tablaBuscarPrenda != null) tablaBuscarPrenda.Enabled = habilitar;
             if (tabHojaMarcacion != null) tabHojaMarcacion.Enabled = habilitar;
-        }
-
-        private void btnBuscarScanners_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                if (m_pCoreScanner == null)
-                {
-                    ActualizarEstadoConexion("CORESCANNER NULO", Color.Firebrick);
-                    MessageBox.Show("m_pCoreScanner está nulo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-
-                ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
-
-                if (!m_bScannerOpen)
-                {
-                    short[] types = new short[1];
-                    types[0] = 1;
-
-                    int status;
-                    m_pCoreScanner.Open(0, types, 1, out status);
-
-                    if (status != 0)
-                    {
-                        ActualizarEstadoConexion("ERROR OPEN: " + status, Color.Firebrick);
-                        return;
-                    }
-
-                    m_bScannerOpen = true;
-                }
-
-                RegistrarEventos();
-                CargarScannersEnComboDesdeSDK();
-
-                if (cmbScanners.Items.Count > 0)
-                {
-                    cmbScanners.SelectedIndex = 0;
-                    HabilitarTabsTrabajo(true);
-                    ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
-                }
-                else
-                {
-                    HabilitarTabsTrabajo(false);
-                    ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
-                }
-            }
-            catch (Exception ex)
-            {
-                HabilitarTabsTrabajo(false);
-                ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
-                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         private void cmbScanners_SelectedIndexChanged(object sender, EventArgs e)
@@ -889,14 +834,7 @@ namespace DS9908R_App
             if (tabCtrl == null || tabCtrl.TabCount == 0)
                 return;
 
-            int totalWidth = tabCtrl.Width;
-            int tabCount = tabCtrl.TabCount;
-
-            int tabWidth = totalWidth / tabCount;
-            if (tabWidth < 100)
-                tabWidth = 100;
-
-            tabCtrl.ItemSize = new Size(tabWidth, 40);
+            tabCtrl.ItemSize = new Size(150, 38);
         }
 
         private void dgvTagList_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
@@ -969,27 +907,16 @@ namespace DS9908R_App
 
         private void ActualizarTotalCount()
         {
-            int total = DataGridView1.AllowUserToAddRows
-        ? DataGridView1.Rows.Count - 1
-        : DataGridView1.Rows.Count;
+            int totalRegistros = DataGridView1.AllowUserToAddRows ? DataGridView1.Rows.Count - 1 : DataGridView1.Rows.Count;
 
-            if (total < 0)
-                total = 0;
+            if (totalRegistros < 0)
+                totalRegistros = 0;
 
-            lblTotalCount.Text = total.ToString();
+            lblTotalCount.Text = totalRegistros.ToString();
 
-            if (total >= MAX_CACHE_SIZE)
+            if (totalRegistros >= MAX_CACHE_SIZE)
             {
-                Console.WriteLine("🚨 Se alcanzaron 500 registros");
-
-                AlertaManager.MostrarAlerta(
-                    "Se alcanzaron 500 registros. Limpieza automática.",
-                    pinturaGrisOscuro,
-                    2,
-                    5
-                );
-
-                LimpiarTodo(); // 🔥 usa tu método existente
+                LimpiarTodo();
             }
         }
 
@@ -997,8 +924,9 @@ namespace DS9908R_App
         {
             if (_rfidLeidos.Count > MAX_CACHE_SIZE)
             {
-                Console.WriteLine("⚠️ Cache RFID lleno, limpiando...");
+                Console.WriteLine("⚠️ Caché superó 500 elementos, limpiando...");
                 _rfidLeidos.Clear();
+                Console.WriteLine("✅ Caché vaciada.");
             }
         }
 
@@ -1020,11 +948,13 @@ namespace DS9908R_App
             SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
-
-            ResaltarFilaInsertada(rowIndex);
+            SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+            SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
         }
 
         private void ResaltarFilaInsertada(int rowIndex)
@@ -1064,15 +994,16 @@ namespace DS9908R_App
         private void tabMenu_DrawItem(object sender, DrawItemEventArgs e)
         {
             TabControl tab = sender as TabControl;
+            if (tab == null) return;
+
             TabPage page = tab.TabPages[e.Index];
-
             Rectangle rect = e.Bounds;
-            bool isSelected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+            bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
-            Color bg = isSelected ? Color.FromArgb(0, 120, 215) : Color.LightGray;
-            Color fg = isSelected ? Color.White : Color.Black;
+            Color backColor = selected ? Color.FromArgb(0, 120, 215) : Color.FromArgb(235, 235, 235);
+            Color textColor = selected ? Color.White : Color.FromArgb(45, 45, 48);
 
-            using (SolidBrush brush = new SolidBrush(bg))
+            using (SolidBrush brush = new SolidBrush(backColor))
             {
                 e.Graphics.FillRectangle(brush, rect);
             }
@@ -1080,9 +1011,9 @@ namespace DS9908R_App
             TextRenderer.DrawText(
                 e.Graphics,
                 page.Text,
-                new Font("Segoe UI", 10, FontStyle.Bold),
+                new Font("Segoe UI", 10F, FontStyle.Bold),
                 rect,
-                fg,
+                textColor,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
             );
         }
@@ -1109,6 +1040,64 @@ namespace DS9908R_App
             if (MsnVincular != null)
             {
                 MsnVincular.ForeColor = color;
+            }
+        }
+
+        private void frmLector_Resize(object sender, EventArgs e)
+        {
+            AdjustTabWidth(tabMenu);
+        }
+
+        private void btnBuscarScanners_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (m_pCoreScanner == null)
+                {
+                    ActualizarEstadoConexion("CORESCANNER NULO", Color.Firebrick);
+                    MessageBox.Show("m_pCoreScanner está nulo.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                ActualizarEstadoConexion("BUSCANDO...", Color.DarkOrange);
+
+                if (!m_bScannerOpen)
+                {
+                    short[] types = new short[1];
+                    types[0] = 1;
+
+                    int status;
+                    m_pCoreScanner.Open(0, types, 1, out status);
+
+                    if (status != 0)
+                    {
+                        ActualizarEstadoConexion("ERROR OPEN: " + status, Color.Firebrick);
+                        return;
+                    }
+
+                    m_bScannerOpen = true;
+                }
+
+                RegistrarEventos();
+                CargarScannersEnComboDesdeSDK();
+
+                if (cmbScanners.Items.Count > 0)
+                {
+                    cmbScanners.SelectedIndex = 0;
+                    HabilitarTabsTrabajo(true);
+                    ActualizarEstadoConexion("SCANNER DETECTADO", Color.SeaGreen);
+                }
+                else
+                {
+                    HabilitarTabsTrabajo(false);
+                    ActualizarEstadoConexion("SIN SCANNERS", Color.Firebrick);
+                }
+            }
+            catch (Exception ex)
+            {
+                HabilitarTabsTrabajo(false);
+                ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
