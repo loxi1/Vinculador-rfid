@@ -1,122 +1,151 @@
-Ya vi las dos causas.
-El primer error no es porque el botón “no exista” visualmente, sino porque en tu diseñador btnBuscarScanners está declarado como variable local dentro de InitializeComponent():
-C#
-System.Windows.Forms.Button btnBuscarScanners;
-y luego se instancia también como local, no como campo this.btnBuscarScanners. Por eso frmLector.cs no puede verlo fuera del diseñador. En el mismo archivo sí aparecen cmbScanners, lblEstadoConexion, etc. como campos del formulario, pero btnBuscarScanners no. �
+Sí, puedes quitar ToolStripStatusLabel y usar MsnVincular como estado principal. De hecho, con tu diseño nuevo tiene más sentido: ya moviste la conexión a un panel y el tab arriba, así que una barra inferior tipo status strip ya no es obligatoria. Revisé el repo, pero formLector.Designer.txt y frmLector.cs están prácticamente en una sola línea en el raw, así que no se pueden inspeccionar bien por bloques; aun así, por lo que describes, la mejor salida es no recrear ToolStripStatusLabel y centralizar el estado en un solo control visible. �
 GitHub +1
-1) Cómo corregir btnBuscarScanners
-En formLector.Designer.cs o formLector.Designer.txt
-Busca esto al inicio de InitializeComponent():
+Te recomiendo esto:
+Opción recomendada
+Usa MsnVincular para:
+mensajes de conexión
+errores de lectura
+estado de guardado
+limpieza automática
+RFID repetido o múltiples RFID
+Y deja el panel de conexión solo para:
+btnBuscarScanners
+cmbScanners
+un label visual de estado, por ejemplo lblEstadoConexion
+Así separas:
+estado técnico de conexión → lblEstadoConexion
+mensajes operativos del usuario → MsnVincular
+Qué cambiar en frmLector.cs
+1) Reemplaza toolStripStatusLbl.Text = ...
+Por esto:
 C#
-System.Windows.Forms.Button btnBuscarScanners;
-y elimínalo.
-Luego busca esta línea:
-C#
-btnBuscarScanners = new System.Windows.Forms.Button();
-y cámbiala por:
-C#
-this.btnBuscarScanners = new System.Windows.Forms.Button();
-Después, todas las líneas de configuración del botón déjalas con this.:
-C#
-this.btnBuscarScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-this.btnBuscarScanners.BackColor = System.Drawing.Color.WhiteSmoke;
-this.btnBuscarScanners.Location = new System.Drawing.Point(45, 39);
-this.btnBuscarScanners.Name = "btnBuscarScanners";
-this.btnBuscarScanners.Size = new System.Drawing.Size(120, 21);
-this.btnBuscarScanners.TabIndex = 67;
-this.btnBuscarScanners.Text = "Buscar";
-this.btnBuscarScanners.UseVisualStyleBackColor = false;
-this.btnBuscarScanners.Click += new System.EventHandler(this.btnBuscarScanners_Click);
-Y al final del diseñador, en la zona de campos, agrega:
-C#
-private System.Windows.Forms.Button btnBuscarScanners;
-Con eso ya podrás usarlo desde frmLector.cs. La evidencia de que hoy está como variable local se ve en el diseñador del repo. �
-GitHub +1
-2) Cómo corregir el CS0029
-Ese error sigue siendo por esto:
-C#
-int rowIndex = DataGridView1.Rows.Insert(0);
-Rows.Insert(0) en WinForms devuelve void, no un índice. Por eso no se puede asignar a int.
-Déjalo así:
-C#
-DataGridView1.Rows.Insert(0);
-int rowIndex = 0;
-Tu método completo debe quedar así:
-C#
-private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+private void SetMensajeVincular(string mensaje)
 {
-    if (DataGridView1 == null || data == null)
+    if (MsnVincular == null)
         return;
 
-    if (DataGridView1.InvokeRequired)
+    if (MsnVincular.InvokeRequired)
     {
-        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        MsnVincular.Invoke(new Action<string>(SetMensajeVincular), mensaje);
         return;
     }
 
-    DataGridView1.Rows.Insert(0);
-    int rowIndex = 0;
-
-    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+    MsnVincular.Text = mensaje ?? "";
 }
-3) Tu lógica de 500 registros
-Lo que pegaste de frmLecto.txt confirma que el comportamiento correcto es:
-CantidadFilas() actualiza lblTotalCount
-si llega a MAX_CACHE_SIZE, llama LimpiarTodo()
-LimpiarTodo() simula BtnClear_Click y BtnLimpiarRFID_Click
-también existe CheckAndClearCache() para vaciar caché RFID cuando supera 500
-Eso está bien replicarlo así en C#. �
-GitHub
-Te sugiero dejar esto en C#:
+2) Crea un helper de estado visual
+Así ya no dependes del ToolStripStatusLabel:
 C#
-private const int MAX_CACHE_SIZE = 500;
-
-private void CheckAndClearCache()
+private void SetEstadoGeneral(string mensaje, Color color)
 {
-    if (_rfidLeidos.Count > MAX_CACHE_SIZE)
+    SetMensajeVincular(mensaje);
+
+    if (MsnVincular != null)
     {
-        Console.WriteLine("⚠️ Caché superó 500 elementos, limpiando...");
-        _rfidLeidos.Clear();
-        Console.WriteLine("✅ Caché vaciada.");
+        MsnVincular.ForeColor = color;
     }
 }
-
-private void ActualizarTotalCount()
+3) Cambia SetEstado(...)
+Si hoy tu método usa toolStripStatusLbl, reemplázalo por:
+C#
+private void SetEstado(string mensaje, Color color)
 {
-    int totalRegistros = DataGridView1.AllowUserToAddRows
-        ? DataGridView1.Rows.Count - 1
-        : DataGridView1.Rows.Count;
-
-    if (totalRegistros < 0)
-        totalRegistros = 0;
-
-    lblTotalCount.Text = totalRegistros.ToString();
-
-    if (totalRegistros >= MAX_CACHE_SIZE)
-    {
-        LimpiarTodo();
-    }
+    SetEstadoGeneral(mensaje, color);
 }
-Y llama CheckAndClearCache(); después de guardar correctamente un RFID en caché.
-4) Resumen exacto de lo que debes tocar
-Corrige el diseñador para que btnBuscarScanners sea campo del formulario y no variable local. Eso está mal hoy en tu archivo. �
-GitHub +1
-Luego cambia cualquier línea como:
+Dónde se rompe hoy
+Seguramente tienes varias líneas así:
 C#
-int rowIndex = DataGridView1.Rows.Insert(0);
-por:
+toolStripStatusLbl.Text = "..."
+toolStripStatusLbl.BackColor = ...
+Debes cambiarlas por:
 C#
-DataGridView1.Rows.Insert(0);
-int rowIndex = 0;
-Con eso deberías eliminar ambos errores de compilación.
-Si quieres, en el siguiente mensaje te dejo exactamente el bloque del diseñador corregido para btnBuscarScanners listo para copiar y pegar.
+SetEstado("...", Color.Khaki);
+o si solo quieres texto:
+C#
+SetMensajeVincular("...");
+Ejemplos concretos
+En Vinculador_OnError
+C#
+private void Vinculador_OnError(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
+        return;
+    }
+
+    SetEstado(msg, Color.Firebrick);
+    ReproducirError();
+
+    AlertaManager.MostrarAlerta(msg, pinturaRoja, 3, 5);
+
+    CodBarras.Clear();
+    CodBarras.Focus();
+}
+En Vinculador_OnInfo
+C#
+private void Vinculador_OnInfo(string msg)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
+        return;
+    }
+
+    SetEstado(msg, Color.DarkOrange);
+}
+En Vinculador_OnInsertadoOk
+C#
+private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
+{
+    if (InvokeRequired)
+    {
+        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
+        return;
+    }
+
+    if (data != null)
+    {
+        if (data.ContainsKey("op"))
+            TextBoxOP.Text = Convert.ToString(data["op"]);
+
+        if (data.ContainsKey("hoja_marcacion"))
+            TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
+    }
+
+    SetEstado("Prenda registrada exitosamente.", Color.Green);
+    LlenarPrimeraFilaDataGridView1(data);
+    ActualizarTotalCount();
+
+    ReproducirOk();
+    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5);
+
+    CodBarras.Clear();
+    _ultimoCodigoBarra = "";
+    _ultimoRfid = "";
+    _rfidPendientes.Clear();
+    dgvTagList.Rows.Clear();
+    cantidadRFID.Text = "0";
+    CodBarras.Focus();
+}
+Para la conexión del scanner
+Mantén lblEstadoConexion en el panel superior, por ejemplo:
+C#
+private void ActualizarEstadoConexion(string texto, Color color)
+{
+    lblEstadoConexion.Text = texto;
+    lblEstadoConexion.BackColor = color;
+    lblEstadoConexion.ForeColor = Color.White;
+    lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
+
+    SetMensajeVincular(texto);
+}
+Así no pierdes feedback.
+Mi recomendación final
+No vuelvas a crear ToolStripStatusLabel.
+Con tu diseño nuevo, queda mejor así:
+arriba izquierda: panel de conexión con btnBuscarScanners, cmbScanners, lblEstadoConexion
+arriba o debajo del panel: MsnVincular como mensaje principal del sistema
+tabs arriba
+grillas abajo
+Eso te deja una UI más limpia y más parecida a un sistema productivo moderno.
+Si quieres, te doy el bloque exacto para buscar y reemplazar todas las referencias a toolStripStatusLbl dentro de frmLector.cs.
