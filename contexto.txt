@@ -1,151 +1,108 @@
-Sí, puedes quitar ToolStripStatusLabel y usar MsnVincular como estado principal. De hecho, con tu diseño nuevo tiene más sentido: ya moviste la conexión a un panel y el tab arriba, así que una barra inferior tipo status strip ya no es obligatoria. Revisé el repo, pero formLector.Designer.txt y frmLector.cs están prácticamente en una sola línea en el raw, así que no se pueden inspeccionar bien por bloques; aun así, por lo que describes, la mejor salida es no recrear ToolStripStatusLabel y centralizar el estado en un solo control visible. �
-GitHub +1
-Te recomiendo esto:
-Opción recomendada
-Usa MsnVincular para:
-mensajes de conexión
-errores de lectura
-estado de guardado
-limpieza automática
-RFID repetido o múltiples RFID
-Y deja el panel de conexión solo para:
-btnBuscarScanners
-cmbScanners
-un label visual de estado, por ejemplo lblEstadoConexion
-Así separas:
-estado técnico de conexión → lblEstadoConexion
-mensajes operativos del usuario → MsnVincular
-Qué cambiar en frmLector.cs
-1) Reemplaza toolStripStatusLbl.Text = ...
-Por esto:
+Para tabMenu, estas son las mejoras que más valen la pena en WinForms:
+1. Pintado personalizado
+Hazlo OwnerDrawFixed para que deje de verse tan clásico.
 C#
-private void SetMensajeVincular(string mensaje)
+tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
+tabMenu.SizeMode = TabSizeMode.Fixed;
+tabMenu.DrawItem += TabMenu_DrawItem;
+C#
+private void TabMenu_DrawItem(object sender, DrawItemEventArgs e)
 {
-    if (MsnVincular == null)
+    TabControl tab = sender as TabControl;
+    if (tab == null) return;
+
+    TabPage page = tab.TabPages[e.Index];
+    Rectangle rect = e.Bounds;
+    bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
+
+    Color backColor = selected ? Color.FromArgb(0, 120, 215) : Color.FromArgb(235, 235, 235);
+    Color textColor = selected ? Color.White : Color.FromArgb(45, 45, 48);
+
+    using (SolidBrush brush = new SolidBrush(backColor))
+    {
+        e.Graphics.FillRectangle(brush, rect);
+    }
+
+    TextRenderer.DrawText(
+        e.Graphics,
+        page.Text,
+        new Font("Segoe UI", 10F, FontStyle.Bold),
+        rect,
+        textColor,
+        TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
+    );
+}
+2. Ancho uniforme de pestañas
+Para que no salgan las flechas raras y se vea parejo.
+C#
+private void AdjustTabWidth(TabControl tabCtrl)
+{
+    if (tabCtrl == null || tabCtrl.TabCount == 0)
         return;
 
-    if (MsnVincular.InvokeRequired)
-    {
-        MsnVincular.Invoke(new Action<string>(SetMensajeVincular), mensaje);
-        return;
-    }
-
-    MsnVincular.Text = mensaje ?? "";
+    tabCtrl.ItemSize = new Size(150, 38);
 }
-2) Crea un helper de estado visual
-Así ya no dependes del ToolStripStatusLabel:
+Y en Load:
 C#
-private void SetEstadoGeneral(string mensaje, Color color)
+AdjustTabWidth(tabMenu);
+3. Evitar estilo viejo del sistema
+Ponle una fuente moderna y alto fijo.
+C#
+tabMenu.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+4. Quitar apariencia recargada
+En cada TabPage pon un fondo claro, por ejemplo:
+C#
+tabVinculador.BackColor = Color.White;
+tabConexion.BackColor = Color.White;
+tabConsultar.BackColor = Color.White;
+tabHojaMarcacion.BackColor = Color.White;
+5. Recalcular al redimensionar
+Si cambias tamaño de ventana:
+C#
+private void frmLector_Resize(object sender, EventArgs e)
 {
-    SetMensajeVincular(mensaje);
-
-    if (MsnVincular != null)
-    {
-        MsnVincular.ForeColor = color;
-    }
+    AdjustTabWidth(tabMenu);
 }
-3) Cambia SetEstado(...)
-Si hoy tu método usa toolStripStatusLbl, reemplázalo por:
+6. Deshabilitar tabs de trabajo hasta conectar
+Esto ya va muy bien con tu flujo.
 C#
-private void SetEstado(string mensaje, Color color)
+private void HabilitarTabsTrabajo(bool habilitar)
 {
-    SetEstadoGeneral(mensaje, color);
+    if (tabVinculador != null) tabVinculador.Enabled = habilitar;
+    if (tabConsultar != null) tabConsultar.Enabled = habilitar;
+    if (tabHojaMarcacion != null) tabHojaMarcacion.Enabled = habilitar;
 }
-Dónde se rompe hoy
-Seguramente tienes varias líneas así:
+Así tabConexion queda activo siempre y los demás solo si hay conexión.
+7. Marcar visualmente el tab activo
+Ya con DrawItem, pero puedes hacerlo más elegante:
+azul para activo
+gris claro para inactivos
+texto blanco activo
+texto negro/gris oscuro inactivo
+Eso ya te lo cubre el DrawItem.
+8. Aumentar área útil
+Si el header ocupa mucho, puedes bajar un poco el alto:
 C#
-toolStripStatusLbl.Text = "..."
-toolStripStatusLbl.BackColor = ...
-Debes cambiarlas por:
+tabMenu.ItemSize = new Size(150, 34);
+9. Pestañas con nombres cortos
+Para que no salgan flechas:
+Conexión
+Vincular
+Consultar
+Hoja
+Si usas textos muy largos, WinForms se deforma más.
+10. Mejor alternativa si quieres algo más pro
+Si quieres que se vea como un sistema moderno de verdad, lo mejor ya no sería TabControl nativo, sino:
+un Panel superior
+botones estilizados como tabs
+y mostrar/ocultar paneles
+Pero si quieres mantener TabControl, con OwnerDrawFixed ya mejora bastante.
+Configuración mínima recomendada para tu tabMenu
 C#
-SetEstado("...", Color.Khaki);
-o si solo quieres texto:
-C#
-SetMensajeVincular("...");
-Ejemplos concretos
-En Vinculador_OnError
-C#
-private void Vinculador_OnError(string msg)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(Vinculador_OnError), msg);
-        return;
-    }
-
-    SetEstado(msg, Color.Firebrick);
-    ReproducirError();
-
-    AlertaManager.MostrarAlerta(msg, pinturaRoja, 3, 5);
-
-    CodBarras.Clear();
-    CodBarras.Focus();
-}
-En Vinculador_OnInfo
-C#
-private void Vinculador_OnInfo(string msg)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<string>(Vinculador_OnInfo), msg);
-        return;
-    }
-
-    SetEstado(msg, Color.DarkOrange);
-}
-En Vinculador_OnInsertadoOk
-C#
-private void Vinculador_OnInsertadoOk(Dictionary<string, object> data)
-{
-    if (InvokeRequired)
-    {
-        BeginInvoke(new Action<Dictionary<string, object>>(Vinculador_OnInsertadoOk), data);
-        return;
-    }
-
-    if (data != null)
-    {
-        if (data.ContainsKey("op"))
-            TextBoxOP.Text = Convert.ToString(data["op"]);
-
-        if (data.ContainsKey("hoja_marcacion"))
-            TextBoxHM.Text = Convert.ToString(data["hoja_marcacion"]);
-    }
-
-    SetEstado("Prenda registrada exitosamente.", Color.Green);
-    LlenarPrimeraFilaDataGridView1(data);
-    ActualizarTotalCount();
-
-    ReproducirOk();
-    AlertaManager.MostrarAlerta("Registrado Ok", pinturaVerde, 1, 5);
-
-    CodBarras.Clear();
-    _ultimoCodigoBarra = "";
-    _ultimoRfid = "";
-    _rfidPendientes.Clear();
-    dgvTagList.Rows.Clear();
-    cantidadRFID.Text = "0";
-    CodBarras.Focus();
-}
-Para la conexión del scanner
-Mantén lblEstadoConexion en el panel superior, por ejemplo:
-C#
-private void ActualizarEstadoConexion(string texto, Color color)
-{
-    lblEstadoConexion.Text = texto;
-    lblEstadoConexion.BackColor = color;
-    lblEstadoConexion.ForeColor = Color.White;
-    lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
-
-    SetMensajeVincular(texto);
-}
-Así no pierdes feedback.
-Mi recomendación final
-No vuelvas a crear ToolStripStatusLabel.
-Con tu diseño nuevo, queda mejor así:
-arriba izquierda: panel de conexión con btnBuscarScanners, cmbScanners, lblEstadoConexion
-arriba o debajo del panel: MsnVincular como mensaje principal del sistema
-tabs arriba
-grillas abajo
-Eso te deja una UI más limpia y más parecida a un sistema productivo moderno.
-Si quieres, te doy el bloque exacto para buscar y reemplazar todas las referencias a toolStripStatusLbl dentro de frmLector.cs.
+tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
+tabMenu.SizeMode = TabSizeMode.Fixed;
+tabMenu.Multiline = false;
+tabMenu.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+AdjustTabWidth(tabMenu);
+tabMenu.DrawItem += TabMenu_DrawItem;
+Si quieres, te dejo un bloque completo de inicialización de tabMenu ya listo para pegar en frmLector_Load.
