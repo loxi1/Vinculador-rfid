@@ -1,2 +1,2 @@
 Porque al cargar la pagina se ve este vista previa que parece que al cargar rediseña y se demora te dejo la url->https://i.ibb.co/m5cdVm3L/Screenshot-6.png
-como harias me recomiednas no redimensionar en el _load mas bien hacer el diseño en con la herramienta para hacer el estilo de cada elemento?
+como harias me recomiednas no redimensionar en el _load mas bien hacer el diseño en con la herramienta para hacer el estilo de cada elemento o se necesita un preload?
