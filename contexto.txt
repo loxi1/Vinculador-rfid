@@ -1,3 +1,29 @@
+            My.Application.Info.Version.Revision
+        ' Configurar el TabControl para dibujar las pestañas con fuente personalizada
+        Me.tabControl.DrawMode = TabDrawMode.OwnerDrawFixed
+        AddHandler Me.tabControl.DrawItem, AddressOf TabControl_DrawItem
+
+        ' Ajustar automáticamente el tamaño de las pestañas según el texto
+        Me.tabControl.SizeMode = TabSizeMode.Fixed
+        AdjustTabWidth()
+
+        Private Sub AdjustTabWidth()
+        ' Ajustar el ancho de cada pestaña basado en el texto
+        Using g As Graphics = Me.tabControl.CreateGraphics()
+            Dim font As New Font("Microsoft Sans Serif", 15.0F, FontStyle.Regular)
+            Dim maxTabWidth As Integer = 0
+
+            For i As Integer = 0 To Me.tabControl.TabPages.Count - 1
+                ' Medir el ancho del texto de la pestaña
+                Dim tabTextSize As SizeF = g.MeasureString(Me.tabControl.TabPages(i).Text, font)
+                maxTabWidth = Math.Max(maxTabWidth, CInt(tabTextSize.Width) + 20) ' Margen adicional
+            Next
+
+            ' Ajustar el ancho de las pestañas
+            Me.tabControl.ItemSize = New Size(maxTabWidth, Me.tabControl.ItemSize.Height)
+        End Using
+    End Sub
+    
 Sí, eso suena a un comportamiento típico del TabControl de WinForms: cuando no alcanza el ancho, aparecen las flechas de navegación y al seleccionar el último tab, el control desplaza la tira de pestañas, por eso el primero queda “oculto” a la izquierda.
 Lo más probable es que tu tabMenu esté funcionando así por tamaño disponible, no porque el tab se haya roto.
 Prueba estas revisiones en formLector.Designer o desde el diseñador visual:

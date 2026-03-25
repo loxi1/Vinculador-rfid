@@ -127,8 +127,8 @@ namespace DS9908R_App
 
                 // tabMenu
                 tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
-                tabMenu.SizeMode = TabSizeMode.Fixed;
-                tabMenu.Multiline = false;
+                tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
+                tabMenu.Multiline = true;
                 tabMenu.DrawItem -= tabMenu_DrawItem;
                 tabMenu.DrawItem += tabMenu_DrawItem;
                 AdjustTabWidth(tabMenu);
