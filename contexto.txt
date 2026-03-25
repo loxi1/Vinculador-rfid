@@ -1,1 +1,183 @@
-Por favor mejorar un poco el diseño primero la etiqueta codBarras debe ser mas grande se debe visualizar desde casi 1m luego los botones Nuevo Timbrado y Limpiar tienes que aumentar el tamaño la cantida de rfi contado tambien tienes que aumentar la fuente, luego el dgvTagList se confunde si el rfid es titulo o detalle por favor distinguir los colores, en la griflla por favor se debe ver en toda la pantalla con respecto a los colores por favor saca los colores que ya tenia porque ya esta aprobado -> esta es la imagen: https://i.ibb.co/BH66bk7B/vinculador-prendas-Cofaco.png no se visualiza bien el boton: btnVerConsolidado y tiene que tener funcionalida como lo esta en frmLecto.txt 
+Sí. La mejora más importante aquí no es cambiar colores, sino jerarquía visual: que CodBarras, el contador RFID y los botones principales se lean a distancia, y que dgvTagList parezca claramente una tabla con encabezado y no una lista ambigua. En tu flujo original también existe btnVerConsolidado, así que conviene dejarlo visible y con su evento conectado como en frmLecto.txt. �
+GitHub +1
+Te dejo un ajuste directo para frmLector.cs usando tus nombres reales.
+C#
+private void AplicarDisenoOperativo()
+{
+    // ===== CodBarras: visible a distancia =====
+    CodBarras.Font = new Font("Segoe UI", 28F, FontStyle.Bold);
+    CodBarras.Height = 58;
+    CodBarras.BackColor = Color.White;
+    CodBarras.ForeColor = pinturaNegra;
+    CodBarras.BorderStyle = BorderStyle.FixedSingle;
+    CodBarras.TextAlign = HorizontalAlignment.Center;
+
+    // ===== Mensaje principal =====
+    MsnVincular.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+    MsnVincular.ForeColor = pinturaNegra;
+    MsnVincular.BackColor = Color.Transparent;
+    MsnVincular.TextAlign = ContentAlignment.MiddleLeft;
+
+    // ===== Contadores grandes =====
+    cantidadRFID.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
+    cantidadRFID.ForeColor = pinturaRojoIndio;
+    cantidadRFID.TextAlign = ContentAlignment.MiddleCenter;
+
+    lblTotalCount.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
+    lblTotalCount.ForeColor = pinturaVerdeOscuro;
+    lblTotalCount.TextAlign = ContentAlignment.MiddleCenter;
+
+    // ===== OP / HM =====
+    TextBoxOP.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+    TextBoxHM.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+    TextBoxOP.Height = 42;
+    TextBoxHM.Height = 42;
+
+    // ===== Botones grandes =====
+    AplicarBotonGrande(btnClear);
+    AplicarBotonGrande(btnLimpiarRFID);
+    AplicarBotonGrande(btnVerConsolidado);
+    AplicarBotonGrande(BtnBuscarHM);
+    AplicarBotonGrande(BtnLimpiarHM);
+    AplicarBotonGrande(btnBuscarScanners);
+
+    // ===== Combo scanner =====
+    cmbScanners.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+    cmbScanners.Height = 40;
+
+    // ===== Grilla RFID =====
+    MejorarGridRFID();
+
+    // ===== Grilla principal =====
+    MejorarGridPrincipal();
+}
+
+private void AplicarBotonGrande(Button btn)
+{
+    if (btn == null) return;
+
+    btn.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+    btn.Height = 52;
+    btn.FlatStyle = FlatStyle.Flat;
+    btn.FlatAppearance.BorderSize = 0;
+    btn.Cursor = Cursors.Hand;
+    btn.TextImageRelation = TextImageRelation.ImageBeforeText;
+    btn.Padding = new Padding(10, 0, 10, 0);
+}
+
+private void MejorarGridRFID()
+{
+    dgvTagList.BackgroundColor = pinturaBlanca;
+    dgvTagList.BorderStyle = BorderStyle.None;
+    dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+    dgvTagList.GridColor = pinturaGris;
+    dgvTagList.RowHeadersVisible = false;
+    dgvTagList.EnableHeadersVisualStyles = false;
+    dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+    dgvTagList.MultiSelect = false;
+    dgvTagList.AllowUserToAddRows = false;
+    dgvTagList.AllowUserToDeleteRows = false;
+    dgvTagList.AllowUserToResizeRows = false;
+    dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+    dgvTagList.Dock = DockStyle.Fill;
+
+    dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = pinturaGrisOscuro;
+    dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
+    dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
+    dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+    dgvTagList.ColumnHeadersHeight = 42;
+    dgvTagList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+
+    dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
+    dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
+    dgvTagList.DefaultCellStyle.Font = new Font("Consolas", 15F, FontStyle.Bold);
+    dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+    dgvTagList.DefaultCellStyle.SelectionBackColor = pinturaAzulClaro;
+    dgvTagList.DefaultCellStyle.SelectionForeColor = pinturaNegra;
+
+    dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
+    dgvTagList.RowTemplate.Height = 40;
+
+    if (dgvTagList.Columns.Contains("RFID"))
+    {
+        dgvTagList.Columns["RFID"].HeaderText = "RFID LEÍDO";
+    }
+
+    if (dgvTagList.Columns.Contains("clnTID"))
+    {
+        dgvTagList.Columns["clnTID"].Visible = false;
+    }
+}
+
+private void MejorarGridPrincipal()
+{
+    DataGridView1.BackgroundColor = pinturaBlanca;
+    DataGridView1.BorderStyle = BorderStyle.None;
+    DataGridView1.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+    DataGridView1.GridColor = pinturaGris;
+    DataGridView1.RowHeadersVisible = false;
+    DataGridView1.EnableHeadersVisualStyles = false;
+    DataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+    DataGridView1.Dock = DockStyle.Fill;
+
+    DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = pinturaGrisOscuro;
+    DataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
+    DataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+    DataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+    DataGridView1.ColumnHeadersHeight = 40;
+
+    DataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+    DataGridView1.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
+    DataGridView1.DefaultCellStyle.SelectionBackColor = pinturaAzulClaro;
+    DataGridView1.DefaultCellStyle.SelectionForeColor = pinturaNegra;
+    DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
+    DataGridView1.RowTemplate.Height = 34;
+}
+En frmLector_Load, después de tus estilos actuales, llama:
+C#
+AplicarDisenoOperativo();
+Para que dgvTagList se entienda mejor, lo ideal es que tenga una sola columna con encabezado visible y texto distinto. Si tu ConfigurarGridRfid() hoy crea la columna, déjala así:
+C#
+private void ConfigurarGridRfid()
+{
+    dgvTagList.Columns.Clear();
+    dgvTagList.Rows.Clear();
+
+    dgvTagList.Columns.Add("RFID", "RFID LEÍDO");
+    MejorarGridRFID();
+    ActualizarCantidadRfid();
+}
+Para btnVerConsolidado, si en el diseñador casi no se ve, normalmente es por tamaño o por estar tapado por otro control. Súbele ancho y tráelo al frente en el Load:
+C#
+btnVerConsolidado.Width = 190;
+btnVerConsolidado.BringToFront();
+Y conecta su funcionalidad si aún no la tienes enlazada. En tu flujo original ese botón sí existe dentro del formulario principal. �
+GitHub +1
+C#
+private void btnVerConsolidado_Click(object sender, EventArgs e)
+{
+    tabMenu.SelectedTab = tabHojaMarcacion; // cambia esto por el tab real de consolidado si tienes otro
+}
+Si tu botón debe abrir una grilla o panel consolidado, entonces en lugar de cambiar de tab, muestra el panel correspondiente. El punto importante es que sí tenga evento.
+También te recomiendo este ajuste para el último RFID leído, así destaque visualmente:
+C#
+private void ResaltarPrimerRfid()
+{
+    if (dgvTagList.Rows.Count == 0) return;
+
+    dgvTagList.ClearSelection();
+    dgvTagList.Rows[0].Selected = true;
+    dgvTagList.FirstDisplayedScrollingRowIndex = 0;
+}
+Y lo llamas después de insertar:
+C#
+dgvTagList.Rows.Insert(0, epc);
+ResaltarPrimerRfid();
+Con esto logras:
+CodBarras visible desde lejos.
+contador RFID y total grandes.
+botones principales más legibles.
+dgvTagList con encabezado oscuro y contenido claro, para que se note qué es título y qué es dato.
+DataGridView1 ocupando visualmente toda la pantalla.
+btnVerConsolidado más visible y funcional.
+Si quieres, en el siguiente mensaje te dejo el bloque exacto para reorganizar el alto y ancho de CodBarras, btnClear, btnLimpiarRFID, btnVerConsolidado, cantidadRFID, dgvTagList y DataGridView1 según un layout tipo planta, usando tus controles actuales.
