@@ -1,75 +1,122 @@
-            My.Application.Info.Version.Revision
-        ' Configurar el TabControl para dibujar las pestañas con fuente personalizada
-        Me.tabControl.DrawMode = TabDrawMode.OwnerDrawFixed
-        AddHandler Me.tabControl.DrawItem, AddressOf TabControl_DrawItem
+Ya vi las dos causas.
+El primer error no es porque el botón “no exista” visualmente, sino porque en tu diseñador btnBuscarScanners está declarado como variable local dentro de InitializeComponent():
+C#
+System.Windows.Forms.Button btnBuscarScanners;
+y luego se instancia también como local, no como campo this.btnBuscarScanners. Por eso frmLector.cs no puede verlo fuera del diseñador. En el mismo archivo sí aparecen cmbScanners, lblEstadoConexion, etc. como campos del formulario, pero btnBuscarScanners no. �
+GitHub +1
+1) Cómo corregir btnBuscarScanners
+En formLector.Designer.cs o formLector.Designer.txt
+Busca esto al inicio de InitializeComponent():
+C#
+System.Windows.Forms.Button btnBuscarScanners;
+y elimínalo.
+Luego busca esta línea:
+C#
+btnBuscarScanners = new System.Windows.Forms.Button();
+y cámbiala por:
+C#
+this.btnBuscarScanners = new System.Windows.Forms.Button();
+Después, todas las líneas de configuración del botón déjalas con this.:
+C#
+this.btnBuscarScanners.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+this.btnBuscarScanners.BackColor = System.Drawing.Color.WhiteSmoke;
+this.btnBuscarScanners.Location = new System.Drawing.Point(45, 39);
+this.btnBuscarScanners.Name = "btnBuscarScanners";
+this.btnBuscarScanners.Size = new System.Drawing.Size(120, 21);
+this.btnBuscarScanners.TabIndex = 67;
+this.btnBuscarScanners.Text = "Buscar";
+this.btnBuscarScanners.UseVisualStyleBackColor = false;
+this.btnBuscarScanners.Click += new System.EventHandler(this.btnBuscarScanners_Click);
+Y al final del diseñador, en la zona de campos, agrega:
+C#
+private System.Windows.Forms.Button btnBuscarScanners;
+Con eso ya podrás usarlo desde frmLector.cs. La evidencia de que hoy está como variable local se ve en el diseñador del repo. �
+GitHub +1
+2) Cómo corregir el CS0029
+Ese error sigue siendo por esto:
+C#
+int rowIndex = DataGridView1.Rows.Insert(0);
+Rows.Insert(0) en WinForms devuelve void, no un índice. Por eso no se puede asignar a int.
+Déjalo así:
+C#
+DataGridView1.Rows.Insert(0);
+int rowIndex = 0;
+Tu método completo debe quedar así:
+C#
+private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+{
+    if (DataGridView1 == null || data == null)
+        return;
 
-        ' Ajustar automáticamente el tamaño de las pestañas según el texto
-        Me.tabControl.SizeMode = TabSizeMode.Fixed
-        AdjustTabWidth()
+    if (DataGridView1.InvokeRequired)
+    {
+        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        return;
+    }
 
-        Private Sub AdjustTabWidth()
-        ' Ajustar el ancho de cada pestaña basado en el texto
-        Using g As Graphics = Me.tabControl.CreateGraphics()
-            Dim font As New Font("Microsoft Sans Serif", 15.0F, FontStyle.Regular)
-            Dim maxTabWidth As Integer = 0
+    DataGridView1.Rows.Insert(0);
+    int rowIndex = 0;
 
-            For i As Integer = 0 To Me.tabControl.TabPages.Count - 1
-                ' Medir el ancho del texto de la pestaña
-                Dim tabTextSize As SizeF = g.MeasureString(Me.tabControl.TabPages(i).Text, font)
-                maxTabWidth = Math.Max(maxTabWidth, CInt(tabTextSize.Width) + 20) ' Margen adicional
-            Next
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+}
+3) Tu lógica de 500 registros
+Lo que pegaste de frmLecto.txt confirma que el comportamiento correcto es:
+CantidadFilas() actualiza lblTotalCount
+si llega a MAX_CACHE_SIZE, llama LimpiarTodo()
+LimpiarTodo() simula BtnClear_Click y BtnLimpiarRFID_Click
+también existe CheckAndClearCache() para vaciar caché RFID cuando supera 500
+Eso está bien replicarlo así en C#. �
+GitHub
+Te sugiero dejar esto en C#:
+C#
+private const int MAX_CACHE_SIZE = 500;
 
-            ' Ajustar el ancho de las pestañas
-            Me.tabControl.ItemSize = New Size(maxTabWidth, Me.tabControl.ItemSize.Height)
-        End Using
-    End Sub
-    
-Sí, eso suena a un comportamiento típico del TabControl de WinForms: cuando no alcanza el ancho, aparecen las flechas de navegación y al seleccionar el último tab, el control desplaza la tira de pestañas, por eso el primero queda “oculto” a la izquierda.
-Lo más probable es que tu tabMenu esté funcionando así por tamaño disponible, no porque el tab se haya roto.
-Prueba estas revisiones en formLector.Designer o desde el diseñador visual:
+private void CheckAndClearCache()
+{
+    if (_rfidLeidos.Count > MAX_CACHE_SIZE)
+    {
+        Console.WriteLine("⚠️ Caché superó 500 elementos, limpiando...");
+        _rfidLeidos.Clear();
+        Console.WriteLine("✅ Caché vaciada.");
+    }
+}
+
+private void ActualizarTotalCount()
+{
+    int totalRegistros = DataGridView1.AllowUserToAddRows
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
+
+    if (totalRegistros < 0)
+        totalRegistros = 0;
+
+    lblTotalCount.Text = totalRegistros.ToString();
+
+    if (totalRegistros >= MAX_CACHE_SIZE)
+    {
+        LimpiarTodo();
+    }
+}
+Y llama CheckAndClearCache(); después de guardar correctamente un RFID en caché.
+4) Resumen exacto de lo que debes tocar
+Corrige el diseñador para que btnBuscarScanners sea campo del formulario y no variable local. Eso está mal hoy en tu archivo. �
+GitHub +1
+Luego cambia cualquier línea como:
 C#
-this.tabMenu.Multiline = true;
-this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Normal;
-Si quieres forzar que entren mejor, también puedes usar:
+int rowIndex = DataGridView1.Rows.Insert(0);
+por:
 C#
-this.tabMenu.Multiline = false;
-this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-this.tabMenu.ItemSize = new System.Drawing.Size(140, 30);
-Pero aquí hay una diferencia importante:
-Multiline = true hace que los tabs bajen a otra fila cuando no entran.
-Fixed + ItemSize fuerza un ancho fijo por tab, útil si quieres controlar mejor cuánto ocupan.
-Si el contenedor donde está tabMenu es muy angosto, igual puede seguir pasando.
-Te recomiendo este orden:
-Opción 1: la más simple
-Activa varias filas:
-C#
-this.tabMenu.Multiline = true;
-Con eso normalmente dejas de depender de las flechas laterales.
-Opción 2: reducir el ancho de cada tab
-Si los textos son largos o el área del TabControl quedó más pequeña por el rediseño:
-C#
-this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-this.tabMenu.ItemSize = new System.Drawing.Size(120, 30);
-this.tabMenu.Multiline = false;
-Opción 3: revisar el contenedor padre
-Como comentaste que cambiaste el diseño, quitaste cosas y moviste paneles, también revisa si el tabMenu quedó dentro de un Panel o SplitContainer más pequeño que antes. A veces el problema no es el tab sino esto:
-C#
-this.tabMenu.Dock = System.Windows.Forms.DockStyle.Fill;
-o al menos:
-C#
-this.tabMenu.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top 
-    | System.Windows.Forms.AnchorStyles.Left) 
-    | System.Windows.Forms.AnchorStyles.Right) 
-    | System.Windows.Forms.AnchorStyles.Bottom)));
-Si no está bien anclado, al cambiar tamaño del formulario se queda angosto y comienzan las flechas.
-Lo que yo revisaría en tu caso
-Por lo que describes, haría esto primero:
-C#
-this.tabMenu.Multiline = true;
-this.tabMenu.Dock = System.Windows.Forms.DockStyle.Fill;
-y si no te gusta que haya dos filas, entonces:
-C#
-this.tabMenu.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
-this.tabMenu.ItemSize = new System.Drawing.Size(110, 28);
-Además revisa que los nombres visibles de pestañas no sean demasiado largos.
-Pásame el formLector.Designer.txt y te digo exactamente qué línea cambiar y te lo devuelvo ya corregido.
+DataGridView1.Rows.Insert(0);
+int rowIndex = 0;
+Con eso deberías eliminar ambos errores de compilación.
+Si quieres, en el siguiente mensaje te dejo exactamente el bloque del diseñador corregido para btnBuscarScanners listo para copiar y pegar.
