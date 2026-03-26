@@ -1,1 +1,145 @@
-Se hizo el cambio se dio los estilo a todo los input pero existe algo que no hace ver los colores que se puso, por ejemplo el boton btnClear (deberia tener letra white) no esta igual al como se puso en la configuracion UI, por favor validar revisar fromLector.Designer.txt te dejo la url de la vista -> https://i.ibb.co/Mkg5XV3n/Screenshot-6.png
+Veo los dos fallos.
+El primero es que en tu frmLector.cs todavía hay una referencia a btnBuscarScanners, pero en el estado actual del archivo la línea de estilo ya aparece comentada, así que debe quedar otra referencia más a ese nombre en otra parte del archivo. También se ve que el archivo sigue teniendo referencias a toolStripStatusLbl, aunque dijiste que lo quitaste, así que hay código viejo mezclado con el nuevo diseño. �
+GitHub +1
+El segundo error, Cannot implicitly convert type 'void' to 'int', viene de usar Rows.Insert(0) como si devolviera índice. En WinForms no devuelve nada. �
+GitHub
+1) btnBuscarScanners does not exist
+Haz una búsqueda global en frmLector.cs de:
+C#
+btnBuscarScanners
+y reemplaza o elimina todas las referencias.
+Como no aparece claro en el diseñador comprimido cuál es el nombre real del botón en la cabecera, la forma segura es esta:
+Si el botón ya no existe
+borra o comenta cualquier línea como:
+C#
+EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+Si sí existe pero cambió de nombre
+usa el nombre real del diseñador. En tu mensaje anterior dijiste que en cabecera tienes btnBuscarScanners y cmbScanners, pero el error de compilación indica que ese nombre no está declarado en la clase actual, así que el diseñador y el código no están alineados. �
+GitHub
+2) Cannot implicitly convert type 'void' to 'int'
+Corrige esto:
+C#
+int rowIndex = DataGridView1.Rows.Insert(0);
+por esto:
+C#
+DataGridView1.Rows.Insert(0);
+int rowIndex = 0;
+3) ActualizarTotalCount() no debe asignarse a una variable
+Tu método debe quedar como void, igual que la lógica VB CantidadFilas() que solo actualiza el label y limpia si llega al límite. El VB original no devuelve ningún valor; solo hace SafeUpdateLabel(lblTotalCount, ...) y si supera MAX_CACHE_SIZE llama LimpiarTodo(). �
+GitHub
+Entonces, si tienes algo como:
+C#
+int total = ActualizarTotalCount();
+cámbialo por:
+C#
+ActualizarTotalCount();
+Y deja el método así:
+C#
+private void ActualizarTotalCount()
+{
+    int total = DataGridView1.AllowUserToAddRows
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
+
+    if (total < 0)
+        total = 0;
+
+    lblTotalCount.Text = total.ToString();
+
+    if (total >= MAX_CACHE_SIZE)
+    {
+        LimpiarTodo();
+    }
+}
+4) LimpiarTodo() conviene alinearlo al VB
+En tu VB original, cuando llega al límite:
+llama BtnClear_Click
+llama BtnLimpiarRFID_Click
+repone foco en CodBarras
+Y BtnClear_Click además limpia DataGridView1, MsnVincular, CodBarras, y ejecuta otras limpiezas. �
+GitHub
+Con lo que tienes ahora, te recomiendo dejar:
+C#
+private void LimpiarSoloRfid()
+{
+    dgvTagList.Rows.Clear();
+    _rfidPendientes.Clear();
+    _rfidLeidos.Clear();
+    _ultimoRfid = "";
+
+    cantidadRFID.Text = "0";
+    CodBarras.Clear();
+    CodBarras.Focus();
+
+    SetEstado("RFID limpiados", Color.Khaki);
+}
+
+private void LimpiarTodo()
+{
+    try
+    {
+        LimpiarSoloRfid();
+
+        _ultimoCodigoBarra = "";
+        nroOP.Text = "";
+        nroHM.Text = "";
+        _hojaMarcacionActual = "";
+
+        MsnVincular.Text = "";
+        DataGridView1.Rows.Clear();
+        lblTotalCount.Text = "0";
+
+        CodBarras.Focus();
+        CodBarras.Select();
+
+        SetEstado("Formulario limpiado", Color.Khaki);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Error en LimpiarTodo: " + ex.Message);
+    }
+}
+5) Corrige LlenarPrimeraFilaDataGridView1
+Déjala así:
+C#
+private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+{
+    if (DataGridView1 == null || data == null)
+        return;
+
+    if (DataGridView1.InvokeRequired)
+    {
+        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        return;
+    }
+
+    DataGridView1.Rows.Insert(0);
+    int rowIndex = 0;
+
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+
+    ActualizarTotalCount();
+}
+6) Lo que te está pasando realmente
+Tu frmLector.cs tiene mezcla de:
+código nuevo de estilos y tabs
+lógica vieja que sigue llamando toolStripStatusLbl
+referencias a controles que ya no existen o cambiaron de nombre
+Eso se ve en el archivo actual, donde aún aparecen toolStripStatusLbl, btnBuscarScanners_Click, y varias llamadas de estado en texto. �
+GitHub
+La corrección práctica es:
+buscar y quitar todas las referencias a controles eliminados
+reemplazar toolStripStatusLbl por MsnVincular
+no asignar métodos void a variables
+no usar Rows.Insert(0) como si devolviera índice
+Si quieres, te ordeno el bloque completo de frmLector_Load, SetEstado, LlenarPrimeraFilaDataGridView1, ActualizarTotalCount, btnClear_Click y btnLimpiarRFID_Click en una sola versión final consistente.
