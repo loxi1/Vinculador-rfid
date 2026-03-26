@@ -105,33 +105,12 @@ namespace DS9908R_App
             {
                 ConfigurarGridRfid();
 
-                // contenedor
-                EstiloContenedorTablaRFID();
-
-                ConfigurarEstiloDataGridView(DataGridView1);
                 BloquearColumnas(DataGridView1);
 
-                EstiloBoton(btnClear, pinturaRojoIndio, pinturaBlanca, pinturaRojoCarmesi);
-                EstiloBoton(btnLimpiarRFID, pinturaGrisClaro, pinturaNegra, pinturaPlata);
-                EstiloBoton(BtnBuscarHM, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
-                EstiloBoton(BtnLimpiarHM, pinturaGrisClaro, pinturaNegra, pinturaPlata);
-                EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
-
-                EstiloTextBox(CodBarras);
-                EstiloTextBox(TextBoxHM);
-                EstiloTextBox(TextBoxOP);
-
-                EstiloComboBox(cmbScanners);
-                EstiloLabelMensaje(MsnVincular);
-                EstiloLabelContador(lblTotalCount);
-
                 // tabMenu
-                tabMenu.DrawMode = TabDrawMode.OwnerDrawFixed;
-                tabMenu.SizeMode = TabSizeMode.Fixed;
                 tabMenu.DrawItem += tabMenu_DrawItem;
-                AdjustTabWidth(tabMenu);
 
-                AplicarDisenoOperativo();
+                //AplicarDisenoOperativo();
 
                 _vinculador = new VinculadorService();
                 _vinculador.OnInfo += Vinculador_OnInfo;
@@ -305,7 +284,6 @@ namespace DS9908R_App
             dgvTagList.Rows.Clear();
 
             dgvTagList.Columns.Add("RFID", "RFID LEÍDO");
-            MejorarGridRFID();
             ActualizarCantidadRfid();
         }
 
@@ -695,57 +673,6 @@ namespace DS9908R_App
             }
         }
 
-        private void ConfigurarEstiloDataGridView(DataGridView dgv)
-        {
-            if (dgv == null) return;
-
-            dgv.ReadOnly = false;
-            dgv.AllowUserToAddRows = false;
-            dgv.AllowUserToDeleteRows = false;
-            dgv.SelectionMode = DataGridViewSelectionMode.CellSelect;
-            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
-            dgv.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-
-            dgv.BackgroundColor = Color.White;
-            dgv.BorderStyle = BorderStyle.None;
-            dgv.EnableHeadersVisualStyles = false;
-            dgv.RowHeadersVisible = false;
-            dgv.GridColor = Color.FromArgb(220, 220, 220);
-            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
-            dgv.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
-            dgv.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            dgv.DefaultCellStyle.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            dgv.DefaultCellStyle.BackColor = Color.White;
-            dgv.DefaultCellStyle.ForeColor = Color.Black;
-            dgv.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
-            dgv.DefaultCellStyle.SelectionForeColor = Color.White;
-            dgv.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            dgv.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
-            dgv.RowTemplate.Height = 34;
-            dgv.ColumnHeadersHeight = 38;
-        }
-
-        private void MejorarDataGridView(DataGridView dgv)
-        {
-            ConfigurarEstiloDataGridView(dgv);
-
-            dgv.RowTemplate.Height = 35;
-            dgv.ColumnHeadersHeight = 40;
-
-            dgv.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgv.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            dgv.DefaultCellStyle.Padding = new Padding(5);
-
-            dgv.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-        }
-
         private void BloquearColumnas(DataGridView dgv)
         {
             foreach (DataGridViewColumn column in dgv.Columns)
@@ -754,62 +681,6 @@ namespace DS9908R_App
                 {
                     column.ReadOnly = true;
                 }
-            }
-        }
-
-        private void EstiloBoton(Button btn, Color fondo, Color texto, Color hover)
-        {
-            if (btn == null) return;
-
-            btn.BackColor = fondo;
-            btn.ForeColor = texto;
-            btn.FlatStyle = FlatStyle.Flat;
-            btn.FlatAppearance.BorderSize = 0;
-            btn.FlatAppearance.MouseOverBackColor = hover;
-            btn.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            btn.Cursor = Cursors.Hand;
-            btn.Height = 38;
-        }
-
-        private void EstiloContenedorTablaRFID()
-        {
-            if (dgvTagList == null) return;
-
-            dgvTagList.BackgroundColor = pinturaBlanca;
-            dgvTagList.GridColor = pinturaGris;
-
-            dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
-            dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
-            dgvTagList.DefaultCellStyle.Font = new Font("Arial", 10F, FontStyle.Regular);
-            dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvTagList.DefaultCellStyle.SelectionBackColor = Color.FromArgb(0, 120, 215);
-            dgvTagList.DefaultCellStyle.SelectionForeColor = pinturaBlanca;
-
-            dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(45, 45, 48);
-            dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
-            dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Arial", 11F, FontStyle.Bold);
-            dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-
-            dgvTagList.EnableHeadersVisualStyles = false;
-            dgvTagList.BorderStyle = BorderStyle.None;
-            dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvTagList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
-            dgvTagList.RowTemplate.Height = 30;
-            dgvTagList.ColumnHeadersHeight = 36;
-
-            dgvTagList.RowHeadersVisible = false;
-            dgvTagList.AllowUserToAddRows = false;
-            dgvTagList.AllowUserToDeleteRows = false;
-            dgvTagList.AllowUserToResizeRows = false;
-            dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvTagList.MultiSelect = false;
-            dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-
-            if (dgvTagList.Columns.Contains("clnTID"))
-            {
-                dgvTagList.Columns["clnTID"].Visible = false;
             }
         }
 
@@ -823,17 +694,8 @@ namespace DS9908R_App
             dgv.FirstDisplayedScrollingRowIndex = last;
         }
 
-        private void AdjustTabWidth(TabControl tabCtrl)
-        {
-            if (tabCtrl == null || tabCtrl.TabCount == 0)
-                return;
-
-            tabCtrl.ItemSize = new Size(150, 38);
-        }
-
         private void dgvTagList_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
-            EstiloContenedorTablaRFID();
         }
 
         private void BloquearColumnasDataGridView1()
@@ -845,44 +707,6 @@ namespace DS9908R_App
                     column.ReadOnly = true;
                 }
             }
-        }
-
-        private void EstiloTextBox(TextBox txt)
-        {
-            if (txt == null) return;
-
-            txt.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            txt.BackColor = Color.White;
-            txt.ForeColor = Color.Black;
-            txt.BorderStyle = BorderStyle.FixedSingle;
-        }
-
-        private void EstiloComboBox(ComboBox cmb)
-        {
-            if (cmb == null) return;
-
-            cmb.Font = new Font("Segoe UI", 10F, FontStyle.Regular);
-            cmb.BackColor = Color.White;
-            cmb.ForeColor = Color.Black;
-            cmb.DropDownStyle = ComboBoxStyle.DropDownList;
-        }
-
-        private void EstiloLabelMensaje(Label lbl)
-        {
-            if (lbl == null) return;
-
-            lbl.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
-            lbl.ForeColor = Color.FromArgb(45, 45, 48);
-            lbl.BackColor = Color.Transparent;
-        }
-
-        private void EstiloLabelContador(Label lbl)
-        {
-            if (lbl == null) return;
-
-            lbl.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
-            lbl.ForeColor = Color.FromArgb(0, 120, 215);
-            lbl.BackColor = Color.Transparent;
         }
 
         private void SetMensajeVincular(string mensaje)
@@ -1037,11 +861,6 @@ namespace DS9908R_App
             }
         }
 
-        private void frmLector_Resize(object sender, EventArgs e)
-        {
-            AdjustTabWidth(tabMenu);
-        }
-
         private void btnBuscarScanners_Click(object sender, EventArgs e)
         {
             try
@@ -1093,138 +912,6 @@ namespace DS9908R_App
                 ActualizarEstadoConexion("ERROR BUSCANDO", Color.Firebrick);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void AplicarDisenoOperativo()
-        {
-            // ===== CodBarras: visible a distancia =====
-            CodBarras.Font = new Font("Segoe UI", 28F, FontStyle.Bold);
-            CodBarras.Height = 58;
-            CodBarras.BackColor = Color.White;
-            CodBarras.ForeColor = pinturaNegra;
-            CodBarras.BorderStyle = BorderStyle.FixedSingle;
-            CodBarras.TextAlign = HorizontalAlignment.Center;
-
-            // ===== Mensaje principal =====
-            MsnVincular.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            MsnVincular.ForeColor = pinturaNegra;
-            MsnVincular.BackColor = Color.Transparent;
-            MsnVincular.TextAlign = ContentAlignment.MiddleLeft;
-
-            // ===== Contadores grandes =====
-            cantidadRFID.Font = new Font("Segoe UI", 22F, FontStyle.Bold);
-            cantidadRFID.ForeColor = pinturaRojoIndio;
-            cantidadRFID.TextAlign = ContentAlignment.MiddleCenter;
-
-            lblTotalCount.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
-            lblTotalCount.ForeColor = pinturaVerdeOscuro;
-            lblTotalCount.TextAlign = ContentAlignment.MiddleCenter;
-
-            // ===== OP / HM =====
-            TextBoxOP.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            TextBoxHM.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            TextBoxOP.Height = 42;
-            TextBoxHM.Height = 42;
-
-            // ===== Botones grandes =====
-            AplicarBotonGrande(btnClear);
-            AplicarBotonGrande(btnLimpiarRFID);
-            AplicarBotonGrande(btnVerConsolidado);
-            AplicarBotonGrande(BtnBuscarHM);
-            AplicarBotonGrande(BtnLimpiarHM);
-            AplicarBotonGrande(btnBuscarScanners);
-
-            // ===== Combo scanner =====
-            cmbScanners.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            cmbScanners.Height = 40;
-
-            // ===== Grilla RFID =====
-            MejorarGridRFID();
-
-            // ===== Grilla principal =====
-            MejorarGridPrincipal();
-        }
-
-        private void AplicarBotonGrande(Button btn)
-        {
-            if (btn == null) return;
-
-            btn.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            btn.Height = 52;
-            btn.FlatStyle = FlatStyle.Flat;
-            btn.FlatAppearance.BorderSize = 0;
-            btn.Cursor = Cursors.Hand;
-            btn.TextImageRelation = TextImageRelation.ImageBeforeText;
-            btn.Padding = new Padding(10, 0, 10, 0);
-        }
-
-        private void MejorarGridRFID()
-        {
-            dgvTagList.BackgroundColor = pinturaBlanca;
-            dgvTagList.BorderStyle = BorderStyle.None;
-            dgvTagList.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            dgvTagList.GridColor = pinturaGris;
-            dgvTagList.RowHeadersVisible = false;
-            dgvTagList.EnableHeadersVisualStyles = false;
-            dgvTagList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvTagList.MultiSelect = false;
-            dgvTagList.AllowUserToAddRows = false;
-            dgvTagList.AllowUserToDeleteRows = false;
-            dgvTagList.AllowUserToResizeRows = false;
-            dgvTagList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dgvTagList.Dock = DockStyle.Fill;
-
-            dgvTagList.ColumnHeadersDefaultCellStyle.BackColor = pinturaGrisOscuro;
-            dgvTagList.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
-            dgvTagList.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 15F, FontStyle.Bold);
-            dgvTagList.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvTagList.ColumnHeadersHeight = 42;
-            dgvTagList.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
-
-            dgvTagList.DefaultCellStyle.BackColor = pinturaBlanca;
-            dgvTagList.DefaultCellStyle.ForeColor = pinturaNegra;
-            dgvTagList.DefaultCellStyle.Font = new Font("Consolas", 15F, FontStyle.Bold);
-            dgvTagList.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            dgvTagList.DefaultCellStyle.SelectionBackColor = pinturaAzulClaro;
-            dgvTagList.DefaultCellStyle.SelectionForeColor = pinturaNegra;
-
-            dgvTagList.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
-            dgvTagList.RowTemplate.Height = 40;
-
-            if (dgvTagList.Columns.Contains("RFID"))
-            {
-                dgvTagList.Columns["RFID"].HeaderText = "RFID LEÍDO";
-            }
-
-            if (dgvTagList.Columns.Contains("clnTID"))
-            {
-                dgvTagList.Columns["clnTID"].Visible = false;
-            }
-        }
-
-        private void MejorarGridPrincipal()
-        {
-            DataGridView1.BackgroundColor = pinturaBlanca;
-            DataGridView1.BorderStyle = BorderStyle.None;
-            DataGridView1.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            DataGridView1.GridColor = pinturaGris;
-            DataGridView1.RowHeadersVisible = false;
-            DataGridView1.EnableHeadersVisualStyles = false;
-            DataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            DataGridView1.Dock = DockStyle.Fill;
-
-            DataGridView1.ColumnHeadersDefaultCellStyle.BackColor = pinturaGrisOscuro;
-            DataGridView1.ColumnHeadersDefaultCellStyle.ForeColor = pinturaBlanca;
-            DataGridView1.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            DataGridView1.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            DataGridView1.ColumnHeadersHeight = 40;
-
-            DataGridView1.DefaultCellStyle.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
-            DataGridView1.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            DataGridView1.DefaultCellStyle.SelectionBackColor = pinturaAzulClaro;
-            DataGridView1.DefaultCellStyle.SelectionForeColor = pinturaNegra;
-            DataGridView1.AlternatingRowsDefaultCellStyle.BackColor = pinturaBlancoHumo;
-            DataGridView1.RowTemplate.Height = 34;
         }
 
         private void ResaltarPrimerRfid()
