@@ -110,7 +110,7 @@ namespace DS9908R_App
             if (e.KeyCode == Keys.Enter || e.KeyCode == Keys.Tab)
             {
                 e.SuppressKeyPress = true;
-                ButtonOk.Focus();
+                ClaveTrabajador.Focus();
             }
         }
 
@@ -141,6 +141,9 @@ namespace DS9908R_App
             if (txtCodTrabajador.Text == "Ingrese su usuario...")
             {
                 txtCodTrabajador.Text = "";
+            } else
+            {
+                ClaveTrabajador.Focus();
             }
         }
 

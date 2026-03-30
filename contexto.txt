@@ -1,145 +1,112 @@
-Veo los dos fallos.
-El primero es que en tu frmLector.cs todavía hay una referencia a btnBuscarScanners, pero en el estado actual del archivo la línea de estilo ya aparece comentada, así que debe quedar otra referencia más a ese nombre en otra parte del archivo. También se ve que el archivo sigue teniendo referencias a toolStripStatusLbl, aunque dijiste que lo quitaste, así que hay código viejo mezclado con el nuevo diseño. �
-GitHub +1
-El segundo error, Cannot implicitly convert type 'void' to 'int', viene de usar Rows.Insert(0) como si devolviera índice. En WinForms no devuelve nada. �
-GitHub
-1) btnBuscarScanners does not exist
-Haz una búsqueda global en frmLector.cs de:
-C#
-btnBuscarScanners
-y reemplaza o elimina todas las referencias.
-Como no aparece claro en el diseñador comprimido cuál es el nombre real del botón en la cabecera, la forma segura es esta:
-Si el botón ya no existe
-borra o comenta cualquier línea como:
-C#
-EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
-Si sí existe pero cambió de nombre
-usa el nombre real del diseñador. En tu mensaje anterior dijiste que en cabecera tienes btnBuscarScanners y cmbScanners, pero el error de compilación indica que ese nombre no está declarado en la clase actual, así que el diseñador y el código no están alineados. �
-GitHub
-2) Cannot implicitly convert type 'void' to 'int'
-Corrige esto:
-C#
-int rowIndex = DataGridView1.Rows.Insert(0);
-por esto:
-C#
-DataGridView1.Rows.Insert(0);
-int rowIndex = 0;
-3) ActualizarTotalCount() no debe asignarse a una variable
-Tu método debe quedar como void, igual que la lógica VB CantidadFilas() que solo actualiza el label y limpia si llega al límite. El VB original no devuelve ningún valor; solo hace SafeUpdateLabel(lblTotalCount, ...) y si supera MAX_CACHE_SIZE llama LimpiarTodo(). �
-GitHub
-Entonces, si tienes algo como:
-C#
-int total = ActualizarTotalCount();
-cámbialo por:
-C#
-ActualizarTotalCount();
-Y deja el método así:
-C#
-private void ActualizarTotalCount()
-{
-    int total = DataGridView1.AllowUserToAddRows
-        ? DataGridView1.Rows.Count - 1
-        : DataGridView1.Rows.Count;
+dado el metodo:
+private void ProcesarVinculacion(VinculacionRequest request)
+        {
+            try
+            {
+                string codigoBarra = (request.CodigoBarras ?? "").Trim();
+                string rfid = NormalizarRfid(request.Rfid);
+                bool usarRfid = request.UsarRfid;
 
-    if (total < 0)
-        total = 0;
+                if (string.IsNullOrWhiteSpace(codigoBarra))
+                {
+                    OnError?.Invoke("El código de barras está vacío.");
+                    return;
+                }
 
-    lblTotalCount.Text = total.ToString();
+                if (usarRfid && string.IsNullOrWhiteSpace(rfid))
+                {
+                    OnError?.Invoke("El RFID está vacío.");
+                    return;
+                }
 
-    if (total >= MAX_CACHE_SIZE)
-    {
-        LimpiarTodo();
-    }
-}
-4) LimpiarTodo() conviene alinearlo al VB
-En tu VB original, cuando llega al límite:
-llama BtnClear_Click
-llama BtnLimpiarRFID_Click
-repone foco en CodBarras
-Y BtnClear_Click además limpia DataGridView1, MsnVincular, CodBarras, y ejecuta otras limpiezas. �
-GitHub
-Con lo que tienes ahora, te recomiendo dejar:
-C#
-private void LimpiarSoloRfid()
-{
-    dgvTagList.Rows.Clear();
-    _rfidPendientes.Clear();
-    _rfidLeidos.Clear();
-    _ultimoRfid = "";
+                if (usarRfid && !string.IsNullOrWhiteSpace(rfid) && _cacheRFID.ContainsKey(rfid))
+                {
+                    OnError?.Invoke("RFID repetido: " + rfid);
+                    return;
+                }
 
-    cantidadRFID.Text = "0";
-    CodBarras.Clear();
-    CodBarras.Focus();
+                Tuple<int, string> result;
 
-    SetEstado("RFID limpiados", Color.Khaki);
-}
+                if (usarRfid)
+                {
+                    result = _bdPrenda.SaveRFID(
+                        codigoBarra,
+                        request.Empresa,
+                        request.CodTrabajador,
+                        rfid,
+                        request.HojaMarcacion
+                    );
 
-private void LimpiarTodo()
-{
-    try
-    {
-        LimpiarSoloRfid();
+                    if (result.Item1 != 0)
+                    {
+                        if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfid))
+                            GuardarEnCache(rfid);
 
-        _ultimoCodigoBarra = "";
-        nroOP.Text = "";
-        nroHM.Text = "";
-        _hojaMarcacionActual = "";
+                        OnError?.Invoke(result.Item2);
+                        return;
+                    }
 
-        MsnVincular.Text = "";
-        DataGridView1.Rows.Clear();
-        lblTotalCount.Text = "0";
+                    if (!string.IsNullOrWhiteSpace(rfid))
+                        GuardarEnCache(rfid);
+                }
+                else
+                {
+                    result = Tuple.Create(0, "OK");
+                }
 
-        CodBarras.Focus();
-        CodBarras.Select();
+                DataTable dataTimbrado = _bdPrenda.GetTimbradasByWorkerAndEtiqueta(
+                    request.CodTrabajador,
+                    codigoBarra
+                );
 
-        SetEstado("Formulario limpiado", Color.Khaki);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Error en LimpiarTodo: " + ex.Message);
-    }
-}
-5) Corrige LlenarPrimeraFilaDataGridView1
-Déjala así:
-C#
-private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
-{
-    if (DataGridView1 == null || data == null)
-        return;
+                if (dataTimbrado.Rows.Count == 0)
+                {
+                    OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas.");
+                    return;
+                }
 
-    if (DataGridView1.InvokeRequired)
-    {
-        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
-        return;
-    }
+                DataRow row = dataTimbrado.Rows[0];
 
-    DataGridView1.Rows.Insert(0);
-    int rowIndex = 0;
+                var insertData = new Dictionary<string, object>
+                {
+                    { "id_rfid", usarRfid ? rfid : "" },
+                    { "id_barras", row["etiqueta"] },
+                    { "op", row["op"] },
+                    { "corte", row["corte"] },
+                    { "subcorte", row["sub_corte"] },
+                    { "cod_talla", row["cod_talla"] },
+                    { "id_talla", row["id_talla"] },
+                    { "talla", row["talla"] },
+                    { "cod_combinacion", row["cod_comb"] },
+                    { "color", row["color"] },
+                    { "cod_trabajador", row["fotocheck"] },
+                    { "hoja_marcacion", request.HojaMarcacion }
+                };
 
-    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
-    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+                long insertReturn = _bdPrendaScm.Insert(insertData);
 
-    ActualizarTotalCount();
-}
-6) Lo que te está pasando realmente
-Tu frmLector.cs tiene mezcla de:
-código nuevo de estilos y tabs
-lógica vieja que sigue llamando toolStripStatusLbl
-referencias a controles que ya no existen o cambiaron de nombre
-Eso se ve en el archivo actual, donde aún aparecen toolStripStatusLbl, btnBuscarScanners_Click, y varias llamadas de estado en texto. �
-GitHub
-La corrección práctica es:
-buscar y quitar todas las referencias a controles eliminados
-reemplazar toolStripStatusLbl por MsnVincular
-no asignar métodos void a variables
-no usar Rows.Insert(0) como si devolviera índice
-Si quieres, te ordeno el bloque completo de frmLector_Load, SetEstado, LlenarPrimeraFilaDataGridView1, ActualizarTotalCount, btnClear_Click y btnLimpiarRFID_Click en una sola versión final consistente.
+                if (insertReturn != 1)
+                {
+                    string mysqlError = _bdPrendaScm.GetError();
+                    OnError?.Invoke(string.IsNullOrWhiteSpace(mysqlError)
+                        ? "No se pudo insertar en bd_ci_scm.prenda."
+                        : mysqlError);
+                    return;
+                }
+
+                insertData["fecha"] = DateTime.Now;
+                insertData["linea"] = row["linea"];
+
+                if (insertData.ContainsKey("id_barras")) insertData.Remove("id_barras");
+                if (insertData.ContainsKey("cod_combinacion")) insertData.Remove("cod_combinacion");
+                if (insertData.ContainsKey("cod_trabajador")) insertData.Remove("cod_trabajador");
+
+                OnInsertadoOk?.Invoke(insertData);
+                OnInfo?.Invoke("Prenda registrada exitosamente.");
+            }
+            catch (Exception ex)
+            {
+                OnError?.Invoke("Error inesperado al registrar: " + ex.Message);
+            }
+        }
+validar que el codigo rfid debe ser 1 o vacio y debe permitir guardar en caso es mas de uno sale un error
