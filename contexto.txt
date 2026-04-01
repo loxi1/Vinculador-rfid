@@ -1,1 +1,86 @@
-Ahora quiero implementar ListarTimbrados() y poner llenar LlenarDataGridViewDesdeDataTable(dataTimbrado) y todo lo que concierne a ListarTimbrados por favor revisar frmLecto.txt y toda las funciones que conciernen ademas se tiene que editar el DataGridView1 con la funcion: DataGridView1_CellEndEdit y depende de ti si deseas usar: DataGridView1_CellPainting
+Te faltan dos ajustes.
+btnBuscarScanners no existe en tu frmLector.cs actual; sí existe cmbScanners, pero no aparece ningún match para btnBuscarScanners en el repo, así que esa línea de estilo hay que quitarla o cambiarla por el nombre real del botón en tu diseñador. �
+GitHub +1
+Haz esto en frmLector_Load:
+C#
+// Quitar o comentar esta línea si el control no existe:
+// EstiloBoton(btnBuscarScanners, pinturaVerdeMarMedio, pinturaBlanca, pinturaVerdeOscuro);
+Si en tu diseñador el botón tiene otro nombre, reemplázalo por ese nombre real.
+El segundo error Cannot implicitly convert type 'void' to 'int' no viene de Rows.Insert(0) en el bloque que ya corregiste; en el repo ya está bien como:
+C#
+DataGridView1.Rows.Insert(0);
+int rowIndex = 0;
+Así que el CS0029 te está saliendo en otra línea donde todavía estás asignando a un int el resultado de un método void, muy probablemente algo como int total = ActualizarTotalCount();. �
+GitHub
+Déjalo así:
+C#
+ActualizarTotalCount();
+y no así:
+C#
+int total = ActualizarTotalCount(); // mal
+Tu lógica de 500 registros está alineada con el VB: en frmLecto.txt se define MAX_CACHE_SIZE = 500 y cuando el total llega al límite se llama a LimpiarTodo(). �
+GitHub
+Para dejarlo consistente, usa este bloque:
+C#
+private const int MAX_CACHE_SIZE = 500;
+
+private void ActualizarTotalCount()
+{
+    int total = DataGridView1.AllowUserToAddRows
+        ? DataGridView1.Rows.Count - 1
+        : DataGridView1.Rows.Count;
+
+    if (total < 0)
+        total = 0;
+
+    lblTotalCount.Text = total.ToString();
+
+    if (total >= MAX_CACHE_SIZE)
+    {
+        AlertaManager.MostrarAlerta(
+            "Se alcanzaron 500 registros. Limpieza automática.",
+            pinturaGrisOscuro,
+            2,
+            5
+        );
+
+        LimpiarTodo();
+    }
+}
+Y deja tu carga de DataGridView1 así:
+C#
+private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+{
+    if (DataGridView1 == null || data == null)
+        return;
+
+    if (DataGridView1.InvokeRequired)
+    {
+        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        return;
+    }
+
+    DataGridView1.Rows.Insert(0);
+    int rowIndex = 0;
+
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+
+    ResaltarFilaInsertada(rowIndex);
+}
+Revisa en la línea 1016 exacta de tu frmLector.cs y cambia cualquier patrón de este tipo:
+C#
+int x = MetodoQueRetornaVoid();
+por una llamada simple:
+C#
+MetodoQueRetornaVoid();
+Si me pegas las líneas 110-125 y 1008-1020 de tu frmLector.cs, te digo exactamente qué reemplazar.
