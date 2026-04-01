@@ -1,4 +1,357 @@
-Ahora quiero implementar ListarTimbrados() y poner llenar LlenarDataGridViewDesdeDataTable(dataTimbrado) y todo lo que concierne a ListarTimbrados por favor revisar frmLecto.txt y toda las funciones que conciernen ademas se tiene que editar el DataGridView1 con la funcion: DataGridView1_CellEndEdit y depende de ti si deseas usar: DataGridView1_CellPainting.
-por favor entrar al repo: https://github.com/loxi1/Vinculador-rfid esta en c# pero la fuente de donde se copia esta en vb y lo tengo en archivos *.txt por favor dime los cambios.
+Revisé tu repo y el estado actual sí confirma lo que te falta:
+En frmLector.cs no existe ListarTimbrados, tampoco LlenarDataGridViewDesdeDataTable, ni handlers DataGridView1_CellEndEdit / DataGridView1_CellPainting. En cambio, el formulario sí carga DataGridView1, bloquea columnas dejando editable solo hoja_marcacion, y agrega filas nuevas con LlenarPrimeraFilaDataGridView1. �
+GitHub +3
+Además, en BDPrenda.cs tienes GetTimbradasByWorkerAndEtiqueta(...) y NuevoTimbrado(...), pero no están portados desde VB los métodos ListarTimbradas(...) y UpdateTimbrado(...), que sí existen en BDPrenda.txt. En VB, ListarTimbradas ya trae las columnas con alias exactos para el grid (nhoja AS hoja_marcacion, sub_corte AS subcorte, rfid AS id_rfid) y UpdateTimbrado hace el UPDATE tmp_etiq_timbradas SET fecha = GETDATE(), .... �
+GitHub +2
+Te recomiendo estos cambios.
+1) En BDPrenda.cs, agrega ListarTimbradas(...)
+Pon esto después de GetTimbradasByWorkerAndEtiqueta(...) y antes de NuevoTimbrado(...):
+C#
+public Tuple<int, string, DataTable> ListarTimbradas(Dictionary<string, object> whereParameters)
+{
+    int li_return = 0;
+    string s_mensaje = string.Empty;
+    DataTable tabla = new DataTable();
 
-http://spap05.cofaco.com/eCorporativoTV/blank_tabla_control_linea_totales/
+    if (whereParameters == null)
+        whereParameters = new Dictionary<string, object>();
+
+    // Igual que en VB: forzar estado si no viene
+    if (!whereParameters.ContainsKey("estado"))
+        whereParameters.Add("estado", "EMB"); // cambia "EMB" por tu constante real si ya la tienes en C#
+
+    try
+    {
+        using (AseConnection conn = _sybase.Connect())
+        {
+            if (conn == null || conn.State != ConnectionState.Open)
+                throw new InvalidOperationException("La conexión a la base de datos no está abierta.");
+
+            string whereClause = string.Join(" AND ",
+                whereParameters.Keys.Select(k => $"{k} = @{k}"));
+
+            string sql =
+                "SELECT linea, op, nhoja AS hoja_marcacion, corte, sub_corte AS subcorte, " +
+                "color, talla, cod_talla, id_talla, fecha, rfid AS id_rfid " +
+                "FROM tmp_etiq_timbradas " +
+                $"WHERE {whereClause} " +
+                "ORDER BY fecha DESC";
+
+            using (AseCommand cmd = new AseCommand(sql, conn))
+            {
+                foreach (var param in whereParameters)
+                    cmd.Parameters.AddWithValue("@" + param.Key, param.Value ?? DBNull.Value);
+
+                using (AseDataReader reader = cmd.ExecuteReader())
+                {
+                    tabla.Load(reader);
+                }
+            }
+
+            li_return = tabla.Rows.Count;
+            s_mensaje = li_return > 0
+                ? "Datos obtenidos correctamente"
+                : "No se encontraron resultados";
+        }
+    }
+    catch (Exception ex)
+    {
+        ss_error = ex.Message;
+        LogError("Error en ListarTimbradas", ex);
+        li_return = -1;
+        s_mensaje = "Error en la consulta";
+    }
+    finally
+    {
+        _sybase.Disconnect();
+    }
+
+    return Tuple.Create(li_return, s_mensaje, tabla);
+}
+2) En BDPrenda.cs, agrega UpdateTimbrado(...)
+Debajo de NuevoTimbrado(...):
+C#
+public int UpdateTimbrado(
+    Dictionary<string, object> whereParameters,
+    Dictionary<string, object> updateParameters)
+{
+    int rowsAffected = 0;
+
+    if (whereParameters == null)
+        whereParameters = new Dictionary<string, object>();
+
+    if (updateParameters == null || updateParameters.Count == 0)
+        return 0;
+
+    if (!whereParameters.ContainsKey("estado"))
+        whereParameters.Add("estado", "EMB"); // cambia por tu constante real si corresponde
+
+    try
+    {
+        using (AseConnection conn = _sybase.Connect())
+        {
+            if (conn == null || conn.State != ConnectionState.Open)
+                throw new InvalidOperationException("La conexión a la base de datos no está abierta.");
+
+            using (AseTransaction trans = conn.BeginTransaction())
+            {
+                try
+                {
+                    string setClause = string.Join(", ",
+                        updateParameters.Keys.Select(k => $"{k} = @{k}"));
+
+                    string whereClause = string.Join(" AND ",
+                        whereParameters.Keys.Select(k => $"{k} = @w_{k}"));
+
+                    string sql =
+                        $"UPDATE tmp_etiq_timbradas " +
+                        $"SET fecha = GETDATE(), {setClause} " +
+                        $"WHERE {whereClause}";
+
+                    using (AseCommand cmd = new AseCommand(sql, conn, trans))
+                    {
+                        foreach (var param in updateParameters)
+                            cmd.Parameters.AddWithValue("@" + param.Key, param.Value ?? DBNull.Value);
+
+                        foreach (var param in whereParameters)
+                            cmd.Parameters.AddWithValue("@w_" + param.Key, param.Value ?? DBNull.Value);
+
+                        rowsAffected = cmd.ExecuteNonQuery();
+                    }
+
+                    if (rowsAffected > 0)
+                        trans.Commit();
+                    else
+                        trans.Rollback();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    LogError("Error en UpdateTimbrado", ex);
+                    throw;
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        ss_error = ex.Message;
+        LogError("Error general en UpdateTimbrado", ex);
+        rowsAffected = -1;
+    }
+    finally
+    {
+        _sybase.Disconnect();
+    }
+
+    return rowsAffected;
+}
+3) En frmLector.cs, llama ListarTimbrados() al cargar
+En tu frmLector_Load, después de BloquearColumnas(DataGridView1);, agrega:
+C#
+BloquearColumnasDataGridView1();
+ListarTimbrados();
+
+DataGridView1.CellEndEdit += DataGridView1_CellEndEdit;
+DataGridView1.CellPainting += DataGridView1_CellPainting;
+Eso encaja con el comportamiento VB donde al iniciar se listan las prendas timbradas. �
+GitHub +1
+4) En frmLector.cs, agrega ListarTimbrados()
+Ponlo cerca de tus métodos del grid:
+C#
+private void ListarTimbrados()
+{
+    try
+    {
+        var where = new Dictionary<string, object>();
+
+        if (!string.IsNullOrWhiteSpace(mCodTrabajador))
+            where["fotocheck"] = mCodTrabajador;
+
+        var result = _bdPrenda.ListarTimbradas(where);
+
+        if (result.Item1 < 0)
+        {
+            SetEstado("Error al listar timbrados.", Color.Firebrick);
+            return;
+        }
+
+        LlenarDataGridViewDesdeDataTable(result.Item3);
+        ActualizarTotalCount();
+        SetEstado(result.Item2, Color.SeaGreen);
+    }
+    catch (Exception ex)
+    {
+        SetEstado("Error al listar timbrados: " + ex.Message, Color.Firebrick);
+    }
+}
+5) En frmLector.cs, agrega LlenarDataGridViewDesdeDataTable(...)
+C#
+private void LlenarDataGridViewDesdeDataTable(DataTable dataTimbrado)
+{
+    if (DataGridView1 == null)
+        return;
+
+    DataGridView1.Rows.Clear();
+
+    if (dataTimbrado == null || dataTimbrado.Rows.Count == 0)
+        return;
+
+    foreach (DataRow dr in dataTimbrado.Rows)
+    {
+        int rowIndex = DataGridView1.Rows.Add();
+
+        DataGridView1.Rows[rowIndex].Cells["linea"].Value = dr["linea"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["op"].Value = dr["op"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["hoja_marcacion"].Value = dr["hoja_marcacion"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["corte"].Value = dr["corte"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["subcorte"].Value = dr["subcorte"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["color"].Value = dr["color"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["talla"].Value = dr["talla"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["cod_talla"].Value = dr["cod_talla"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["id_talla"].Value = dr["id_talla"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["fecha"].Value = dr["fecha"]?.ToString() ?? "";
+        DataGridView1.Rows[rowIndex].Cells["id_rfid"].Value = dr["id_rfid"]?.ToString() ?? "";
+    }
+
+    BloquearColumnasDataGridView1();
+}
+6) En frmLector.cs, agrega DataGridView1_CellEndEdit
+Como solo hoja_marcacion es editable, aquí actualizas nhoja en tmp_etiq_timbradas.
+C#
+private void DataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+{
+    try
+    {
+        if (e.RowIndex < 0 || e.ColumnIndex < 0)
+            return;
+
+        var column = DataGridView1.Columns[e.ColumnIndex];
+        if (column == null || column.Name != "hoja_marcacion")
+            return;
+
+        var row = DataGridView1.Rows[e.RowIndex];
+
+        string nuevoHm = Convert.ToString(row.Cells["hoja_marcacion"].Value)?.Trim() ?? "";
+        string idRfid = Convert.ToString(row.Cells["id_rfid"].Value)?.Trim() ?? "";
+        string op = Convert.ToString(row.Cells["op"].Value)?.Trim() ?? "";
+        string codTalla = Convert.ToString(row.Cells["cod_talla"].Value)?.Trim() ?? "";
+
+        if (string.IsNullOrWhiteSpace(idRfid))
+        {
+            SetEstado("No se pudo actualizar: falta id_rfid.", Color.Firebrick);
+            return;
+        }
+
+        var where = new Dictionary<string, object>
+        {
+            { "rfid", idRfid }
+        };
+
+        if (!string.IsNullOrWhiteSpace(mCodTrabajador))
+            where["fotocheck"] = mCodTrabajador;
+
+        // opcional: endurecer el WHERE
+        if (!string.IsNullOrWhiteSpace(op))
+            where["op"] = op;
+
+        if (!string.IsNullOrWhiteSpace(codTalla))
+            where["cod_talla"] = codTalla;
+
+        var update = new Dictionary<string, object>
+        {
+            { "nhoja", nuevoHm }
+        };
+
+        int rows = _bdPrenda.UpdateTimbrado(where, update);
+
+        if (rows > 0)
+        {
+            SetEstado("Hoja de marcación actualizada.", Color.SeaGreen);
+            ResaltarFilaInsertada(e.RowIndex);
+        }
+        else
+        {
+            SetEstado("No se actualizó la hoja de marcación.", Color.DarkOrange);
+        }
+    }
+    catch (Exception ex)
+    {
+        SetEstado("Error al actualizar HM: " + ex.Message, Color.Firebrick);
+    }
+}
+7) En frmLector.cs, agrega DataGridView1_CellPainting
+No es obligatorio, pero sí te sirve para dejar visualmente claro que HM es editable.
+C#
+private void DataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+{
+    if (e.RowIndex < 0 || e.ColumnIndex < 0)
+        return;
+
+    if (DataGridView1.Columns[e.ColumnIndex].Name != "hoja_marcacion")
+        return;
+
+    e.CellStyle.BackColor = Color.FromArgb(255, 248, 220); // tono suave
+    e.CellStyle.ForeColor = Color.Black;
+    e.CellStyle.SelectionBackColor = Color.Khaki;
+    e.CellStyle.SelectionForeColor = Color.Black;
+}
+8) Corrige LlenarPrimeraFilaDataGridView1(...)
+Ahora mismo insertas la fila nueva, pero no actualizas estilo ni bloqueos luego de insertarla. Déjalo así:
+C#
+private void LlenarPrimeraFilaDataGridView1(Dictionary<string, object> data)
+{
+    if (DataGridView1 == null || data == null)
+        return;
+
+    if (DataGridView1.InvokeRequired)
+    {
+        DataGridView1.Invoke(new Action<Dictionary<string, object>>(LlenarPrimeraFilaDataGridView1), data);
+        return;
+    }
+
+    DataGridView1.Rows.Insert(0);
+    int rowIndex = 0;
+
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_rfid", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "op", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "corte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "subcorte", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "cod_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "id_talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "talla", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "color", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
+    SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+
+    BloquearColumnasDataGridView1();
+    ResaltarFilaInsertada(rowIndex);
+}
+9) Usa el mismo alias del VB
+Esto es importante: el VB ya normaliza nombres para el grid usando:
+nhoja AS hoja_marcacion
+sub_corte AS subcorte
+rfid AS id_rfid
+y tu diseñador C# tiene justamente las columnas linea, op, hoja_marcacion, corte, subcorte, color, talla, cod_talla, id_talla, fecha, id_rfid. �
+GitHub +2
+Por eso prefiero que ListarTimbradas() sea la fuente principal para llenar el grid, en vez de reutilizar GetTimbradasByWorkerAndEtiqueta(), porque ese método actual en C# devuelve nombres crudos como sub_corte, rfid, nhoja, y luego te obliga a mapear más manualmente. �
+GitHub
+10) Cambio pequeño de nombres
+En tus snippets C# nuevos usé _bdPrenda. Si en tu clase el objeto ya tiene otro nombre, por ejemplo bdPrenda o m_BDPrenda, solo reemplázalo por el nombre real del atributo.
+Resumen directo de archivos a tocar
+BDPrenda.cs
+agregar ListarTimbradas(...)
+agregar UpdateTimbrado(...)
+frmLector.cs
+en frmLector_Load:
+BloquearColumnasDataGridView1();
+ListarTimbrados();
+enlazar CellEndEdit y CellPainting
+agregar:
+ListarTimbrados()
+LlenarDataGridViewDesdeDataTable(DataTable dataTimbrado)
+DataGridView1_CellEndEdit(...)
+DataGridView1_CellPainting(...)
+mejorar LlenarPrimeraFilaDataGridView1(...)
+Si quieres, en el siguiente mensaje te dejo el bloque final completo ya listo para pegar en BDPrenda.cs y frmLector.cs sin explicación.
