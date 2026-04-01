@@ -1,1 +1,92 @@
-sale este error: https://i.ibb.co/Y7dbvdWR/Screenshot-6.png o https://i.postimg.cc/pX82f9fb/Screenshot-6.png o es un problema del store procedure proque lo tengo como un mensaje del alerta por favor revisar el repo.
+Sí: el problema está en el flujo actual, no en el TextBox del código de barras. En tu VinculadorService.cs, cuando UsarRfid == false, el código salta SaveRFID(...), pone result = OK, y aun así después intenta leer tmp_etiq_timbradas con GetTimbradasByWorkerAndEtiqueta(...). Si no ejecutaste el SP antes, esa tabla no tendrá la fila y el servicio dispara OnError("No se registraron datos en tmp_etiq_timbradas."). �
+GitHub
+Además, en ese mismo flujo actual, la rama sin RFID sí termina intentando insertar en MySQL usando los datos de tmp_etiq_timbradas, o sea depende igual de esa tabla aunque no haya pasado por Sybase antes. �
+GitHub
+La corrección más segura para tu caso “solo código de barras” es esta:
+Qué cambiar
+En vez de saltarte SaveRFID(...) cuando no hay RFID, llama igual al SP pero mandando rfid = "".
+Con el SP que pegaste antes, eso es coherente porque la validación de RFID repetido solo corre si @rfid tiene valor; si va vacío, esa parte se omite y el procedimiento aún puede hacer sus validaciones normales e insertar en tmp_etiq_timbradas.
+Cambio exacto en VinculadorService.cs
+Reemplaza este bloque:
+C#
+Tuple<int, string> result;
+
+if (usarRfid)
+{
+    result = _bdPrenda.SaveRFID(
+        codigoBarra,
+        request.Empresa,
+        request.CodTrabajador,
+        rfid,
+        request.HojaMarcacion
+    );
+
+    if (result.Item1 != 0)
+    {
+        if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfid))
+            GuardarEnCache(rfid);
+
+        OnError?.Invoke(result.Item2);
+        return;
+    }
+
+    if (!string.IsNullOrWhiteSpace(rfid))
+        GuardarEnCache(rfid);
+}
+else
+{
+    result = Tuple.Create(0, "OK");
+}
+por este:
+C#
+Tuple<int, string> result;
+
+// Siempre pasar por Sybase para que:
+// 1) valide negocio
+// 2) actualice estado
+// 3) inserte en tmp_etiq_timbradas
+string rfidParaGuardar = usarRfid ? rfid : "";
+
+result = _bdPrenda.SaveRFID(
+    codigoBarra,
+    request.Empresa,
+    request.CodTrabajador,
+    rfidParaGuardar,
+    request.HojaMarcacion
+);
+
+if (result.Item1 != 0)
+{
+    if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfidParaGuardar))
+        GuardarEnCache(rfidParaGuardar);
+
+    OnError?.Invoke(result.Item2);
+    return;
+}
+
+if (!string.IsNullOrWhiteSpace(rfidParaGuardar))
+    GuardarEnCache(rfidParaGuardar);
+Con eso:
+con RFID: funciona como ahora
+sin RFID: también pasa por el SP, se llena tmp_etiq_timbradas y ya puede continuar el flujo hacia MySQL
+Por qué esta es la mejor corrección
+Porque tu servicio actual ya está diseñado para depender de:
+SaveRFID(...)
+GetTimbradasByWorkerAndEtiqueta(...)
+Insert(...) en MySQL
+Si intentas saltarte el paso 1, rompes el paso 2. Eso es exactamente lo que hoy te está pasando. �
+GitHub
+Extra recomendado
+Cambia también este mensaje para depurar mejor:
+C#
+if (dataTimbrado.Rows.Count == 0)
+{
+    OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas para el código: " + codigoBarra);
+    return;
+}
+Así sabrás si el fallo sigue viniendo de ahí.
+Verificación rápida
+Después del cambio, prueba con solo código de barras:
+si pasa, el problema estaba en la rama !usarRfid
+si ahora sale un mensaje distinto, ese mensaje ya vendrá del SP y será la validación real de negocio
+Si quieres, te dejo VinculadorService.cs completo ya reescrito con este ajuste.
