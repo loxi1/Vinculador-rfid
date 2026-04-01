@@ -1,2 +1,4 @@
 Ahora quiero implementar ListarTimbrados() y poner llenar LlenarDataGridViewDesdeDataTable(dataTimbrado) y todo lo que concierne a ListarTimbrados por favor revisar frmLecto.txt y toda las funciones que conciernen ademas se tiene que editar el DataGridView1 con la funcion: DataGridView1_CellEndEdit y depende de ti si deseas usar: DataGridView1_CellPainting.
 por favor entrar al repo: https://github.com/loxi1/Vinculador-rfid esta en c# pero la fuente de donde se copia esta en vb y lo tengo en archivos *.txt por favor dime los cambios.
+
+http://spap05.cofaco.com/eCorporativoTV/blank_tabla_control_linea_totales/
