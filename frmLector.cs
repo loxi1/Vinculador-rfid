@@ -157,15 +157,14 @@ namespace DS9908R_App
         {
             LimpiarSoloRfid();
         }
-        
+
         private void ActualizarEstadoConexion(string texto, Color color)
         {
             lblEstadoConexion.Text = texto;
             lblEstadoConexion.BackColor = color;
             lblEstadoConexion.ForeColor = Color.White;
-            lblEstadoConexion.TextAlign = ContentAlignment.MiddleCenter;
 
-            SetMensajeVincular(texto);
+            SetEstado(texto, color); // 🔥 sincroniza con MsnVincular
         }
 
         private void HabilitarTabsTrabajo(bool habilitar)
@@ -599,7 +598,18 @@ namespace DS9908R_App
         }
         private void SetEstado(string mensaje, Color color)
         {
-            SetEstadoGeneral(mensaje, color);
+            if (MsnVincular == null)
+                return;
+
+            if (MsnVincular.InvokeRequired)
+            {
+                MsnVincular.Invoke(new Action<string, Color>(SetEstado), mensaje, color);
+                return;
+            }
+
+            MsnVincular.Text = mensaje ?? "";
+            MsnVincular.ForeColor = Color.White;
+            MsnVincular.BackColor = color;
         }
 
         private void ReproducirOk()

@@ -71,9 +71,24 @@ namespace DS9908R_App
                     return;
                 }
 
+                // ✅ si no usa RFID, se permite guardar
+                if (!usarRfid)
+                {
+                    rfid = "";
+                }
+
+                // ✅ si usa RFID, debe haber solo uno válido
                 if (usarRfid && string.IsNullOrWhiteSpace(rfid))
                 {
                     OnError?.Invoke("El RFID está vacío.");
+                    return;
+                }
+
+                // ✅ protección extra por si llega un string raro con varios RFID
+                if (!string.IsNullOrWhiteSpace(rfid) &&
+                    (rfid.Contains(",") || rfid.Contains(";") || rfid.Contains("|")))
+                {
+                    OnError?.Invoke("Error: se detectó más de un RFID en la solicitud.");
                     return;
                 }
 
