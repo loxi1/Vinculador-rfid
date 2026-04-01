@@ -100,32 +100,31 @@ namespace DS9908R_App
 
                 Tuple<int, string> result;
 
-                if (usarRfid)
+                // Siempre pasar por Sybase para que:
+                // 1) valide negocio
+                // 2) actualice estado
+                // 3) inserte en tmp_etiq_timbradas
+                string rfidParaGuardar = usarRfid ? rfid : "";
+
+                result = _bdPrenda.SaveRFID(
+                    codigoBarra,
+                    request.Empresa,
+                    request.CodTrabajador,
+                    rfidParaGuardar,
+                    request.HojaMarcacion
+                );
+
+                if (result.Item1 != 0)
                 {
-                    result = _bdPrenda.SaveRFID(
-                        codigoBarra,
-                        request.Empresa,
-                        request.CodTrabajador,
-                        rfid,
-                        request.HojaMarcacion
-                    );
+                    if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfidParaGuardar))
+                        GuardarEnCache(rfidParaGuardar);
 
-                    if (result.Item1 != 0)
-                    {
-                        if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfid))
-                            GuardarEnCache(rfid);
-
-                        OnError?.Invoke(result.Item2);
-                        return;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(rfid))
-                        GuardarEnCache(rfid);
+                    OnError?.Invoke(result.Item2);
+                    return;
                 }
-                else
-                {
-                    result = Tuple.Create(0, "OK");
-                }
+
+                if (!string.IsNullOrWhiteSpace(rfidParaGuardar))
+                    GuardarEnCache(rfidParaGuardar);
 
                 DataTable dataTimbrado = _bdPrenda.GetTimbradasByWorkerAndEtiqueta(
                     request.CodTrabajador,
@@ -134,7 +133,7 @@ namespace DS9908R_App
 
                 if (dataTimbrado.Rows.Count == 0)
                 {
-                    OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas.");
+                    OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas para el código: " + codigoBarra);
                     return;
                 }
 
