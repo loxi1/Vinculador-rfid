@@ -1,112 +1,211 @@
-dado el metodo:
+Sí. Con ese método, la regla correcta debería ser:
+RFID vacío → permitido
+1 RFID → permitido
+más de 1 RFID → error y no guardar
+Pero ese método por sí solo no sabe cuántos RFID se leyeron, porque solo recibe:
+C#
+request.Rfid
+request.UsarRfid
+o sea, un solo string.
+Lo correcto
+La validación fuerte de “más de uno” debe hacerse en frmLector.cs, antes de encolar, porque ahí sí tienes:
+_rfidPendientes.Count
+dgvTagList.Rows.Count
+cantidadRFID
+De hecho, ya ibas por buen camino con esto:
+C#
+if (_rfidPendientes.Count > 1)
+{
+    // error
+    return;
+}
+Reglas recomendadas
+Caso 1: sin RFID
+Guardar permitido.
+Caso 2: un solo RFID
+Guardar permitido.
+Caso 3: más de un RFID
+No guardar y mostrar error.
+Validación correcta en frmLector.cs
+Tu IntentarVincular() debería quedar así:
+C#
+private void IntentarVincular()
+{
+    string codigo = (CodBarras.Text ?? "").Trim();
+    string hojaMarcacion = (TextBoxHM.Text ?? "").Trim();
+
+    if (string.IsNullOrWhiteSpace(codigo))
+    {
+        SetEstado("Debe ingresar o leer un código de barras.", Color.Firebrick);
+        return;
+    }
+
+    // ✅ regla principal:
+    // RFID puede ser 0 o 1
+    // más de 1 = error
+    if (_rfidPendientes.Count > 1)
+    {
+        SetEstado("Error: se detectó más de un RFID. Limpie la lectura.", Color.Firebrick);
+        AlertaManager.MostrarAlerta("Error: se detectó más de un RFID. Limpie la lectura.", pinturaRoja, 3, 5);
+        return;
+    }
+
+    string rfid = _rfidPendientes.Count == 1
+        ? _rfidPendientes[0]
+        : "";
+
+    var request = new VinculacionRequest
+    {
+        CodigoBarras = codigo,
+        Rfid = rfid,
+        HojaMarcacion = hojaMarcacion,
+        CodTrabajador = mCodTrabajador,
+        Empresa = mEmpresa,
+        UsarRfid = !string.IsNullOrWhiteSpace(rfid)
+    };
+
+    SetEstado("Procesando...", Color.Khaki);
+    _vinculador.Enqueue(request);
+}
+Validación adicional en ProcesarVinculacion
+Aunque la validación principal debe estar en frmLector.cs, también conviene blindar el servicio.
+Tu método ajustado
+C#
 private void ProcesarVinculacion(VinculacionRequest request)
+{
+    try
+    {
+        string codigoBarra = (request.CodigoBarras ?? "").Trim();
+        string rfid = NormalizarRfid(request.Rfid);
+        bool usarRfid = request.UsarRfid;
+
+        if (string.IsNullOrWhiteSpace(codigoBarra))
         {
-            try
-            {
-                string codigoBarra = (request.CodigoBarras ?? "").Trim();
-                string rfid = NormalizarRfid(request.Rfid);
-                bool usarRfid = request.UsarRfid;
-
-                if (string.IsNullOrWhiteSpace(codigoBarra))
-                {
-                    OnError?.Invoke("El código de barras está vacío.");
-                    return;
-                }
-
-                if (usarRfid && string.IsNullOrWhiteSpace(rfid))
-                {
-                    OnError?.Invoke("El RFID está vacío.");
-                    return;
-                }
-
-                if (usarRfid && !string.IsNullOrWhiteSpace(rfid) && _cacheRFID.ContainsKey(rfid))
-                {
-                    OnError?.Invoke("RFID repetido: " + rfid);
-                    return;
-                }
-
-                Tuple<int, string> result;
-
-                if (usarRfid)
-                {
-                    result = _bdPrenda.SaveRFID(
-                        codigoBarra,
-                        request.Empresa,
-                        request.CodTrabajador,
-                        rfid,
-                        request.HojaMarcacion
-                    );
-
-                    if (result.Item1 != 0)
-                    {
-                        if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfid))
-                            GuardarEnCache(rfid);
-
-                        OnError?.Invoke(result.Item2);
-                        return;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(rfid))
-                        GuardarEnCache(rfid);
-                }
-                else
-                {
-                    result = Tuple.Create(0, "OK");
-                }
-
-                DataTable dataTimbrado = _bdPrenda.GetTimbradasByWorkerAndEtiqueta(
-                    request.CodTrabajador,
-                    codigoBarra
-                );
-
-                if (dataTimbrado.Rows.Count == 0)
-                {
-                    OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas.");
-                    return;
-                }
-
-                DataRow row = dataTimbrado.Rows[0];
-
-                var insertData = new Dictionary<string, object>
-                {
-                    { "id_rfid", usarRfid ? rfid : "" },
-                    { "id_barras", row["etiqueta"] },
-                    { "op", row["op"] },
-                    { "corte", row["corte"] },
-                    { "subcorte", row["sub_corte"] },
-                    { "cod_talla", row["cod_talla"] },
-                    { "id_talla", row["id_talla"] },
-                    { "talla", row["talla"] },
-                    { "cod_combinacion", row["cod_comb"] },
-                    { "color", row["color"] },
-                    { "cod_trabajador", row["fotocheck"] },
-                    { "hoja_marcacion", request.HojaMarcacion }
-                };
-
-                long insertReturn = _bdPrendaScm.Insert(insertData);
-
-                if (insertReturn != 1)
-                {
-                    string mysqlError = _bdPrendaScm.GetError();
-                    OnError?.Invoke(string.IsNullOrWhiteSpace(mysqlError)
-                        ? "No se pudo insertar en bd_ci_scm.prenda."
-                        : mysqlError);
-                    return;
-                }
-
-                insertData["fecha"] = DateTime.Now;
-                insertData["linea"] = row["linea"];
-
-                if (insertData.ContainsKey("id_barras")) insertData.Remove("id_barras");
-                if (insertData.ContainsKey("cod_combinacion")) insertData.Remove("cod_combinacion");
-                if (insertData.ContainsKey("cod_trabajador")) insertData.Remove("cod_trabajador");
-
-                OnInsertadoOk?.Invoke(insertData);
-                OnInfo?.Invoke("Prenda registrada exitosamente.");
-            }
-            catch (Exception ex)
-            {
-                OnError?.Invoke("Error inesperado al registrar: " + ex.Message);
-            }
+            OnError?.Invoke("El código de barras está vacío.");
+            return;
         }
-validar que el codigo rfid debe ser 1 o vacio y debe permitir guardar en caso es mas de uno sale un error
+
+        // ✅ si no usa RFID, se permite guardar
+        if (!usarRfid)
+        {
+            rfid = "";
+        }
+
+        // ✅ si usa RFID, debe haber solo uno válido
+        if (usarRfid && string.IsNullOrWhiteSpace(rfid))
+        {
+            OnError?.Invoke("El RFID está vacío.");
+            return;
+        }
+
+        // ✅ protección extra por si llega un string raro con varios RFID
+        if (!string.IsNullOrWhiteSpace(rfid) &&
+            (rfid.Contains(",") || rfid.Contains(";") || rfid.Contains("|")))
+        {
+            OnError?.Invoke("Error: se detectó más de un RFID en la solicitud.");
+            return;
+        }
+
+        if (usarRfid && !string.IsNullOrWhiteSpace(rfid) && _cacheRFID.ContainsKey(rfid))
+        {
+            OnError?.Invoke("RFID repetido: " + rfid);
+            return;
+        }
+
+        Tuple<int, string> result;
+
+        if (usarRfid)
+        {
+            result = _bdPrenda.SaveRFID(
+                codigoBarra,
+                request.Empresa,
+                request.CodTrabajador,
+                rfid,
+                request.HojaMarcacion
+            );
+
+            if (result.Item1 != 0)
+            {
+                if (result.Item1 == 3 && !string.IsNullOrWhiteSpace(rfid))
+                    GuardarEnCache(rfid);
+
+                OnError?.Invoke(result.Item2);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(rfid))
+                GuardarEnCache(rfid);
+        }
+        else
+        {
+            result = Tuple.Create(0, "OK");
+        }
+
+        DataTable dataTimbrado = _bdPrenda.GetTimbradasByWorkerAndEtiqueta(
+            request.CodTrabajador,
+            codigoBarra
+        );
+
+        if (dataTimbrado.Rows.Count == 0)
+        {
+            OnError?.Invoke("No se registraron datos en tmp_etiq_timbradas.");
+            return;
+        }
+
+        DataRow row = dataTimbrado.Rows[0];
+
+        var insertData = new Dictionary<string, object>
+        {
+            { "id_rfid", usarRfid ? rfid : "" },
+            { "id_barras", row["etiqueta"] },
+            { "op", row["op"] },
+            { "corte", row["corte"] },
+            { "subcorte", row["sub_corte"] },
+            { "cod_talla", row["cod_talla"] },
+            { "id_talla", row["id_talla"] },
+            { "talla", row["talla"] },
+            { "cod_combinacion", row["cod_comb"] },
+            { "color", row["color"] },
+            { "cod_trabajador", row["fotocheck"] },
+            { "hoja_marcacion", request.HojaMarcacion }
+        };
+
+        long insertReturn = _bdPrendaScm.Insert(insertData);
+
+        if (insertReturn != 1)
+        {
+            string mysqlError = _bdPrendaScm.GetError();
+            OnError?.Invoke(string.IsNullOrWhiteSpace(mysqlError)
+                ? "No se pudo insertar en bd_ci_scm.prenda."
+                : mysqlError);
+            return;
+        }
+
+        insertData["fecha"] = DateTime.Now;
+        insertData["linea"] = row["linea"];
+
+        if (insertData.ContainsKey("id_barras")) insertData.Remove("id_barras");
+        if (insertData.ContainsKey("cod_combinacion")) insertData.Remove("cod_combinacion");
+        if (insertData.ContainsKey("cod_trabajador")) insertData.Remove("cod_trabajador");
+
+        OnInsertadoOk?.Invoke(insertData);
+        OnInfo?.Invoke("Prenda registrada exitosamente.");
+    }
+    catch (Exception ex)
+    {
+        OnError?.Invoke("Error inesperado al registrar: " + ex.Message);
+    }
+}
+Lo más importante
+Este método sí permite:
+código + 1 RFID
+código + RFID vacío
+Este método no debe permitir:
+código + más de un RFID
+Pero repito: la validación real de “más de uno” debe salir de _rfidPendientes.Count.
+Recomendación final
+Haz la regla así:
+_rfidPendientes.Count == 0 → guardar sin RFID
+_rfidPendientes.Count == 1 → guardar con RFID
+_rfidPendientes.Count > 1 → error
+Si quieres, te dejo el bloque completo de SetRfid(...) + IntentarVincular() + btnClear_Click() ya ajustado para esa regla exacta.
