@@ -937,6 +937,7 @@ namespace DS9908R_App
         {
             tabMenu.SelectedTab = tabHojaMarcacion;
         }
+
         private void ListarTimbrados()
         {
             try
@@ -945,6 +946,12 @@ namespace DS9908R_App
 
                 if (!string.IsNullOrWhiteSpace(mCodTrabajador))
                     where["fotocheck"] = mCodTrabajador;
+
+                if (_vinculador == null)
+                {
+                    SetEstado("El servicio de vinculación no está inicializado.", Color.Firebrick);
+                    return;
+                }
 
                 var resultado = _vinculador.ListarTimbradas(where);
 
@@ -1035,12 +1042,13 @@ namespace DS9908R_App
             { "nhoja", nuevoValor }
         };
 
-                int resultado;
+                if (_vinculador == null)
+                {
+                    SetEstado("El servicio de vinculación no está inicializado.", Color.Firebrick);
+                    return;
+                }
 
-                if (_vinculador != null && _vinculador.BDPrenda != null)
-                    resultado = _vinculador.BDPrenda.UpdateTimbrado(where, update);
-                else
-                    resultado = _bdPrenda.UpdateTimbrado(where, update);
+                int resultado = _vinculador.UpdateTimbrado(where, update);
 
                 if (resultado > 0)
                 {
