@@ -209,5 +209,17 @@ namespace DS9908R_App
 
             _cacheRFID[rfid] = true;
         }
+
+        public Tuple<int, string, DataTable> ListarTimbradas(Dictionary<string, object> whereParameters)
+        {
+            return _bdPrenda.ListarTimbradas(whereParameters);
+        }
+
+        public int UpdateTimbrado(
+    Dictionary<string, object> whereParameters,
+    Dictionary<string, object> updateParameters)
+        {
+            return _bdPrenda.UpdateTimbrado(whereParameters, updateParameters);
+        }
     }
 }

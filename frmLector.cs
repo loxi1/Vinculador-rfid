@@ -104,19 +104,17 @@ namespace DS9908R_App
             try
             {
                 ConfigurarGridRfid();
-
                 BloquearColumnas(DataGridView1);
-                ListarTimbrados();
 
                 // tabMenu
                 tabMenu.DrawItem += tabMenu_DrawItem;
-
-                //AplicarDisenoOperativo();
 
                 _vinculador = new VinculadorService();
                 _vinculador.OnInfo += Vinculador_OnInfo;
                 _vinculador.OnError += Vinculador_OnError;
                 _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+                ListarTimbrados();
 
                 m_pCoreScanner = new CCoreScannerClass();
                 discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
@@ -130,10 +128,8 @@ namespace DS9908R_App
                     m_arScanners[i] = new Scanner();
 
                 m_bScannerOpen = false;
-
                 ActualizarEstadoConexion("LISTO PARA CONECTAR", Color.DarkOrange);
                 HabilitarTabsTrabajo(false);
-
                 CodBarras.Focus();
             }
             catch (Exception ex)
@@ -950,7 +946,7 @@ namespace DS9908R_App
                 if (!string.IsNullOrWhiteSpace(mCodTrabajador))
                     where["fotocheck"] = mCodTrabajador;
 
-                var resultado = _bdPrenda.ListarTimbradas(where);
+                var resultado = _vinculador.ListarTimbradas(where);
 
                 if (resultado.Item1 >= 0)
                 {
