@@ -1,3 +1,5 @@
+https://drive.google.com/file/d/1_nVUBSb4_n7tqeeW30BQTW2gQ1lhkdeM/view?usp=drivesdk
+
 El error está clarísimo: en DataGridView1_CellEndEdit todavía estás usando una versión intermedia de la lógica.
 Tu código actual intenta usar esto:
 C#
