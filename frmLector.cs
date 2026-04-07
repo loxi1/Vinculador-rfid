@@ -106,6 +106,7 @@ namespace DS9908R_App
                 ConfigurarGridRfid();
 
                 BloquearColumnas(DataGridView1);
+                ListarTimbrados();
 
                 // tabMenu
                 tabMenu.DrawItem += tabMenu_DrawItem;
@@ -783,6 +784,9 @@ namespace DS9908R_App
             SetCellValueIfExists(DataGridView1, rowIndex, "hoja_marcacion", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "fecha", data);
             SetCellValueIfExists(DataGridView1, rowIndex, "linea", data);
+
+            BloquearColumnasDataGridView1();
+            ResaltarFilaInsertada(rowIndex);
         }
 
         private void ResaltarFilaInsertada(int rowIndex)
@@ -936,6 +940,146 @@ namespace DS9908R_App
         private void btnVerConsolidado_Click(object sender, EventArgs e)
         {
             tabMenu.SelectedTab = tabHojaMarcacion;
+        }
+        private void ListarTimbrados()
+        {
+            try
+            {
+                Dictionary<string, object> where = new Dictionary<string, object>();
+
+                if (!string.IsNullOrWhiteSpace(mCodTrabajador))
+                    where["fotocheck"] = mCodTrabajador;
+
+                var resultado = _bdPrenda.ListarTimbradas(where);
+
+                if (resultado.Item1 >= 0)
+                {
+                    LlenarDataGridViewDesdeDataTable(resultado.Item3);
+                    ActualizarTotalCount();
+                    SetEstado(resultado.Item2, Color.SeaGreen);
+                }
+                else
+                {
+                    SetEstado("Error al listar timbrados: " + resultado.Item2, Color.Firebrick);
+                }
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al listar timbrados: " + ex.Message, Color.Firebrick);
+            }
+        }
+
+        private void LlenarDataGridViewDesdeDataTable(DataTable dataTimbrado)
+        {
+            try
+            {
+                DataGridView1.Rows.Clear();
+
+                if (dataTimbrado == null || dataTimbrado.Rows.Count == 0)
+                    return;
+
+                foreach (DataRow dr in dataTimbrado.Rows)
+                {
+                    int rowIndex = DataGridView1.Rows.Add();
+
+                    DataGridView1.Rows[rowIndex].Cells["linea"].Value = dr["linea"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["op"].Value = dr["op"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["hoja_marcacion"].Value = dr["hoja_marcacion"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["corte"].Value = dr["corte"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["subcorte"].Value = dr["subcorte"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["color"].Value = dr["color"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["talla"].Value = dr["talla"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["cod_talla"].Value = dr["cod_talla"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["id_talla"].Value = dr["id_talla"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["fecha"].Value = dr["fecha"]?.ToString() ?? "";
+                    DataGridView1.Rows[rowIndex].Cells["id_rfid"].Value = dr["id_rfid"]?.ToString() ?? "";
+                }
+
+                BloquearColumnas(DataGridView1);
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al llenar grid: " + ex.Message, Color.Firebrick);
+            }
+        }
+
+        private void DataGridView1_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            try
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+                string nombreColumna = DataGridView1.Columns[e.ColumnIndex].Name;
+
+                if (nombreColumna != "hoja_marcacion")
+                    return;
+
+                DataGridViewRow fila = DataGridView1.Rows[e.RowIndex];
+
+                string nuevoValor = Convert.ToString(fila.Cells["hoja_marcacion"].Value)?.Trim() ?? "";
+                string idRfid = Convert.ToString(fila.Cells["id_rfid"].Value)?.Trim() ?? "";
+
+                if (string.IsNullOrWhiteSpace(idRfid))
+                {
+                    SetEstado("No se puede actualizar: id_rfid vacío.", Color.Firebrick);
+                    return;
+                }
+
+                var where = new Dictionary<string, object>
+        {
+            { "rfid", idRfid }
+        };
+
+                if (!string.IsNullOrWhiteSpace(mCodTrabajador))
+                    where["fotocheck"] = mCodTrabajador;
+
+                var update = new Dictionary<string, object>
+        {
+            { "nhoja", nuevoValor }
+        };
+
+                int resultado;
+
+                if (_vinculador != null && _vinculador.BDPrenda != null)
+                    resultado = _vinculador.BDPrenda.UpdateTimbrado(where, update);
+                else
+                    resultado = _bdPrenda.UpdateTimbrado(where, update);
+
+                if (resultado > 0)
+                {
+                    fila.Cells["fecha"].Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    SetEstado("Hoja de marcación actualizada correctamente.", Color.SeaGreen);
+                }
+                else
+                {
+                    SetEstado("No se actualizó el timbrado.", Color.DarkOrange);
+                }
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al editar: " + ex.Message, Color.Firebrick);
+            }
+        }
+
+        private void DataGridView1_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+        {
+            try
+            {
+                if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                    return;
+
+                if (DataGridView1.Columns[e.ColumnIndex].Name == "hoja_marcacion")
+                {
+                    e.CellStyle.BackColor = Color.LightYellow;
+                    e.CellStyle.ForeColor = Color.Black;
+                    e.CellStyle.SelectionBackColor = Color.Gold;
+                    e.CellStyle.SelectionForeColor = Color.Black;
+                }
+            }
+            catch
+            {
+            }
         }
     }
 }
