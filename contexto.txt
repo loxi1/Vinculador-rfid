@@ -1,2 +1,141 @@
-revisar se hicieron los cambios validr por favor y tengo un error relacionado con var resultado = _bdPrenda.ListarTimbradas(where); y verificar: VinculadorService.cs
-se tiene actualiado el repo
+Sí, ya vi el problema.
+El error de var resultado = _bdPrenda.ListarTimbradas(where); pasa porque en frmLector.cs no existe ningún campo _bdPrenda; solo existe private VinculadorService _vinculador;. Además, en frmLector_Load estás llamando ListarTimbrados(); antes de crear _vinculador = new VinculadorService();. O sea, ahora mismo hay dos fallas: una variable inexistente y un orden de inicialización incorrecto. �
+GitHub +3
+También confirmé que BDPrenda.cs sí ya tiene ListarTimbradas(...) y UpdateTimbrado(...), así que esa parte quedó actualizada. En cambio, VinculadorService.cs solo tiene private readonly BDPrenda _bdPrenda = new BDPrenda();, pero no expone esa instancia con una propiedad pública ni con métodos wrapper, por eso frmLector no puede usarla directamente a través del servicio. �
+GitHub +3
+La corrección más limpia es esta:
+1) frmLector_Load — cambia el orden
+Deja primero la creación del servicio y luego llama a ListarTimbrados():
+C#
+private void frmLector_Load(object sender, EventArgs e)
+{
+    try
+    {
+        ConfigurarGridRfid();
+        BloquearColumnas(DataGridView1);
+
+        // tabMenu
+        tabMenu.DrawItem += tabMenu_DrawItem;
+
+        _vinculador = new VinculadorService();
+        _vinculador.OnInfo += Vinculador_OnInfo;
+        _vinculador.OnError += Vinculador_OnError;
+        _vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+
+        ListarTimbrados();
+
+        m_pCoreScanner = new CCoreScannerClass();
+        discoverScanner = DiscoverScanner.GetInstance(m_pCoreScanner);
+        scanToConnect = ScanToConnect.GetInstance();
+
+        m_pCoreScanner.BarcodeEvent += new _ICoreScannerEvents_BarcodeEventEventHandler(OnBarcodeEventLector);
+        m_pCoreScanner.PNPEvent += new _ICoreScannerEvents_PNPEventEventHandler(OnPnpEventLector);
+
+        m_arScanners = new Scanner[255];
+        for (int i = 0; i < m_arScanners.Length; i++)
+            m_arScanners[i] = new Scanner();
+
+        m_bScannerOpen = false;
+        ActualizarEstadoConexion("LISTO PARA CONECTAR", Color.DarkOrange);
+        HabilitarTabsTrabajo(false);
+        CodBarras.Focus();
+    }
+    catch (Exception ex)
+    {
+        MessageBox.Show(
+            "Error inicializando CoreScanner: " + ex.Message,
+            "CoreScanner",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Error
+        );
+
+        ActualizarEstadoConexion("ERROR INICIALIZANDO", Color.Firebrick);
+    }
+}
+Eso corrige el segundo problema que sí está en el repo hoy. �
+GitHub
+2) VinculadorService.cs — expón BDPrenda con métodos públicos
+Agrega esto dentro de la clase VinculadorService:
+C#
+public Tuple<int, string, DataTable> ListarTimbradas(Dictionary<string, object> whereParameters)
+{
+    return _bdPrenda.ListarTimbradas(whereParameters);
+}
+
+public int UpdateTimbrado(
+    Dictionary<string, object> whereParameters,
+    Dictionary<string, object> updateParameters)
+{
+    return _bdPrenda.UpdateTimbrado(whereParameters, updateParameters);
+}
+Así aprovechas que el servicio ya tiene internamente private readonly BDPrenda _bdPrenda = new BDPrenda();. �
+GitHub
+3) frmLector.cs — corrige ListarTimbrados()
+Cambia esta línea:
+C#
+var resultado = _bdPrenda.ListarTimbradas(where);
+por esta:
+C#
+var resultado = _vinculador.ListarTimbradas(where);
+Te quedaría así:
+C#
+private void ListarTimbrados()
+{
+    try
+    {
+        Dictionary<string, object> where = new Dictionary<string, object>();
+
+        if (!string.IsNullOrWhiteSpace(mCodTrabajador))
+            where["fotocheck"] = mCodTrabajador;
+
+        var resultado = _vinculador.ListarTimbradas(where);
+
+        if (resultado.Item1 >= 0)
+        {
+            LlenarDataGridViewDesdeDataTable(resultado.Item3);
+            ActualizarTotalCount();
+            SetEstado(resultado.Item2, Color.SeaGreen);
+        }
+        else
+        {
+            SetEstado("Error al listar timbrados: " + resultado.Item2, Color.Firebrick);
+        }
+    }
+    catch (Exception ex)
+    {
+        SetEstado("Error al listar timbrados: " + ex.Message, Color.Firebrick);
+    }
+}
+4) frmLector.cs — para edición aún falta esto
+Revisé y todavía no existe el método DataGridView1_CellEndEdit, ni tampoco está enlazado CellEndEdit += .... CellPainting tampoco está enlazado. Así que la parte de “listar” ya está medio avanzada, pero la parte de edición todavía no quedó integrada. �
+GitHub +3
+Tu camino correcto ahora es:
+dejar BDPrenda.cs como está
+agregar wrappers públicos en VinculadorService
+usar _vinculador.ListarTimbradas(where) en el form
+mover ListarTimbrados() después de new VinculadorService()
+El cambio mínimo y correcto es ese.
+Te dejo el parche exacto listo para copiar:
+En VinculadorService.cs:
+C#
+public Tuple<int, string, DataTable> ListarTimbradas(Dictionary<string, object> whereParameters)
+{
+    return _bdPrenda.ListarTimbradas(whereParameters);
+}
+
+public int UpdateTimbrado(
+    Dictionary<string, object> whereParameters,
+    Dictionary<string, object> updateParameters)
+{
+    return _bdPrenda.UpdateTimbrado(whereParameters, updateParameters);
+}
+En frmLector.cs, dentro de ListarTimbrados():
+C#
+var resultado = _vinculador.ListarTimbradas(where);
+En frmLector_Load(...): mueve ListarTimbrados(); debajo de:
+C#
+_vinculador = new VinculadorService();
+_vinculador.OnInfo += Vinculador_OnInfo;
+_vinculador.OnError += Vinculador_OnError;
+_vinculador.OnInsertadoOk += Vinculador_OnInsertadoOk;
+Si quieres, en el siguiente mensaje te dejo también el bloque exacto para DataGridView1_CellEndEdit usando _vinculador.UpdateTimbrado(...).
