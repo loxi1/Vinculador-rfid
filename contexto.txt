@@ -1,3 +1,6 @@
+
+https://docs.google.com/document/d/1cqBmnaiH7PEXrh8dBgy7hKSymUn5flIh/edit?usp=drivesdk&ouid=102007340510333386394&rtpof=true&sd=true
+
 Perfecto, aquí ya entramos a lo interesante 🔥 (port VB → C# bien hecho).
 He revisado el repo y lo que estás mencionando es clave:
 en frmLecto.txt (VB) existe la función:
