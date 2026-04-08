@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Sybase.Data.AseClient;
 
 namespace DS9908R_App
@@ -403,6 +404,8 @@ namespace DS9908R_App
                         return Tuple.Create(li_return, s_mensaje, totalTalla, detalleTalla);
                     }
 
+                    Console.WriteLine("Filas: " + datos.Rows.Count);
+
                     // 🔹 Agrupación
                     var agrupados = new Dictionary<string, (int total, List<Dictionary<string, object>> detalles)>();
 
@@ -463,5 +466,321 @@ namespace DS9908R_App
 
             return Tuple.Create(li_return, s_mensaje, totalTalla, detalleTalla);
         }
+
+        public DataTable GetHistorialPrenda(
+    string op,
+    string corte,
+    string subcorte,
+    string talla,
+    string idTalla)
+        {
+            DataTable tabla = new DataTable();
+
+            try
+            {
+                using (AseConnection conn = _sybase.Connect())
+                {
+                    if (conn == null || conn.State != ConnectionState.Open)
+                        throw new Exception("Error en conexión con Sybase.");
+
+                    using (AseCommand cmd = new AseCommand("USP_ACAB_EMB_MOV_PRENDAS", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.Add(new AseParameter("@compania", AseDbType.VarChar)).Value = "02";
+                        cmd.Parameters.Add(new AseParameter("@op", AseDbType.VarChar)).Value = op;
+                        cmd.Parameters.Add(new AseParameter("@corte", AseDbType.VarChar)).Value = corte;
+                        cmd.Parameters.Add(new AseParameter("@subcorte", AseDbType.VarChar)).Value = subcorte;
+                        cmd.Parameters.Add(new AseParameter("@talla", AseDbType.VarChar)).Value = talla;
+                        cmd.Parameters.Add(new AseParameter("@id", AseDbType.VarChar)).Value = idTalla;
+
+                        using (AseDataReader reader = cmd.ExecuteReader())
+                        {
+                            tabla.Load(reader);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en GetHistorialPrenda", ex);
+                throw;
+            }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return tabla;
+        }
+
+        public string ObtenerSubCorte(string op, string corte, string codTalla, string idTalla)
+        {
+            string subCorte = "";
+
+            if (string.IsNullOrWhiteSpace(op) ||
+                string.IsNullOrWhiteSpace(corte) ||
+                string.IsNullOrWhiteSpace(codTalla) ||
+                string.IsNullOrWhiteSpace(idTalla))
+            {
+                throw new ArgumentException("Los parámetros no pueden estar vacíos o nulos.");
+            }
+
+            try
+            {
+                using (AseConnection conn = _sybase.Connect())
+                {
+                    if (conn == null || conn.State != ConnectionState.Open)
+                        throw new Exception("Error en conexión con Sybase.");
+
+                    string query = @"
+                SELECT NOrdenSubCorte
+                FROM ordencortetallasid
+                WHERE ccmpn = @compania
+                AND nnope = @nnope
+                AND nordencorte = @nordencorte
+                AND cod_talla = @cod_talla
+                AND id_talla = @id_talla";
+
+                    using (AseCommand cmd = new AseCommand(query, conn))
+                    {
+                        cmd.Parameters.Add(new AseParameter("@compania", AseDbType.VarChar)).Value = "02";
+                        cmd.Parameters.Add(new AseParameter("@nnope", AseDbType.VarChar)).Value = op;
+                        cmd.Parameters.Add(new AseParameter("@nordencorte", AseDbType.VarChar)).Value = corte;
+                        cmd.Parameters.Add(new AseParameter("@cod_talla", AseDbType.VarChar)).Value = codTalla;
+                        cmd.Parameters.Add(new AseParameter("@id_talla", AseDbType.VarChar)).Value = idTalla;
+
+                        using (AseDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                subCorte = reader.IsDBNull(0) ? "" : reader.GetString(0);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en ObtenerSubCorte", ex);
+                throw;
+            }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return subCorte;
+        }
+
+        public Tuple<int, string, string> ValidarOP(Dictionary<string, object> whereParameters, string tipo)
+        {
+            int li_return = -1;
+            string s_mensaje = string.Empty;
+            string result = string.Empty;
+            DataTable datos = new DataTable();
+
+            if (whereParameters == null || whereParameters.Count == 0)
+                throw new ArgumentException("El parámetro whereParameters no puede estar vacío o nulo.");
+
+            try
+            {
+                using (AseConnection conn = _sybase.Connect())
+                {
+                    if (conn == null || conn.State != ConnectionState.Open)
+                        throw new InvalidOperationException("La conexión a la base de datos no está abierta.");
+
+                    List<string> filtros = new List<string>();
+                    using (AseCommand cmd = conn.CreateCommand())
+                    {
+                        foreach (var item in whereParameters)
+                        {
+                            filtros.Add($"{item.Key} = @{item.Key}");
+                            cmd.Parameters.AddWithValue("@" + item.Key, item.Value ?? DBNull.Value);
+                        }
+
+                        string sql = "SELECT TOP 1 norpd, nhjmr FROM althmd ";
+                        if (filtros.Count > 0)
+                            sql += "WHERE " + string.Join(" AND ", filtros);
+
+                        cmd.CommandText = sql;
+
+                        using (AseDataReader reader = cmd.ExecuteReader())
+                        {
+                            datos.Load(reader);
+                        }
+                    }
+
+                    if (datos.Rows.Count > 0)
+                    {
+                        var row = datos.Rows[0];
+                        if (row[tipo] != DBNull.Value)
+                        {
+                            result = row[tipo].ToString();
+                            li_return = 1;
+                            s_mensaje = "Validación exitosa.";
+                        }
+                        else
+                        {
+                            li_return = 0;
+                            s_mensaje = "No se encontró valor para el tipo solicitado.";
+                        }
+                    }
+                    else
+                    {
+                        li_return = 0;
+                        s_mensaje = "No se encontraron registros.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en ValidarOP", ex);
+                li_return = -1;
+                s_mensaje = ex.Message;
+            }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return Tuple.Create(li_return, s_mensaje, result);
+        }
+
+
+        private string BuildWhereClause(Dictionary<string, object> parameters, string alias = "")
+        {
+            if (parameters == null || parameters.Count == 0)
+                throw new ArgumentException("Parámetros vacíos");
+
+            return string.Join(" AND ", parameters.Keys.Select(key =>
+                string.IsNullOrEmpty(alias)
+                    ? $"{key} = @{key}"
+                    : $"{alias}.{key} = @{key}"
+            ));
+        }
+
+        public Tuple<int, List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>>
+BuscarHMDetalle(Dictionary<string, object> whereParameters)
+        {
+            var datos = new DataTable();
+            var totalTalla = new List<Dictionary<string, object>>();
+            var detalleTalla = new Dictionary<string, List<Dictionary<string, object>>>();
+
+            try
+            {
+                string where = BuildWhereClause(whereParameters, "alt");
+
+                string query = $@"
+            SELECT 
+                alt.cclrcl,
+                alt.tclrcl,
+                alt.qartsl,
+                alw.tcrct6
+            FROM althmd alt
+            LEFT JOIN almart alm ON alm.ctpar = alt.ctpar AND alm.cartc = alt.cartc
+            LEFT JOIN alwart alw ON alm.ctpar = alw.ctpar AND alm.cartc = alw.cartc
+            WHERE {where}
+        ";
+
+                using (var conn = _sybase.Connect())
+                using (var cmd = new AseCommand(query, conn))
+                {
+                    foreach (var p in whereParameters)
+                        cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
+
+                    using (var reader = cmd.ExecuteReader())
+                        datos.Load(reader);
+                }
+
+                if (datos.Rows.Count == 0)
+                    return Tuple.Create(0, totalTalla, detalleTalla);
+
+                var agrupados = new Dictionary<string, (string desc, int total, List<Dictionary<string, object>> det)>();
+
+                foreach (DataRow row in datos.Rows)
+                {
+                    string color = row["cclrcl"].ToString();
+                    string desc = row["tclrcl"].ToString();
+                    int cant = Convert.ToInt32(row["qartsl"]);
+                    string talla = row["tcrct6"].ToString();
+
+                    if (!agrupados.ContainsKey(color))
+                        agrupados[color] = (desc, 0, new List<Dictionary<string, object>>());
+
+                    var g = agrupados[color];
+                    g.total += cant;
+
+                    g.det.Add(new Dictionary<string, object>
+            {
+                { "talla", talla },
+                { "cantidad", cant }
+            });
+
+                    agrupados[color] = g;
+                }
+
+                foreach (var g in agrupados)
+                {
+                    totalTalla.Add(new Dictionary<string, object>
+            {
+                { "cclrcl", g.Key },
+                { "tclrcl", g.Value.desc },
+                { "total", g.Value.total }
+            });
+
+                    detalleTalla[g.Key] = g.Value.det;
+                }
+
+                return Tuple.Create(1, totalTalla, detalleTalla);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error BuscarHMDetalle: " + ex.Message);
+                return Tuple.Create(0, totalTalla, detalleTalla);
+            }
+        }
+
+        public DataTable BuscarHMCabecera(Dictionary<string, object> whereParameters)
+        {
+            var datos = new DataTable();
+
+            try
+            {
+                string where = BuildWhereClause(whereParameters, "althmc");
+
+                string query = $@"
+            SELECT 
+                althmc.norpd,
+                althmc.nhjmr,
+                althmc.cclnt,
+                althmc.npocl,
+                CONVERT(VARCHAR, althmc.fentr, 105) AS fentr
+            FROM althmc
+            INNER JOIN altopc ON althmc.norpd = altopc.nnope
+            WHERE {where}
+        ";
+
+                using (var conn = _sybase.Connect())
+                using (var cmd = new AseCommand(query, conn))
+                {
+                    foreach (var p in whereParameters)
+                        cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
+
+                    using (var reader = cmd.ExecuteReader())
+                        datos.Load(reader);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error BuscarHMCabecera: " + ex.Message);
+            }
+
+            return datos;
+        }
+
     }
 }

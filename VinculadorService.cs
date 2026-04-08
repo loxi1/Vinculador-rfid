@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Data;
 using System.Collections.Concurrent;
+using System.Web.UI.WebControls;
+using System.Windows.Forms;
 
 namespace DS9908R_App
 {
@@ -22,6 +24,8 @@ namespace DS9908R_App
         public event Action<string> OnError;
         public event Action<Dictionary<string, object>> OnInsertadoOk;
         public event Action<List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>> OnConsolidadoGenerado;
+        public event Action<DataTable, string> OnHistorialPrenda;
+        public event Action<DataTable, List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>> OnHMGenerado;
 
         public void Enqueue(VinculacionRequest request)
         {
@@ -233,5 +237,114 @@ namespace DS9908R_App
 
             OnConsolidadoGenerado?.Invoke(resultado.Item3, resultado.Item4);
         }
+
+        public void BuscarPrenda(string codigoBarras)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(codigoBarras) || codigoBarras.Length < 18)
+                {
+                    OnError?.Invoke("Código de barras inválido.");
+                    return;
+                }
+
+                string op = codigoBarras.Substring(0, 10);
+                string corte = codigoBarras.Substring(10, 4);
+                string talla = codigoBarras.Substring(14, 2);
+                string idTalla = codigoBarras.Substring(16);
+
+                string subcorte = _bdPrenda.ObtenerSubCorte(op, corte, talla, idTalla);
+
+                System.Threading.Thread.Sleep(300);
+
+                DataTable tabla = _bdPrenda.GetHistorialPrenda(op, corte, subcorte, talla, idTalla);
+
+                string mensaje = "";
+
+                if (tabla.Rows.Count > 0)
+                {
+                    DataRow ultimaFila = tabla.Rows[tabla.Rows.Count - 1];
+
+                    if (ultimaFila["AREA"] != DBNull.Value)
+                    {
+                        mensaje = $"La Prenda Timbrada Se Encuentra Actualmente En: {ultimaFila["AREA"]}";
+                    }
+                }
+
+                OnHistorialPrenda?.Invoke(tabla, mensaje);
+            }
+            catch (Exception ex)
+            {
+                OnError?.Invoke("Error al buscar prenda: " + ex.Message);
+            }
+        }
+
+        public void GenerarHM(string op, string hm)
+        {
+            Task.Run(() =>
+            {
+                try
+                {
+                    var where = new Dictionary<string, object>
+            {
+                { "norpd", op },
+                { "nhjmr", hm }
+            };
+
+                    var cabecera = _bdPrenda.BuscarHMCabecera(where);
+                    var detalle = _bdPrenda.BuscarHMDetalle(where);
+
+                    if (detalle.Item1 == 0)
+                    {
+                        OnError?.Invoke("No hay datos de HM.");
+                        return;
+                    }
+
+                    OnHMGenerado?.Invoke(cabecera, detalle.Item2, detalle.Item3);
+                }
+                catch (Exception ex)
+                {
+                    OnError?.Invoke("Error GenerarHM: " + ex.Message);
+                }
+            });
+        }
+
+        public string ValidarHM(string op, string hm)
+        {
+            const string tipo = "nhjmr";
+
+            if (string.IsNullOrWhiteSpace(hm) || hm.Length < 1 || hm.Length > 3)
+                return null;
+
+            var whereParameters = new Dictionary<string, object>
+    {
+        { "norpd", op },
+        { tipo, hm.PadLeft(3, '0') }
+    };
+
+            var resultado = _bdPrenda.ValidarOP(whereParameters, tipo);
+
+            return resultado.Item1 == 1 ? resultado.Item3 : null;
+        }
+
+
+        public string ValidarOP(string op)
+        {
+            const string tipo = "norpd";
+            var whereParameters = new Dictionary<string, object> { { tipo, op } };
+
+            var resultado = _bdPrenda.ValidarOP(whereParameters, tipo);
+
+            if (resultado.Item1 == 1)
+            {
+                return resultado.Item3; // valor válido
+            }
+            else
+            {
+                OnError?.Invoke($"ValidarOP: {resultado.Item2}");
+                return null;
+            }
+        }
+
     }
 }

@@ -132,7 +132,42 @@ namespace DS9908R_App
                 HabilitarTabsTrabajo(false);
                 CodBarras.Focus();
 
+                // 🔹 PRIMERO te suscribes
+                _vinculador.OnConsolidadoGenerado += (total, detalle) =>
+                {
+                    if (this.InvokeRequired)
+                    {
+                        this.Invoke(new Action(() =>
+                            GenerarConsolidadoDinamico(total, detalle)
+                        ));
+                    }
+                    else
+                    {
+                        GenerarConsolidadoDinamico(total, detalle);
+                    }
+                };
+
+                // 🔹 DESPUÉS ejecutas
                 _vinculador.GenerarConsolidado(mCodTrabajador);
+
+                _vinculador.OnHistorialPrenda += Vinculador_OnHistorialPrenda;
+
+                _vinculador.OnHMGenerado += (cabecera, total, detalle) =>
+                {
+                    if (InvokeRequired)
+                    {
+                        Invoke(new Action(() =>
+                        {
+                            CargarValoresEnLabels(cabecera);
+                            MostrarEnDataGridView3(total, detalle);
+                        }));
+                    }
+                    else
+                    {
+                        CargarValoresEnLabels(cabecera);
+                        MostrarEnDataGridView3(total, detalle);
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -682,6 +717,18 @@ namespace DS9908R_App
             }
         }
 
+        private void AlertaError(string mensaje, Color color, Action callback = null)
+        {
+            // 🔥 Evitar que se abran múltiples alertas al mismo tiempo
+            if (FormAlertaError.alertaAbierta)
+                return;
+
+            using (var alertaError = new FormAlertaError("Error", mensaje, color, callback))
+            {
+                alertaError.ShowDialog();
+            }
+        }
+
         private void BloquearColumnas(DataGridView dgv)
         {
             foreach (DataGridViewColumn column in dgv.Columns)
@@ -1095,17 +1142,25 @@ namespace DS9908R_App
         }
 
         private void GenerarConsolidadoDinamico(
-            List<Dictionary<string, object>> totalTalla,
-            Dictionary<string, List<Dictionary<string, object>>> detalleTalla)
+    List<Dictionary<string, object>> totalTalla,
+    Dictionary<string, List<Dictionary<string, object>>> detalleTalla)
         {
+            if (totalTalla == null || totalTalla.Count == 0)
+            {
+                MessageBox.Show("No hay datos para mostrar.");
+                return;
+            }
+
+            tbDetalleTimbrado.SuspendLayout();
             tbDetalleTimbrado.Controls.Clear();
             tbDetalleTimbrado.RowStyles.Clear();
             tbDetalleTimbrado.RowCount = 0;
-            lblTotalDetalle.Text = "";
-
-            panelScroll.AutoScroll = true;
-            panelScroll.Controls.Clear();
+            tbDetalleTimbrado.ColumnCount = 1;
+            tbDetalleTimbrado.AutoSize = true;
             tbDetalleTimbrado.Dock = DockStyle.Top;
+
+            panelScroll.Controls.Clear();
+            panelScroll.AutoScroll = true;
             panelScroll.Controls.Add(tbDetalleTimbrado);
 
             int totalGeneral = 0;
@@ -1116,28 +1171,30 @@ namespace DS9908R_App
                 int totalCantidad = Convert.ToInt32(total["total"]);
                 totalGeneral += totalCantidad;
 
-                var lblLinea = new Label
+                // 🔹 LABEL
+                Label lblLinea = new Label
                 {
                     Text = $"LINEA: {linea}",
-                    Font = new Font("Arial", 12, FontStyle.Bold),
-                    ForeColor = Color.Black,
+                    Font = new Font("Arial", 11, FontStyle.Bold),
                     BackColor = Color.Silver,
+                    ForeColor = Color.Black,
                     Dock = DockStyle.Top,
-                    AutoSize = true,
+                    Height = 25,
                     TextAlign = ContentAlignment.MiddleCenter
                 };
 
-                tbDetalleTimbrado.RowCount += 1;
+                tbDetalleTimbrado.RowCount++;
                 tbDetalleTimbrado.Controls.Add(lblLinea, 0, tbDetalleTimbrado.RowCount - 1);
 
-                var dgv = new DataGridView
+                // 🔹 GRID
+                DataGridView dgv = new DataGridView
                 {
-                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                     ReadOnly = true,
                     AllowUserToAddRows = false,
                     AllowUserToDeleteRows = false,
-                    ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
-                    Dock = DockStyle.Top
+                    Dock = DockStyle.Top,
+                    Height = 150
                 };
 
                 dgv.Columns.Add("Op", "OP");
@@ -1145,30 +1202,34 @@ namespace DS9908R_App
                 dgv.Columns.Add("Talla", "Talla");
                 dgv.Columns.Add("Cant", "Cant");
 
-                dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.LightGreen;
-                dgv.EnableHeadersVisualStyles = false;
-
+                // 🔹 DATA
                 if (detalleTalla.ContainsKey(linea))
                 {
                     foreach (var detalle in detalleTalla[linea])
-                        dgv.Rows.Add(detalle["op"], detalle["color"], detalle["talla"], detalle["cantidad"]);
+                    {
+                        dgv.Rows.Add(
+                            detalle["op"],
+                            detalle["color"],
+                            detalle["talla"],
+                            detalle["cantidad"]
+                        );
+                    }
                 }
 
-                int totalRowIndex = dgv.Rows.Add();
-                dgv.Rows[totalRowIndex].Cells["Talla"].Value = "Total";
-                dgv.Rows[totalRowIndex].Cells["Cant"].Value = totalCantidad;
-                dgv.Rows[totalRowIndex].DefaultCellStyle.BackColor = Color.LightGray;
-                dgv.Rows[totalRowIndex].DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Bold);
-                dgv.Rows[totalRowIndex].Cells["Talla"].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+                // 🔹 TOTAL
+                int rowIndex = dgv.Rows.Add();
+                dgv.Rows[rowIndex].Cells["Talla"].Value = "TOTAL";
+                dgv.Rows[rowIndex].Cells["Cant"].Value = totalCantidad;
+                dgv.Rows[rowIndex].DefaultCellStyle.BackColor = Color.LightGray;
+                dgv.Rows[rowIndex].DefaultCellStyle.Font = new Font("Arial", 9, FontStyle.Bold);
 
-                dgv.Height = Math.Min(250, dgv.ColumnHeadersHeight + (dgv.RowTemplate.Height * dgv.Rows.Count) + 5);
-                tbDetalleTimbrado.RowCount += 1;
+                tbDetalleTimbrado.RowCount++;
                 tbDetalleTimbrado.Controls.Add(dgv, 0, tbDetalleTimbrado.RowCount - 1);
             }
 
-            tbDetalleTimbrado.Height = tbDetalleTimbrado.PreferredSize.Height;
             lblTotalDetalle.Text = $"TOTAL TIMBRADO: {totalGeneral}";
-            panelScroll.Refresh();
+
+            tbDetalleTimbrado.ResumeLayout();
         }
 
         private void LimpiarGridConsolidado()
@@ -1178,6 +1239,306 @@ namespace DS9908R_App
             tbDetalleTimbrado.RowStyles.Clear();
             tbDetalleTimbrado.RowCount = 0;
             lblTotalDetalle.Text = "";
+        }
+
+        private void BuscarCodBarras_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                EjecutarBusqueda();
+            }
+        }
+
+        private void BuscarCodBarras_Enter(object sender, EventArgs e)
+        {
+            if (BuscarCodBarras.Text == "Codigo de Barras...")
+            {
+                BuscarCodBarras.Text = "";
+                BuscarCodBarras.ForeColor = pinturaNegra;
+            }
+        }
+
+        private void EjecutarBusqueda()
+        {
+            string codigo = BuscarCodBarras.Text;
+
+            MsnBusquedaPrenda.Text = "";
+            BuscarCodBarras.Text = "";
+
+            _vinculador.BuscarPrenda(codigo);
+        }
+
+        private void Vinculador_OnHistorialPrenda(DataTable tabla, string mensaje)
+        {
+            if (this.InvokeRequired)
+            {
+                this.Invoke(new Action(() =>
+                    PintarHistorial(tabla, mensaje)
+                ));
+            }
+            else
+            {
+                PintarHistorial(tabla, mensaje);
+            }
+        }
+
+        private void PintarHistorial(DataTable tabla, string mensaje)
+        {
+            MsnBusquedaPrenda.Text = mensaje;
+
+            DataGridView2.AutoGenerateColumns = true;
+            DataGridView2.DataSource = tabla;
+
+            foreach (DataGridViewColumn column in DataGridView2.Columns)
+            {
+                column.HeaderText = System.Globalization.CultureInfo.CurrentCulture.TextInfo
+                    .ToTitleCase(column.HeaderText.ToLower());
+            }
+
+            DataGridView2.ColumnHeadersDefaultCellStyle.Font =
+                new Font("Arial", 15, FontStyle.Bold);
+        }
+
+        private void CargarValoresEnLabels(DataTable dataTable)
+        {
+            if (dataTable == null || dataTable.Rows.Count == 0)
+                return;
+
+            DataRow row = dataTable.Rows[0];
+
+            foreach (DataColumn column in dataTable.Columns)
+            {
+                string columnName = column.ColumnName;
+                string controlName = "text_" + columnName;
+
+                Control control = this.Controls.Find(controlName, true).FirstOrDefault();
+
+                if (control is Label lbl)
+                {
+                    lbl.Text = row[columnName]?.ToString();
+                }
+            }
+        }
+
+        private void BuscarCabeceraHM()
+        {
+            string pOp = TextBoxOP.Text;
+            string pHm = TextBoxHM.Text;
+
+            var where = new Dictionary<string, object>
+    {
+        { "norpd", pOp },
+        { "nhjmr", pHm }
+    };
+
+            DataTable dt = _bdPrenda.BuscarHMCabecera(where);
+
+            if (dt == null || dt.Rows.Count == 0)
+            {
+                AlertaError($"No se encontraron registros para la OP: {pOp} {pHm}", pinturaRojoLadrillo);
+                return;
+            }
+
+            CargarValoresEnLabels(dt);
+        }
+
+
+        private void BtnBuscarHM_Click(object sender, EventArgs e)
+        {
+            _vinculador.GenerarHM(TextBoxOP.Text, TextBoxHM.Text);
+        }
+
+        private void MostrarEnDataGridView3(
+    List<Dictionary<string, object>> totalTalla,
+    Dictionary<string, List<Dictionary<string, object>>> detalleTalla)
+        {
+            // Limpiar DataGridView
+            DataGridView3.DataSource = null;
+            DataGridView3.Rows.Clear();
+            DataGridView3.Columns.Clear();
+
+            // Configurar columnas
+            DataGridView3.Columns.Add("Color", "Color");
+            DataGridView3.Columns.Add("Descripcion", "Descripción");
+            DataGridView3.Columns.Add("Talla", "Talla");
+            DataGridView3.Columns.Add("Cantidad", "Cantidad");
+            DataGridView3.Columns.Add("Total", "Total");
+
+            // Iterar sobre los totales
+            foreach (var total in totalTalla)
+            {
+                string color = total["cclrcl"].ToString();
+                string desc = total["tclrcl"].ToString();
+                int totalCantidad = Convert.ToInt32(total["total"]);
+
+                // Fila resumen (color + total)
+                int resumenIndex = DataGridView3.Rows.Add();
+                var resumenRow = DataGridView3.Rows[resumenIndex];
+
+                resumenRow.Cells["Color"].Value = color;
+                resumenRow.Cells["Descripcion"].Value = desc;
+                resumenRow.Cells["Total"].Value = totalCantidad.ToString("N0");
+
+                // Estilos fila resumen
+                resumenRow.DefaultCellStyle.BackColor = pinturaGrisClaro;
+                resumenRow.DefaultCellStyle.Font = new Font(DataGridView3.Font, FontStyle.Bold);
+
+                if (totalCantidad > 500)
+                    resumenRow.DefaultCellStyle.ForeColor = pinturaVerdeOscuro;
+
+                // Agregar filas de detalle
+                if (detalleTalla.ContainsKey(color))
+                {
+                    foreach (var detalle in detalleTalla[color])
+                    {
+                        int detalleIndex = DataGridView3.Rows.Add();
+                        var detalleRow = DataGridView3.Rows[detalleIndex];
+
+                        detalleRow.Cells["Talla"].Value = detalle["talla"];
+                        detalleRow.Cells["Cantidad"].Value = Convert.ToInt32(detalle["cantidad"]).ToString("N0");
+
+                        // Celdas de resumen vacías para detalle
+                        detalleRow.Cells["Color"].Value = "";
+                        detalleRow.Cells["Descripcion"].Value = "";
+                        detalleRow.Cells["Total"].Value = "";
+
+                        // Alternar color de detalle
+                        detalleRow.DefaultCellStyle.BackColor = (detalleIndex % 2 == 0) ? pinturaBlanca : pinturaAzulClaro;
+                    }
+                }
+            }
+
+            // Ajustar tamaño de columnas automáticamente
+            DataGridView3.AutoResizeColumns();
+        }
+
+        private void TextBoxOP_Enter(object sender, EventArgs e)
+        {
+            if (TextBoxOP.Text == "Nro OP...")
+            {
+                TextBoxOP.Text = "";
+                TextBoxOP.ForeColor = pinturaNegra;
+            }
+        }
+
+        private void TextBoxOP_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(TextBoxOP.Text))
+            {
+                TextBoxOP.Text = "Nro OP...";
+                TextBoxOP.ForeColor = pinturaGris;
+            }
+        }
+
+        private void TextBoxOP_TextChanged(object sender, EventArgs e)
+        {
+            if (TextBoxOP.TextLength == 5)
+            {
+                string pOp = "10000" + TextBoxOP.Text;
+                string valor = _vinculador.ValidarOP(pOp);
+
+                if (string.IsNullOrWhiteSpace(valor))
+                {
+                    TextBoxOP.Text = "";
+                    TextBoxOP.Focus();
+                    AlertaError($"Verificar la OP: {pOp}.", pinturaRojoLadrillo);
+                }
+                else
+                {
+                    TextBoxOP.Text = valor;
+                    TextBoxOP.Enabled = false;
+                    TextBoxHM.Enabled = true;
+                    TextBoxHM.Text = "";
+                    TextBoxHM.Focus();
+                }
+            }
+        }
+
+        private void TextBoxHM_Enter(object sender, EventArgs e)
+        {
+            if (TextBoxHM.Text == "H. M....")
+            {
+                TextBoxHM.Text = "";
+                TextBoxHM.ForeColor = pinturaNegra;
+            }
+        }
+
+        private void TextBoxHM_Leave(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(TextBoxHM.Text))
+            {
+                TextBoxHM.Text = "H. M....";
+                TextBoxHM.ForeColor = pinturaGris;
+            }
+        }
+
+        private void TextBoxHM_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                ValidarHM();
+            }
+        }
+
+        private void TextBoxHM_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            // Permitir números, punto decimal y teclas de control
+            if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar) && e.KeyChar != '.')
+            {
+                e.Handled = true;
+            }
+
+            // Asegurarse de que solo haya un punto decimal
+            if (e.KeyChar == '.' && TextBoxHM.Text.Contains("."))
+            {
+                e.Handled = true;
+            }
+
+            // Limitar a 3 caracteres
+            if (TextBoxHM.Text.Length >= 3 && !char.IsControl(e.KeyChar))
+            {
+                e.Handled = true;
+            }
+
+            // Manejar el carácter Tab si AcceptsTab es True
+            if (e.KeyChar == (char)Keys.Tab)
+            {
+                e.Handled = true; // Opcional: evitar la inserción si no deseas un carácter Tab
+            }
+        }
+
+        private void TextBoxHM_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Tab)
+            {
+                ValidarHM();
+                e.IsInputKey = true;
+            }
+        }
+
+        private void ValidarHM()
+        {
+            string valor = _vinculador.ValidarHM(TextBoxOP.Text, TextBoxHM.Text);
+
+            if (string.IsNullOrWhiteSpace(valor))
+            {
+                TextBoxHM.Text = "";
+                TextBoxHM.Focus();
+                AlertaError($"Verificar la Hoja Marcación: {TextBoxHM.Text}.", pinturaRojoLadrillo);
+            }
+            else
+            {
+                TextBoxHM.Text = valor;
+                TextBoxHM.Enabled = false;
+                BtnBuscarHM.Focus();
+            }
+        }
+
+        private void BtnLimpiarHM_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
