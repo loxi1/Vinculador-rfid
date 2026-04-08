@@ -21,6 +21,7 @@ namespace DS9908R_App
         public event Action<string> OnInfo;
         public event Action<string> OnError;
         public event Action<Dictionary<string, object>> OnInsertadoOk;
+        public event Action<List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>> OnConsolidadoGenerado;
 
         public void Enqueue(VinculacionRequest request)
         {
@@ -220,6 +221,17 @@ namespace DS9908R_App
     Dictionary<string, object> updateParameters)
         {
             return _bdPrenda.UpdateTimbrado(whereParameters, updateParameters);
+        }
+
+        public void GenerarConsolidado(string codTrabajador)
+        {
+            var whereParameters = new Dictionary<string, object> { { "fotocheck", codTrabajador } };
+            var resultado = _bdPrenda.VerConsolidado(whereParameters);
+
+            if (resultado.Item1 <= 0)
+                return;
+
+            OnConsolidadoGenerado?.Invoke(resultado.Item3, resultado.Item4);
         }
     }
 }

@@ -131,6 +131,8 @@ namespace DS9908R_App
                 ActualizarEstadoConexion("LISTO PARA CONECTAR", Color.DarkOrange);
                 HabilitarTabsTrabajo(false);
                 CodBarras.Focus();
+
+                _vinculador.GenerarConsolidado(mCodTrabajador);
             }
             catch (Exception ex)
             {
@@ -935,7 +937,8 @@ namespace DS9908R_App
 
         private void btnVerConsolidado_Click(object sender, EventArgs e)
         {
-            tabMenu.SelectedTab = tabHojaMarcacion;
+            LimpiarGridConsolidado();
+            _vinculador.GenerarConsolidado(mCodTrabajador);
         }
 
         private void ListarTimbrados()
@@ -1084,6 +1087,97 @@ namespace DS9908R_App
             catch
             {
             }
+        }
+
+        private void lblTotalDetalle_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void GenerarConsolidadoDinamico(
+            List<Dictionary<string, object>> totalTalla,
+            Dictionary<string, List<Dictionary<string, object>>> detalleTalla)
+        {
+            tbDetalleTimbrado.Controls.Clear();
+            tbDetalleTimbrado.RowStyles.Clear();
+            tbDetalleTimbrado.RowCount = 0;
+            lblTotalDetalle.Text = "";
+
+            panelScroll.AutoScroll = true;
+            panelScroll.Controls.Clear();
+            tbDetalleTimbrado.Dock = DockStyle.Top;
+            panelScroll.Controls.Add(tbDetalleTimbrado);
+
+            int totalGeneral = 0;
+
+            foreach (var total in totalTalla)
+            {
+                string linea = total["linea"].ToString();
+                int totalCantidad = Convert.ToInt32(total["total"]);
+                totalGeneral += totalCantidad;
+
+                var lblLinea = new Label
+                {
+                    Text = $"LINEA: {linea}",
+                    Font = new Font("Arial", 12, FontStyle.Bold),
+                    ForeColor = Color.Black,
+                    BackColor = Color.Silver,
+                    Dock = DockStyle.Top,
+                    AutoSize = true,
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                tbDetalleTimbrado.RowCount += 1;
+                tbDetalleTimbrado.Controls.Add(lblLinea, 0, tbDetalleTimbrado.RowCount - 1);
+
+                var dgv = new DataGridView
+                {
+                    AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells,
+                    ReadOnly = true,
+                    AllowUserToAddRows = false,
+                    AllowUserToDeleteRows = false,
+                    ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+                    Dock = DockStyle.Top
+                };
+
+                dgv.Columns.Add("Op", "OP");
+                dgv.Columns.Add("Color", "Color");
+                dgv.Columns.Add("Talla", "Talla");
+                dgv.Columns.Add("Cant", "Cant");
+
+                dgv.ColumnHeadersDefaultCellStyle.BackColor = Color.LightGreen;
+                dgv.EnableHeadersVisualStyles = false;
+
+                if (detalleTalla.ContainsKey(linea))
+                {
+                    foreach (var detalle in detalleTalla[linea])
+                        dgv.Rows.Add(detalle["op"], detalle["color"], detalle["talla"], detalle["cantidad"]);
+                }
+
+                int totalRowIndex = dgv.Rows.Add();
+                dgv.Rows[totalRowIndex].Cells["Talla"].Value = "Total";
+                dgv.Rows[totalRowIndex].Cells["Cant"].Value = totalCantidad;
+                dgv.Rows[totalRowIndex].DefaultCellStyle.BackColor = Color.LightGray;
+                dgv.Rows[totalRowIndex].DefaultCellStyle.Font = new Font(dgv.Font, FontStyle.Bold);
+                dgv.Rows[totalRowIndex].Cells["Talla"].Style.Alignment = DataGridViewContentAlignment.MiddleRight;
+
+                dgv.Height = Math.Min(250, dgv.ColumnHeadersHeight + (dgv.RowTemplate.Height * dgv.Rows.Count) + 5);
+                tbDetalleTimbrado.RowCount += 1;
+                tbDetalleTimbrado.Controls.Add(dgv, 0, tbDetalleTimbrado.RowCount - 1);
+            }
+
+            tbDetalleTimbrado.Height = tbDetalleTimbrado.PreferredSize.Height;
+            lblTotalDetalle.Text = $"TOTAL TIMBRADO: {totalGeneral}";
+            panelScroll.Refresh();
+        }
+
+        private void LimpiarGridConsolidado()
+        {
+            // 🔹 Limpiar el contenedor antes de agregar nuevos elementos
+            tbDetalleTimbrado.Controls.Clear();
+            tbDetalleTimbrado.RowStyles.Clear();
+            tbDetalleTimbrado.RowCount = 0;
+            lblTotalDetalle.Text = "";
         }
     }
 }

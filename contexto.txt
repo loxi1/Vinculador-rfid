@@ -1,5 +1,129 @@
 
-https://docs.google.com/document/d/1cqBmnaiH7PEXrh8dBgy7hKSymUn5flIh/edit?usp=drivesdk&ouid=102007340510333386394&rtpof=true&sd=true
+Creo que la funcionalidad lo tiene el boton: btnVerConsolidado y se crea dinamicante dentro de esta tabla: tbDetalleTimbrado usando 
+Private Sub BtnVerConsolidado_Click(sender As Object, e As EventArgs) Handles btnVerConsolidado.Click
+        Dim whereParameters As New Dictionary(Of String, Object) From {{"fotocheck", mCodTrabajador}}
+        Dim l_return = m_DBConsultarPrenda.VerConsolidado(whereParameters)
+        LimpiarGridConsolidado()
+        If l_return.Item1 = 0 Then
+            Return
+        End If
+        Console.WriteLine($"---Mira la linea---")
+        ' Mostrar los datos en el DataGridView3
+        GenerarConsolidadoDinamico(l_return.Item2, l_return.Item3)
+    End Sub
+Private Sub GenerarConsolidadoDinamico(totalTalla As List(Of Dictionary(Of String, Object)),
+                                      detalleTalla As Dictionary(Of String, List(Of Dictionary(Of String, Object))))
+
+        ' 🔹 Limpiar el contenido anterior
+        tbDetalleTimbrado.Controls.Clear()
+        tbDetalleTimbrado.RowStyles.Clear()
+        tbDetalleTimbrado.RowCount = 0
+
+        ' 🔹 Asegurar que `panelScroll` tenga AutoScroll activado correctamente
+        panelScroll.AutoScroll = True
+        panelScroll.Dock = DockStyle.Fill
+        panelScroll.Controls.Clear() ' Limpiar contenido previo
+
+        ' 🔹 Evitar AutoSize en `tbDetalleTimbrado`
+        tbDetalleTimbrado.AutoSize = False
+        tbDetalleTimbrado.Dock = DockStyle.Top ' 🔥 Se asegura que crezca hacia abajo dentro de `panelScroll`
+        tbDetalleTimbrado.Height = 0 ' Inicializa en 0 y crece dinámicamente
+        panelScroll.Controls.Add(tbDetalleTimbrado)
+
+        ' 🔹 Variable para el total general
+        Dim totalGeneral As Integer = 0
+
+        ' 🔹 Iterar sobre cada línea (14B, 17B, 27B, etc.)
+        For Each total In totalTalla
+            Dim linea As String = total("linea").ToString()
+            Dim totalCantidad As Integer = Convert.ToInt32(total("total"))
+            totalGeneral += totalCantidad
+
+            ' 🔹 1️⃣ Agregar un Label para la línea
+            Dim lblLinea As New Label With {
+                .Text = $"LINEA: {linea}",
+                .Font = New Font("Arial", 12, FontStyle.Bold),
+                .ForeColor = pinturaNegra,
+                .BackColor = pinturaPlata,
+                .Dock = DockStyle.Top,
+                .AutoSize = True,
+                .TextAlign = ContentAlignment.MiddleCenter
+            }
+
+            tbDetalleTimbrado.RowCount += 1
+            tbDetalleTimbrado.Controls.Add(lblLinea, 0, tbDetalleTimbrado.RowCount - 1)
+
+            ' 🔹 2️⃣ Crear el DataGridView dinámico
+            Dim dgv As New DataGridView With {
+                .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells, ' 🔥 Se ajusta completamente
+                .ReadOnly = True,
+                .AllowUserToAddRows = False,
+                .AllowUserToDeleteRows = False,
+                .ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+                .Dock = DockStyle.Top
+            }
+
+            ' Configurar columnas del DataGridView
+            dgv.Columns.Add("Op", "OP")
+            dgv.Columns.Add("Color", "Color")
+            dgv.Columns.Add("Talla", "Talla")
+            dgv.Columns.Add("Cant", "Cant")
+
+            ' Aplicar estilos al encabezado
+            dgv.ColumnHeadersDefaultCellStyle.BackColor = pinturaVerdeClaro
+            dgv.ColumnHeadersDefaultCellStyle.Font = New Font("Arial", 10, FontStyle.Bold)
+            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
+            dgv.EnableHeadersVisualStyles = False
+
+            ' 🔹 Llenar el DataGridView con los detalles
+            If detalleTalla.ContainsKey(linea) Then
+                For Each detalle In detalleTalla(linea)
+                    dgv.Rows.Add(detalle("op"), detalle("color"), detalle("talla"), detalle("cantidad"))
+                Next
+            End If
+
+            ' 🔹 Agregar fila de total
+            Dim detalleRowIndex2 As Integer = dgv.Rows.Add()
+            dgv.Rows(detalleRowIndex2).Cells("Op").Value = ""
+            dgv.Rows(detalleRowIndex2).Cells("Color").Value = ""
+            dgv.Rows(detalleRowIndex2).Cells("Talla").Value = "Total"
+            dgv.Rows(detalleRowIndex2).Cells("Cant").Value = totalCantidad
+
+            ' 🔹 Aplicar estilos a la fila total
+            With dgv.Rows(detalleRowIndex2)
+                .DefaultCellStyle.BackColor = pinturaGrisClaro
+                .DefaultCellStyle.Font = New Font(dgv.Font, FontStyle.Bold)
+            End With
+
+            ' 🔹 Alinear el texto de "Total" a la derecha
+            dgv.Rows(detalleRowIndex2).Cells("Talla").Style.Alignment = DataGridViewContentAlignment.MiddleRight
+
+            ' 🔹 Ajustar la altura del DataGridView dinámicamente
+            dgv.Height = Math.Min(250, dgv.ColumnHeadersHeight + (dgv.RowTemplate.Height * dgv.Rows.Count) + 5)
+
+            ' 🔹 Agregar DataGridView al TableLayoutPanel
+            tbDetalleTimbrado.RowCount += 1
+            tbDetalleTimbrado.Controls.Add(dgv, 0, tbDetalleTimbrado.RowCount - 1)
+        Next
+
+        ' 🔹 Ajustar la altura de `tbDetalleTimbrado` para permitir el scroll
+        tbDetalleTimbrado.Height = tbDetalleTimbrado.PreferredSize.Height
+
+        ' 🔹 Mostrar el total general
+        lblTotalDetalle.Text = $"TOTAL TIMBRADO: {totalGeneral}"
+
+        ' 🔹 Ajustar `panelScroll` para que active el Scroll
+        panelScroll.Refresh()
+    End Sub
+
+dentro de esta funcion simula un click al boton:
+
+Private Sub frmInitial_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+...
+
+
+        BtnVerConsolidado_Click(Nothing, EventArgs.Empty) ' Simula el clic en BtnClear
+...
 
 Perfecto, aquí ya entramos a lo interesante 🔥 (port VB → C# bien hecho).
 He revisado el repo y lo que estás mencionando es clave:

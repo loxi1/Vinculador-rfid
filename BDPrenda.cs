@@ -337,5 +337,131 @@ namespace DS9908R_App
 
             return li_return;
         }
+
+        public Tuple<int, string, List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>>
+    VerConsolidado(Dictionary<string, object> whereParameters)
+        {
+            int li_return = 0;
+            string s_mensaje = string.Empty;
+
+            var datos = new DataTable();
+            var totalTalla = new List<Dictionary<string, object>>();
+            var detalleTalla = new Dictionary<string, List<Dictionary<string, object>>>();
+
+            const string ESTADO_EMBALAJE = "SALIDA EMBALAJE";
+
+            if (whereParameters == null)
+                whereParameters = new Dictionary<string, object>();
+
+            // 🔥 Corrección lógica (mejor que tu VB original)
+            if (!whereParameters.ContainsKey("estado"))
+                whereParameters["estado"] = ESTADO_EMBALAJE;
+
+            try
+            {
+                using (AseConnection conn = _sybase.Connect())
+                {
+                    if (conn == null || conn.State != ConnectionState.Open)
+                        throw new Exception("Error en conexión con Sybase.");
+
+                    List<string> filtros = new List<string>();
+
+                    using (AseCommand cmd = conn.CreateCommand())
+                    {
+                        foreach (var item in whereParameters)
+                        {
+                            filtros.Add($"{item.Key} = @{item.Key}");
+                            cmd.Parameters.AddWithValue("@" + item.Key, item.Value ?? DBNull.Value);
+                        }
+
+                        string sql =
+                            "SELECT " +
+                            "linea, " +
+                            "op, " +
+                            "color, " +
+                            "talla, " +
+                            "COUNT(id_timb) AS cant " +
+                            "FROM tmp_etiq_timbradas ";
+
+                        if (filtros.Count > 0)
+                            sql += "WHERE " + string.Join(" AND ", filtros) + " ";
+
+                        sql += "GROUP BY linea, op, color, talla";
+
+                        cmd.CommandText = sql;
+
+                        using (AseDataAdapter da = new AseDataAdapter(cmd))
+                        {
+                            da.Fill(datos);
+                        }
+                    }
+
+                    if (datos.Rows.Count == 0)
+                    {
+                        li_return = 0;
+                        s_mensaje = "No hay datos.";
+                        return Tuple.Create(li_return, s_mensaje, totalTalla, detalleTalla);
+                    }
+
+                    // 🔹 Agrupación
+                    var agrupados = new Dictionary<string, (int total, List<Dictionary<string, object>> detalles)>();
+
+                    foreach (DataRow row in datos.Rows)
+                    {
+                        string linea = row["linea"].ToString();
+                        string op = row["op"].ToString();
+                        string color = row["color"].ToString();
+                        string talla = row["talla"].ToString();
+                        int cant = Convert.ToInt32(row["cant"]);
+
+                        if (!agrupados.ContainsKey(linea))
+                        {
+                            agrupados[linea] = (0, new List<Dictionary<string, object>>());
+                        }
+
+                        var grupo = agrupados[linea];
+                        grupo.total += cant;
+
+                        grupo.detalles.Add(new Dictionary<string, object>
+                {
+                    { "op", op },
+                    { "color", color },
+                    { "talla", talla },
+                    { "cantidad", cant }
+                });
+
+                        agrupados[linea] = grupo;
+                    }
+
+                    // 🔹 Convertir resultado
+                    foreach (var item in agrupados)
+                    {
+                        totalTalla.Add(new Dictionary<string, object>
+                {
+                    { "linea", item.Key },
+                    { "total", item.Value.total }
+                });
+
+                        detalleTalla[item.Key] = item.Value.detalles;
+                    }
+
+                    li_return = 1;
+                    s_mensaje = "Datos obtenidos correctamente.";
+                }
+            }
+            catch (Exception ex)
+            {
+                ss_error = ex.Message;
+                LogError("Error en VerConsolidado", ex);
+                li_return = -1;
+                s_mensaje = ex.Message;
+            }
+            finally
+            {
+                _sybase.Disconnect();
+            }
+
+            return Tuple.Create(li_return, s_mensaje, totalTalla, detalleTalla);
+        }
     }
 }
