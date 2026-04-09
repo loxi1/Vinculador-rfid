@@ -1,3 +1,101 @@
+
+Buena pregunta — esto es clave para entender cómo está armado tu sistema 👇
+🧠 ¿Qué es OnHMGenerado?
+OnHMGenerado es un evento en C#.
+👉 En simple:
+Es un “callback” que el servicio usa para avisarle al formulario: “ya terminé de procesar la HM, aquí tienes los datos”
+🏗️ Dónde está definido
+En tu proyecto está en:
+👉 VinculadorService.cs
+Algo como esto:
+C#
+public event Action<DataTable, DataTable, DataTable> OnHMGenerado;
+⚙️ Cómo funciona (flujo completo)
+1. El formulario pide datos
+Desde frmLector.cs:
+C#
+_vinculador.GenerarHM(op, hm);
+2. El servicio trabaja (en segundo plano)
+En VinculadorService.cs:
+C#
+Task.Run(() =>
+{
+    var cabecera = _bdPrenda.BuscarHMCabecera(where);
+    var detalle = _bdPrenda.BuscarHMDetalle(where);
+
+    OnHMGenerado?.Invoke(cabecera, total, detalle);
+});
+👉 Aquí pasa esto:
+consulta BD
+arma datos
+dispara el evento
+3. El formulario recibe el resultado
+En frmLector.cs (en el Load):
+C#
+_vinculador.OnHMGenerado += Vinculador_OnHMGenerado;
+Y tienes este método:
+C#
+private void Vinculador_OnHMGenerado(
+    DataTable cabecera,
+    DataTable total,
+    DataTable detalle)
+{
+    CargarValoresEnLabels(cabecera);
+    MostrarEnDataGridView3(total, detalle);
+}
+👉 Aquí ya pintas en pantalla
+🔁 Traducción a humano
+Parte
+Quién
+Qué hace
+Form
+Usuario
+Presiona botón o Enter
+Servicio
+Backend
+Consulta BD
+Evento
+OnHMGenerado
+Notifica resultado
+Form
+UI
+Muestra datos
+🧩 Por qué se usa evento
+Porque estás usando esto:
+C#
+Task.Run(...)
+👉 O sea: ejecución en segundo plano (async)
+Entonces:
+❌ No puedes devolver valores directamente
+✅ Usas un evento para avisar cuando termine
+⚠️ Detalle importante (muy PRO)
+Como viene de otro hilo (Task.Run), lo correcto sería:
+C#
+this.Invoke((MethodInvoker)(() =>
+{
+    CargarValoresEnLabels(cabecera);
+    MostrarEnDataGridView3(total, detalle);
+}));
+👉 Si no haces esto, en algún momento te puede salir:
+
+Cross-thread operation not valid
+🎯 Resumen corto
+👉 OnHMGenerado = evento
+👉 sirve para devolver datos del servicio al formulario
+👉 se dispara después de consultar la BD
+👉 el form lo escucha y actualiza la UI
+🚀 Nivel PRO (importante)
+Ya estás usando un patrón muy bueno:
+✔ UI separada del servicio
+✔ BD separada
+✔ eventos para comunicación
+✔ ejecución async
+👉 Esto ya es arquitectura tipo industrial / escalable
+Si quieres, en el siguiente paso te explico:
+👉 cómo unificar TODOS tus eventos (OnInfo, OnError, OnHMGenerado, etc.)
+👉 en un solo sistema más limpio tipo “EventBus”
+o también cómo migrarlo a async/await moderno sin eventos 👍
+
 ﻿Imports System.ComponentModel
 Imports System.IO
 Imports System.Linq
