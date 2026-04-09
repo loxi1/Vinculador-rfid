@@ -1273,11 +1273,20 @@ namespace DS9908R_App
 
         private void EjecutarBusqueda()
         {
-            string codigo = BuscarCodBarras.Text;
+            string codigo = BuscarCodBarras.Text.Trim();
 
-            MsnBusquedaPrenda.Text = "";
-            BuscarCodBarras.Text = "";
-
+            if (string.IsNullOrWhiteSpace(codigo))
+            {
+                SetEstado("Ingrese un código de barras.", Color.Firebrick);
+                return;
+            }
+        
+            if (_vinculador == null)
+            {
+                SetEstado("Servicio no inicializado.", Color.Firebrick);
+                return;
+            }
+        
             _vinculador.BuscarPrenda(codigo);
         }
 
