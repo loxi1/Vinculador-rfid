@@ -168,6 +168,10 @@ namespace DS9908R_App
                         MostrarEnDataGridView3(total, detalle);
                     }
                 };
+
+                //TextBoxOP.KeyDown += TextBoxOP_KeyDown;
+                TextBoxHM.KeyDown += TextBoxHM_KeyDown;
+                BtnBuscarHM.Click += BtnBuscarHM_Click;
             }
             catch (Exception ex)
             {
@@ -1367,7 +1371,7 @@ namespace DS9908R_App
 
         private void BtnBuscarHM_Click(object sender, EventArgs e)
         {
-            _vinculador.GenerarHM(TextBoxOP.Text, TextBoxHM.Text);
+            EjecutarBusquedaHM();
         }
 
         private void MostrarEnDataGridView3(
@@ -1499,7 +1503,7 @@ namespace DS9908R_App
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
-                ValidarHM();
+                EjecutarBusquedaHM();
             }
         }
 
@@ -1560,6 +1564,81 @@ namespace DS9908R_App
         private void BtnLimpiarHM_Click(object sender, EventArgs e)
         {
 
+        }
+        
+        private void EjecutarBusquedaHM()
+        {
+            try
+            {
+                if (_vinculador == null)
+                {
+                    SetEstado("Servicio no inicializado.", Color.Firebrick);
+                    return;
+                }
+        
+                string op = TextBoxOP.Text.Trim();
+                string hm = TextBoxHM.Text.Trim();
+        
+                if (string.IsNullOrWhiteSpace(op))
+                {
+                    SetEstado("Ingrese la OP.", Color.Firebrick);
+                    TextBoxOP.Focus();
+                    return;
+                }
+        
+                string opValidada = _vinculador.ValidarOP(op);
+                if (string.IsNullOrWhiteSpace(opValidada))
+                {
+                    SetEstado("La OP no es válida.", Color.Firebrick);
+                    TextBoxOP.Focus();
+                    return;
+                }
+        
+                if (string.IsNullOrWhiteSpace(hm))
+                {
+                    SetEstado("Ingrese la HM.", Color.Firebrick);
+                    TextBoxHM.Focus();
+                    return;
+                }
+        
+                string hmValidada = _vinculador.ValidarHM(opValidada, hm);
+                if (string.IsNullOrWhiteSpace(hmValidada))
+                {
+                    SetEstado("La HM no es válida para la OP ingresada.", Color.Firebrick);
+                    TextBoxHM.Focus();
+                    return;
+                }
+        
+                LimpiarHMResultado();
+        
+                TextBoxOP.Text = opValidada;
+                TextBoxHM.Text = hmValidada;
+        
+                SetEstado("Consultando HM...", Color.DarkOrange);
+                _vinculador.GenerarHM(opValidada, hmValidada);
+            }
+            catch (Exception ex)
+            {
+                SetEstado("Error al buscar HM: " + ex.Message, Color.Firebrick);
+            }
+        }
+
+        private void LimpiarHMResultado()
+        {
+            try
+            {
+                // Limpia labels/cajas de cabecera si existen
+                // Ajusta estos nombres a tus controles reales:
+                // lblCliente.Text = "";
+                // lblPo.Text = "";
+                // lblFechaIngreso.Text = "";
+        
+                if (dataGridView3 != null)
+                    dataGridView3.Rows.Clear();
+            }
+            catch
+            {
+            }
         }
     }
 }
