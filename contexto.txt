@@ -1,282 +1,229 @@
-
-Creo que la funcionalidad lo tiene el boton: btnVerConsolidado y se crea dinamicante dentro de esta tabla: tbDetalleTimbrado usando 
-Private Sub BtnVerConsolidado_Click(sender As Object, e As EventArgs) Handles btnVerConsolidado.Click
-        Dim whereParameters As New Dictionary(Of String, Object) From {{"fotocheck", mCodTrabajador}}
-        Dim l_return = m_DBConsultarPrenda.VerConsolidado(whereParameters)
-        LimpiarGridConsolidado()
-        If l_return.Item1 = 0 Then
-            Return
-        End If
-        Console.WriteLine($"---Mira la linea---")
-        ' Mostrar los datos en el DataGridView3
-        GenerarConsolidadoDinamico(l_return.Item2, l_return.Item3)
-    End Sub
-Private Sub GenerarConsolidadoDinamico(totalTalla As List(Of Dictionary(Of String, Object)),
-                                      detalleTalla As Dictionary(Of String, List(Of Dictionary(Of String, Object))))
-
-        ' 🔹 Limpiar el contenido anterior
-        tbDetalleTimbrado.Controls.Clear()
-        tbDetalleTimbrado.RowStyles.Clear()
-        tbDetalleTimbrado.RowCount = 0
-
-        ' 🔹 Asegurar que `panelScroll` tenga AutoScroll activado correctamente
-        panelScroll.AutoScroll = True
-        panelScroll.Dock = DockStyle.Fill
-        panelScroll.Controls.Clear() ' Limpiar contenido previo
-
-        ' 🔹 Evitar AutoSize en `tbDetalleTimbrado`
-        tbDetalleTimbrado.AutoSize = False
-        tbDetalleTimbrado.Dock = DockStyle.Top ' 🔥 Se asegura que crezca hacia abajo dentro de `panelScroll`
-        tbDetalleTimbrado.Height = 0 ' Inicializa en 0 y crece dinámicamente
-        panelScroll.Controls.Add(tbDetalleTimbrado)
-
-        ' 🔹 Variable para el total general
-        Dim totalGeneral As Integer = 0
-
-        ' 🔹 Iterar sobre cada línea (14B, 17B, 27B, etc.)
-        For Each total In totalTalla
-            Dim linea As String = total("linea").ToString()
-            Dim totalCantidad As Integer = Convert.ToInt32(total("total"))
-            totalGeneral += totalCantidad
-
-            ' 🔹 1️⃣ Agregar un Label para la línea
-            Dim lblLinea As New Label With {
-                .Text = $"LINEA: {linea}",
-                .Font = New Font("Arial", 12, FontStyle.Bold),
-                .ForeColor = pinturaNegra,
-                .BackColor = pinturaPlata,
-                .Dock = DockStyle.Top,
-                .AutoSize = True,
-                .TextAlign = ContentAlignment.MiddleCenter
-            }
-
-            tbDetalleTimbrado.RowCount += 1
-            tbDetalleTimbrado.Controls.Add(lblLinea, 0, tbDetalleTimbrado.RowCount - 1)
-
-            ' 🔹 2️⃣ Crear el DataGridView dinámico
-            Dim dgv As New DataGridView With {
-                .AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells, ' 🔥 Se ajusta completamente
-                .ReadOnly = True,
-                .AllowUserToAddRows = False,
-                .AllowUserToDeleteRows = False,
-                .ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
-                .Dock = DockStyle.Top
-            }
-
-            ' Configurar columnas del DataGridView
-            dgv.Columns.Add("Op", "OP")
-            dgv.Columns.Add("Color", "Color")
-            dgv.Columns.Add("Talla", "Talla")
-            dgv.Columns.Add("Cant", "Cant")
-
-            ' Aplicar estilos al encabezado
-            dgv.ColumnHeadersDefaultCellStyle.BackColor = pinturaVerdeClaro
-            dgv.ColumnHeadersDefaultCellStyle.Font = New Font("Arial", 10, FontStyle.Bold)
-            dgv.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter
-            dgv.EnableHeadersVisualStyles = False
-
-            ' 🔹 Llenar el DataGridView con los detalles
-            If detalleTalla.ContainsKey(linea) Then
-                For Each detalle In detalleTalla(linea)
-                    dgv.Rows.Add(detalle("op"), detalle("color"), detalle("talla"), detalle("cantidad"))
-                Next
-            End If
-
-            ' 🔹 Agregar fila de total
-            Dim detalleRowIndex2 As Integer = dgv.Rows.Add()
-            dgv.Rows(detalleRowIndex2).Cells("Op").Value = ""
-            dgv.Rows(detalleRowIndex2).Cells("Color").Value = ""
-            dgv.Rows(detalleRowIndex2).Cells("Talla").Value = "Total"
-            dgv.Rows(detalleRowIndex2).Cells("Cant").Value = totalCantidad
-
-            ' 🔹 Aplicar estilos a la fila total
-            With dgv.Rows(detalleRowIndex2)
-                .DefaultCellStyle.BackColor = pinturaGrisClaro
-                .DefaultCellStyle.Font = New Font(dgv.Font, FontStyle.Bold)
-            End With
-
-            ' 🔹 Alinear el texto de "Total" a la derecha
-            dgv.Rows(detalleRowIndex2).Cells("Talla").Style.Alignment = DataGridViewContentAlignment.MiddleRight
-
-            ' 🔹 Ajustar la altura del DataGridView dinámicamente
-            dgv.Height = Math.Min(250, dgv.ColumnHeadersHeight + (dgv.RowTemplate.Height * dgv.Rows.Count) + 5)
-
-            ' 🔹 Agregar DataGridView al TableLayoutPanel
-            tbDetalleTimbrado.RowCount += 1
-            tbDetalleTimbrado.Controls.Add(dgv, 0, tbDetalleTimbrado.RowCount - 1)
-        Next
-
-        ' 🔹 Ajustar la altura de `tbDetalleTimbrado` para permitir el scroll
-        tbDetalleTimbrado.Height = tbDetalleTimbrado.PreferredSize.Height
-
-        ' 🔹 Mostrar el total general
-        lblTotalDetalle.Text = $"TOTAL TIMBRADO: {totalGeneral}"
-
-        ' 🔹 Ajustar `panelScroll` para que active el Scroll
-        panelScroll.Refresh()
-    End Sub
-
-dentro de esta funcion simula un click al boton:
-
-Private Sub frmInitial_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-...
-
-
-        BtnVerConsolidado_Click(Nothing, EventArgs.Empty) ' Simula el clic en BtnClear
-...
-
-Perfecto, aquí ya entramos a lo interesante 🔥 (port VB → C# bien hecho).
-He revisado el repo y lo que estás mencionando es clave:
-en frmLecto.txt (VB) existe la función:
-👉 Private Sub GenerarConsolidadoDinamico
-y esa función NO es solo un listado, sino que arma el resumen/consolidado dinámico del grid.
-🔍 Qué hace GenerarConsolidadoDinamico en VB
-En VB (por cómo está estructurado tu proyecto), esa función:
-✔ 1. Recorre el DataGrid principal (timbrados)
-Agrupa por campos como:
-op
-corte
-subcorte
-talla
-✔ 2. Calcula totales
-Conteo por grupo (cantidad de prendas)
-✔ 3. Llena otro grid (consolidado)
-👉 normalmente otro DataGridView tipo:
-DataGridView2 o dgConsolidado
-🧠 Flujo real en VB (muy importante)
-Según el patrón VB clásico que estás usando:
-Se ejecuta en:
-🔘 Botón (muy probable):
-btnConsolidado_Click
-o btnActualizar_Click
-o después de insertar RFID
-🔁 También se dispara automáticamente cuando:
-se inserta un nuevo timbrado
-se edita hoja_marcacion
-🚨 PROBLEMA ACTUAL EN TU C#
-En tu versión C#:
-✔ ya tienes:
-listado (ListarTimbrados)
-inserción (NuevoTimbrado)
-edición (CellEndEdit)
-❌ PERO NO tienes:
-consolidado dinámico
-✅ SOLUCIÓN: PORT COMPLETO
-Te voy a dar la versión C# de:
-✔ GenerarConsolidadoDinamico()
-✔ y cuándo llamarlo
-🧩 1) CREA EL GRID DE CONSOLIDADO
-Primero asegúrate que tienes otro grid:
+Sí hay avance real para la última pestaña, pero en el repo quedó parcialmente integrado.
+Lo que ya está implementado es esto: en VinculadorService.cs existe el evento OnHMGenerado, el método GenerarHM(string op, string hm) y las validaciones ValidarHM y ValidarOP; GenerarHM arma el filtro con norpd y nhjmr, llama a _bdPrenda.BuscarHMCabecera(where) y _bdPrenda.BuscarHMDetalle(where), y luego dispara OnHMGenerado con cabecera, total y detalle. En BDPrenda.cs también existen BuscarHMDetalle(...), BuscarHMCabecera(...) y el helper BuildWhereClause(...), así que la capa de datos y servicio ya está hecha. En frmLector.cs, durante el Load, ya te suscribes a _vinculador.OnHMGenerado y allí llamas a CargarValoresEnLabels(cabecera) y MostrarEnDataGridView3(total, detalle), por lo que la parte de “recibir y pintar” también está conectada. �
+GitHub +4
+Lo que no veo todavía en frmLector.cs es el disparador del flujo HM: no aparece BtnBuscarHM_Click, tampoco aparecen handlers tipo TextBoxOP_KeyDown o TextBoxHM_KeyDown, ni una llamada directa a _vinculador.GenerarHM(...) desde el formulario. Sí aparecen TextBoxOP.Text y TextBoxHM.Text, pero solo cuando se llena la UI después de un registro exitoso de prenda, no como búsqueda manual de HM. �
+GitHub +5
+Entonces, siguiendo el mismo patrón que ya usaste en consolidado e historial, te falta cerrar la parte de frmLector.cs con un método central de ejecución y los handlers del botón/teclas. La buena noticia es que no necesitas tocar mucho VinculadorService.cs ni BDPrenda.cs, porque esa lógica ya existe. �
+GitHub +1
+Qué debes dejar en frmLector.cs
+Agrega este método central:
 C#
-DataGridView DataGridViewConsolidado;
-Columnas sugeridas:
-op
-corte
-subcorte
-talla
-cantidad
-⚙️ 2) FUNCIÓN: GenerarConsolidadoDinamico()
-Pégala en frmLector.cs:
-C#
-private void GenerarConsolidadoDinamico()
+private void EjecutarBusquedaHM()
 {
     try
     {
-        if (DataGridView1.Rows.Count == 0)
+        if (_vinculador == null)
+        {
+            SetEstado("Servicio no inicializado.", Color.Firebrick);
             return;
-
-        var agrupado = new Dictionary<string, int>();
-
-        foreach (DataGridViewRow row in DataGridView1.Rows)
-        {
-            if (row.IsNewRow) continue;
-
-            string op = row.Cells["op"].Value?.ToString() ?? "";
-            string corte = row.Cells["corte"].Value?.ToString() ?? "";
-            string subcorte = row.Cells["subcorte"].Value?.ToString() ?? "";
-            string talla = row.Cells["talla"].Value?.ToString() ?? "";
-
-            string key = $"{op}|{corte}|{subcorte}|{talla}";
-
-            if (agrupado.ContainsKey(key))
-                agrupado[key]++;
-            else
-                agrupado[key] = 1;
         }
 
-        DataGridViewConsolidado.Rows.Clear();
+        string op = TextBoxOP.Text.Trim();
+        string hm = TextBoxHM.Text.Trim();
 
-        foreach (var item in agrupado)
+        if (string.IsNullOrWhiteSpace(op))
         {
-            var partes = item.Key.Split('|');
-
-            int rowIndex = DataGridViewConsolidado.Rows.Add();
-
-            DataGridViewConsolidado.Rows[rowIndex].Cells["op"].Value = partes[0];
-            DataGridViewConsolidado.Rows[rowIndex].Cells["corte"].Value = partes[1];
-            DataGridViewConsolidado.Rows[rowIndex].Cells["subcorte"].Value = partes[2];
-            DataGridViewConsolidado.Rows[rowIndex].Cells["talla"].Value = partes[3];
-            DataGridViewConsolidado.Rows[rowIndex].Cells["cantidad"].Value = item.Value;
+            SetEstado("Ingrese la OP.", Color.Firebrick);
+            TextBoxOP.Focus();
+            return;
         }
+
+        string opValidada = _vinculador.ValidarOP(op);
+        if (string.IsNullOrWhiteSpace(opValidada))
+        {
+            SetEstado("La OP no es válida.", Color.Firebrick);
+            TextBoxOP.Focus();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(hm))
+        {
+            SetEstado("Ingrese la HM.", Color.Firebrick);
+            TextBoxHM.Focus();
+            return;
+        }
+
+        string hmValidada = _vinculador.ValidarHM(opValidada, hm);
+        if (string.IsNullOrWhiteSpace(hmValidada))
+        {
+            SetEstado("La HM no es válida para la OP ingresada.", Color.Firebrick);
+            TextBoxHM.Focus();
+            return;
+        }
+
+        LimpiarHMResultado();
+
+        TextBoxOP.Text = opValidada;
+        TextBoxHM.Text = hmValidada;
+
+        SetEstado("Consultando HM...", Color.DarkOrange);
+        _vinculador.GenerarHM(opValidada, hmValidada);
     }
     catch (Exception ex)
     {
-        SetEstado("Error en consolidado: " + ex.Message, Color.Firebrick);
+        SetEstado("Error al buscar HM: " + ex.Message, Color.Firebrick);
     }
 }
-🔘 3) BOTÓN QUE EJECUTA EL CONSOLIDADO
-Busca en el .txt algo como:
-VB
-Private Sub btnConsolidado_Click()
-En C# crea:
+Y agrega este helper para limpiar el resultado antes de recargar:
 C#
-private void btnConsolidado_Click(object sender, EventArgs e)
+private void LimpiarHMResultado()
 {
-    GenerarConsolidadoDinamico();
+    try
+    {
+        // Limpia labels/cajas de cabecera si existen
+        // Ajusta estos nombres a tus controles reales:
+        // lblCliente.Text = "";
+        // lblPo.Text = "";
+        // lblFechaIngreso.Text = "";
+
+        if (dataGridView3 != null)
+            dataGridView3.Rows.Clear();
+    }
+    catch
+    {
+    }
 }
-🔄 4) AUTOMATIZACIÓN (IMPORTANTE)
-Esto es lo que hace que tu app se sienta PRO 💪
-Llamar consolidado en:
-✔ Después de listar
+Ese método encaja con lo que ya tienes: el servicio valida OP y HM, y cuando responde, el formulario ya sabe cargar cabecera y detalle con CargarValoresEnLabels(...) y MostrarEnDataGridView3(...). �
+GitHub +2
+Botón equivalente a BtnBuscarHM_Click
+En VB dijiste que el botón hace:
+VB
+BuscarCabeceraHM()
+BuscarHMDetalle()
+En C# ya no necesitas dos llamadas separadas porque GenerarHM(op, hm) hace ambas por dentro. En el form deja esto:
 C#
-LlenarDataGridViewDesdeDataTable(data);
-GenerarConsolidadoDinamico();
-✔ Después de insertar RFID
-En:
+private void BtnBuscarHM_Click(object sender, EventArgs e)
+{
+    EjecutarBusquedaHM();
+}
+Eso respeta el patrón anterior: el formulario dispara una sola acción y el servicio concentra la operación. GenerarHM(...) ya llama tanto a BuscarHMCabecera(...) como a BuscarHMDetalle(...). �
+GitHub +1
+Enter en TextBoxOP y TextBoxHM
+Agrega ambos handlers:
 C#
-Vinculador_OnInsertadoOk
-agrega:
+private void TextBoxOP_KeyDown(object sender, KeyEventArgs e)
+{
+    if (e.KeyCode == Keys.Enter)
+    {
+        e.SuppressKeyPress = true;
+        TextBoxHM.Focus();
+    }
+}
+
+private void TextBoxHM_KeyDown(object sender, KeyEventArgs e)
+{
+    if (e.KeyCode == Keys.Enter)
+    {
+        e.SuppressKeyPress = true;
+        EjecutarBusquedaHM();
+    }
+}
+Así dejas una UX coherente: Enter en OP pasa a HM, y Enter en HM ejecuta la consulta. Ahora mismo esos handlers no aparecen en el repo. �
+GitHub +1
+En frmLector_Load(...), enlaza eventos
+Además de tu suscripción actual a OnHMGenerado, enlaza los controles:
 C#
-GenerarConsolidadoDinamico();
-✔ Después de editar (clave)
-En tu:
+TextBoxOP.KeyDown += TextBoxOP_KeyDown;
+TextBoxHM.KeyDown += TextBoxHM_KeyDown;
+BtnBuscarHM.Click += BtnBuscarHM_Click;
+La suscripción al evento del servicio ya la tienes; esto solo completa el disparo desde la UI. �
+GitHub
+VinculadorService.cs
+Aquí el avance está básicamente correcto. Yo solo le haría una mejora pequeña para validar antes de lanzar la tarea:
 C#
-DataGridView1_CellEndEdit
-agrega al final:
+public void GenerarHM(string op, string hm)
+{
+    if (string.IsNullOrWhiteSpace(op))
+    {
+        OnError?.Invoke("La OP es obligatoria.");
+        return;
+    }
+
+    if (string.IsNullOrWhiteSpace(hm))
+    {
+        OnError?.Invoke("La HM es obligatoria.");
+        return;
+    }
+
+    Task.Run(() =>
+    {
+        try
+        {
+            var where = new Dictionary<string, object>
+            {
+                { "norpd", op },
+                { "nhjmr", hm }
+            };
+
+            var cabecera = _bdPrenda.BuscarHMCabecera(where);
+            var detalle = _bdPrenda.BuscarHMDetalle(where);
+
+            if (cabecera == null || cabecera.Rows.Count == 0)
+            {
+                OnError?.Invoke("No se encontró cabecera de HM.");
+                return;
+            }
+
+            if (detalle.Item1 == 0)
+            {
+                OnError?.Invoke("No hay datos de HM.");
+                return;
+            }
+
+            OnHMGenerado?.Invoke(cabecera, detalle.Item2, detalle.Item3);
+        }
+        catch (Exception ex)
+        {
+            OnError?.Invoke("Error GenerarHM: " + ex.Message);
+        }
+    });
+}
+Tu versión actual ya hace casi todo esto; la mejora es solo robustez cuando no venga cabecera. �
+GitHub
+BDPrenda.cs
+También está casi listo. La parte más importante ya existe:
+BuscarHMDetalle(where) consulta althmd, une almart y alwart, y devuelve una estructura de totales y detalle agrupada por color/talla. �
+GitHub +1
+BuscarHMCabecera(where) consulta althmc, trae norpd, nhjmr, cclnt, npocl y fentr. �
+GitHub +1
+Solo te sugiero agregar ORDER BY en cabecera y detalle para hacer más estable la salida visual, por ejemplo:
 C#
-GenerarConsolidadoDinamico();
-🚀 RESULTADO FINAL
-Con esto tienes:
-✔ Listado dinámico
-✔ Edición en vivo
-✔ Consolidado automático
-✔ UX tipo industrial (como VB original)
-⚠️ DETALLE IMPORTANTE
-Si en VB el consolidado usa más campos (ejemplo: color, linea, etc.), solo agrégalos en el key:
+string query = $@"
+SELECT
+    alt.cclrcl,
+    alt.tclrcl,
+    alt.qartsl,
+    alw.tcrct6
+FROM althmd alt
+LEFT JOIN almart alm ON alm.ctpar = alt.ctpar AND alm.cartc = alt.cartc
+LEFT JOIN alwart alw ON alm.ctpar = alw.ctpar AND alm.cartc = alw.cartc
+WHERE {where}
+ORDER BY alt.cclrcl, alw.tcrct6
+";
+y en cabecera:
 C#
-string key = $"{op}|{corte}|{subcorte}|{talla}|{color}";
-🎯 RESUMEN
-Debes implementar:
-GenerarConsolidadoDinamico()
-Botón que lo llame
-Ejecutarlo en:
-Listar
-Insertar
-Editar
-🚀 SIGUIENTE PASO (si quieres)
-Si quieres lo dejamos idéntico al VB:
-👉 te hago la versión usando DataTable + LINQ (GroupBy)
-👉 o incluso lo llevamos a consulta SQL optimizada (GROUP BY en BD)
-Solo dime:
-"quiero versión PRO optimizada"
-y lo llevamos a nivel producción 🔥
+string query = $@"
+SELECT
+    althmc.norpd,
+    althmc.nhjmr,
+    althmc.cclnt,
+    althmc.npocl,
+    CONVERT(VARCHAR, althmc.fentr, 105) AS fentr
+FROM althmc
+INNER JOIN altopc ON althmc.norpd = altopc.nnope
+WHERE {where}
+ORDER BY althmc.norpd, althmc.nhjmr
+";
+No es obligatorio para que funcione, pero ayuda a que el resultado sea consistente. �
+GitHub +1
+Validación final
+Tu estado actual es este:
+BDPrenda.cs: sí está completo para HM. �
+GitHub
+VinculadorService.cs: sí está funcional, con una mejora opcional de validación. �
+GitHub
+frmLector.cs: está a medio cerrar; recibe bien el resultado (OnHMGenerado) pero todavía te falta el patrón de entrada: botón, Enter en cajas y método central EjecutarBusquedaHM(). �
+GitHub +4
+El cambio importante en C# es este: en VB eran dos métodos separados (BuscarCabeceraHM() y BuscarHMDetalle()), pero en tu port actual el equivalente correcto es una sola llamada desde el form a _vinculador.GenerarHM(op, hm), porque el servicio ya ejecuta ambas consultas internamente. �
+GitHub +1
+Si quieres, en el siguiente mensaje te dejo el bloque final exacto para pegar en frmLector.cs con EjecutarBusquedaHM, BtnBuscarHM_Click, TextBoxOP_KeyDown y TextBoxHM_KeyDown.
