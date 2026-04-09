@@ -281,25 +281,43 @@ namespace DS9908R_App
 
         public void GenerarHM(string op, string hm)
         {
+            if (string.IsNullOrWhiteSpace(op))
+            {
+                OnError?.Invoke("La OP es obligatoria.");
+                return;
+            }
+        
+            if (string.IsNullOrWhiteSpace(hm))
+            {
+                OnError?.Invoke("La HM es obligatoria.");
+                return;
+            }
+        
             Task.Run(() =>
             {
                 try
                 {
                     var where = new Dictionary<string, object>
-            {
-                { "norpd", op },
-                { "nhjmr", hm }
-            };
-
+                    {
+                        { "norpd", op },
+                        { "nhjmr", hm }
+                    };
+        
                     var cabecera = _bdPrenda.BuscarHMCabecera(where);
                     var detalle = _bdPrenda.BuscarHMDetalle(where);
-
+        
+                    if (cabecera == null || cabecera.Rows.Count == 0)
+                    {
+                        OnError?.Invoke("No se encontró cabecera de HM.");
+                        return;
+                    }
+        
                     if (detalle.Item1 == 0)
                     {
                         OnError?.Invoke("No hay datos de HM.");
                         return;
                     }
-
+        
                     OnHMGenerado?.Invoke(cabecera, detalle.Item2, detalle.Item3);
                 }
                 catch (Exception ex)
