@@ -345,7 +345,6 @@ namespace DS9908R_App
             return resultado.Item1 == 1 ? resultado.Item3 : null;
         }
 
-
         public string ValidarOP(string op)
         {
             const string tipo = "norpd";
@@ -354,15 +353,12 @@ namespace DS9908R_App
             var resultado = _bdPrenda.ValidarOP(whereParameters, tipo);
 
             if (resultado.Item1 == 1)
-            {
                 return resultado.Item3; // valor válido
-            }
             else
             {
                 OnError?.Invoke($"ValidarOP: {resultado.Item2}");
                 return null;
             }
         }
-
     }
 }

@@ -663,8 +663,7 @@ namespace DS9908R_App
             ));
         }
 
-        public Tuple<int, List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>>
-BuscarHMDetalle(Dictionary<string, object> whereParameters)
+        public Tuple<int, List<Dictionary<string, object>>, Dictionary<string, List<Dictionary<string, object>>>> BuscarHMDetalle(Dictionary<string, object> whereParameters)
         {
             var datos = new DataTable();
             var totalTalla = new List<Dictionary<string, object>>();
@@ -672,6 +671,9 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
 
             try
             {
+                if (whereParameters == null || whereParameters.Count == 0)
+                    throw new ArgumentException("El parámetro whereParameters no puede estar vacío o ser nulo.");
+
                 string where = BuildWhereClause(whereParameters, "alt");
 
                 string query = $@"
@@ -687,22 +689,18 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
             ORDER BY alt.cclrcl, alw.tcrct6
         ";
 
-                using (var connectionAse = _sybase.Connect())
+                using (var conn = _sybase.Connect())
                 {
-                    if (connectionAse == null || connectionAse.State != ConnectionState.Open)
+                    if (conn == null || conn.State != ConnectionState.Open)
                         throw new Exception("Error en conexión con la base de datos.");
 
-                    using (var comando = new AseCommand(query, connectionAse))
+                    using (var cmd = new AseCommand(query, conn))
                     {
                         foreach (var param in whereParameters)
-                        {
-                            comando.Parameters.AddWithValue("@" + param.Key, param.Value);
-                        }
+                            cmd.Parameters.AddWithValue("@" + param.Key, param.Value);
 
-                        using (var reader = comando.ExecuteReader())
-                        {
+                        using (var reader = cmd.ExecuteReader())
                             datos.Load(reader);
-                        }
                     }
                 }
 
@@ -723,13 +721,11 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
 
                     var g = agrupados[color];
                     g.total += cant;
-
                     g.det.Add(new Dictionary<string, object>
             {
                 { "talla", talla },
                 { "cantidad", cant }
             });
-
                     agrupados[color] = g;
                 }
 
@@ -760,6 +756,9 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
 
             try
             {
+                if (whereParameters == null || whereParameters.Count == 0)
+                    throw new ArgumentException("El parámetro whereParameters no puede estar vacío o ser nulo.");
+
                 string where = BuildWhereClause(whereParameters, "althmc");
 
                 string query = $@"
@@ -776,13 +775,18 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
         ";
 
                 using (var conn = _sybase.Connect())
-                using (var cmd = new AseCommand(query, conn))
                 {
-                    foreach (var p in whereParameters)
-                        cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
+                    if (conn == null || conn.State != ConnectionState.Open)
+                        throw new Exception("Error en conexión con la base de datos.");
 
-                    using (var reader = cmd.ExecuteReader())
-                        datos.Load(reader);
+                    using (var cmd = new AseCommand(query, conn))
+                    {
+                        foreach (var p in whereParameters)
+                            cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
+
+                        using (var reader = cmd.ExecuteReader())
+                            datos.Load(reader);
+                    }
                 }
             }
             catch (Exception ex)
@@ -792,6 +796,7 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
 
             return datos;
         }
+
 
     }
 }
