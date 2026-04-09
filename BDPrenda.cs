@@ -684,6 +684,7 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
             LEFT JOIN almart alm ON alm.ctpar = alt.ctpar AND alm.cartc = alt.cartc
             LEFT JOIN alwart alw ON alm.ctpar = alw.ctpar AND alm.cartc = alw.cartc
             WHERE {where}
+            ORDER BY alt.cclrcl, alw.tcrct6
         ";
 
                 using (var conn = _sybase.Connect())
@@ -762,6 +763,7 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
             FROM althmc
             INNER JOIN altopc ON althmc.norpd = altopc.nnope
             WHERE {where}
+            ORDER BY althmc.norpd, althmc.nhjmr
         ";
 
                 using (var conn = _sybase.Connect())
