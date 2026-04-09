@@ -984,6 +984,18 @@ namespace DS9908R_App
 
         private void btnVerConsolidado_Click(object sender, EventArgs e)
         {
+            if (_vinculador == null)
+            {
+                SetEstado("Servicio no inicializado.", Color.Firebrick);
+                return;
+            }
+        
+            if (string.IsNullOrWhiteSpace(mCodTrabajador))
+            {
+                SetEstado("Trabajador no válido.", Color.Firebrick);
+                return;
+            }
+        
             LimpiarGridConsolidado();
             _vinculador.GenerarConsolidado(mCodTrabajador);
         }
