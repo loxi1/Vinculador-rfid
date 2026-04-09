@@ -687,14 +687,23 @@ BuscarHMDetalle(Dictionary<string, object> whereParameters)
             ORDER BY alt.cclrcl, alw.tcrct6
         ";
 
-                using (var conn = _sybase.Connect())
-                using (var cmd = new AseCommand(query, conn))
+                using (var connectionAse = _sybase.Connect())
                 {
-                    foreach (var p in whereParameters)
-                        cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
+                    if (connectionAse == null || connectionAse.State != ConnectionState.Open)
+                        throw new Exception("Error en conexión con la base de datos.");
 
-                    using (var reader = cmd.ExecuteReader())
-                        datos.Load(reader);
+                    using (var comando = new AseCommand(query, connectionAse))
+                    {
+                        foreach (var param in whereParameters)
+                        {
+                            comando.Parameters.AddWithValue("@" + param.Key, param.Value);
+                        }
+
+                        using (var reader = comando.ExecuteReader())
+                        {
+                            datos.Load(reader);
+                        }
+                    }
                 }
 
                 if (datos.Rows.Count == 0)

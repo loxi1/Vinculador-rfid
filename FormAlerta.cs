@@ -13,7 +13,6 @@ namespace DS9908R_App
 {
     public partial class FormAlerta : Form
     {
-        private int conteo;
         private int tiempo_ = 30; // Tiempo en segundos
         private int desplazamiento = 10; // Velocidad de desplazamiento en píxeles
         private int destinoY; // Coordenada final del formulario en Y

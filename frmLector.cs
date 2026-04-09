@@ -24,7 +24,6 @@ namespace DS9908R_App
         private VinculadorService _vinculador;
         private string _ultimoCodigoBarra = "";
         private string _ultimoRfid = "";
-        private string _hojaMarcacionActual = "";
 
         private string mEmpresa = "COFACO";
         private string mCodTrabajador;
@@ -169,7 +168,7 @@ namespace DS9908R_App
                     }
                 };
 
-                //TextBoxOP.KeyDown += TextBoxOP_KeyDown;
+                TextBoxOP.KeyDown += TextBoxOP_KeyDown;
                 TextBoxHM.KeyDown += TextBoxHM_KeyDown;
                 BtnBuscarHM.Click += BtnBuscarHM_Click;
             }
@@ -1346,29 +1345,6 @@ namespace DS9908R_App
             }
         }
 
-        private void BuscarCabeceraHM()
-        {
-            string pOp = TextBoxOP.Text;
-            string pHm = TextBoxHM.Text;
-
-            var where = new Dictionary<string, object>
-    {
-        { "norpd", pOp },
-        { "nhjmr", pHm }
-    };
-
-            DataTable dt = _bdPrenda.BuscarHMCabecera(where);
-
-            if (dt == null || dt.Rows.Count == 0)
-            {
-                AlertaError($"No se encontraron registros para la OP: {pOp} {pHm}", pinturaRojoLadrillo);
-                return;
-            }
-
-            CargarValoresEnLabels(dt);
-        }
-
-
         private void BtnBuscarHM_Click(object sender, EventArgs e)
         {
             EjecutarBusquedaHM();
@@ -1565,7 +1541,7 @@ namespace DS9908R_App
         {
 
         }
-        
+
         private void EjecutarBusquedaHM()
         {
             try
@@ -1575,17 +1551,17 @@ namespace DS9908R_App
                     SetEstado("Servicio no inicializado.", Color.Firebrick);
                     return;
                 }
-        
+
                 string op = TextBoxOP.Text.Trim();
                 string hm = TextBoxHM.Text.Trim();
-        
+
                 if (string.IsNullOrWhiteSpace(op))
                 {
                     SetEstado("Ingrese la OP.", Color.Firebrick);
                     TextBoxOP.Focus();
                     return;
                 }
-        
+
                 string opValidada = _vinculador.ValidarOP(op);
                 if (string.IsNullOrWhiteSpace(opValidada))
                 {
@@ -1593,14 +1569,14 @@ namespace DS9908R_App
                     TextBoxOP.Focus();
                     return;
                 }
-        
+
                 if (string.IsNullOrWhiteSpace(hm))
                 {
                     SetEstado("Ingrese la HM.", Color.Firebrick);
                     TextBoxHM.Focus();
                     return;
                 }
-        
+
                 string hmValidada = _vinculador.ValidarHM(opValidada, hm);
                 if (string.IsNullOrWhiteSpace(hmValidada))
                 {
@@ -1608,12 +1584,12 @@ namespace DS9908R_App
                     TextBoxHM.Focus();
                     return;
                 }
-        
+
                 LimpiarHMResultado();
-        
+
                 TextBoxOP.Text = opValidada;
                 TextBoxHM.Text = hmValidada;
-        
+
                 SetEstado("Consultando HM...", Color.DarkOrange);
                 _vinculador.GenerarHM(opValidada, hmValidada);
             }
@@ -1627,17 +1603,45 @@ namespace DS9908R_App
         {
             try
             {
-                // Limpia labels/cajas de cabecera si existen
-                // Ajusta estos nombres a tus controles reales:
-                // lblCliente.Text = "";
-                // lblPo.Text = "";
-                // lblFechaIngreso.Text = "";
-        
-                if (dataGridView3 != null)
-                    dataGridView3.Rows.Clear();
+                // Reiniciar OP
+                TextBoxOP.Text = "";
+                TextBoxOP.Enabled = true;
+                TextBoxOP.Focus();
+
+                // Reiniciar HM
+                TextBoxHM.Text = "";
+                TextBoxHM.Enabled = false;
+
+                // Limpiar labels de cabecera que empiezan con "text_"
+                foreach (Control control in tableCabecera.Controls)
+                {
+                    if (control.Name.StartsWith("text_") && control is Label label)
+                    {
+                        label.Text = "";
+                    }
+                }
+
+                // Limpiar el DataGridView
+                if (DataGridView3 != null)
+                {
+                    DataGridView3.DataSource = null;
+                    DataGridView3.Rows.Clear();
+                    DataGridView3.Columns.Clear();
+                }
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine("Error al limpiar HM: " + ex.Message);
+            }
+        }
+
+
+        private void TextBoxOP_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                e.SuppressKeyPress = true;
+                TextBoxHM.Focus();
             }
         }
     }
