@@ -759,34 +759,70 @@ namespace DS9908R_App
                 if (whereParameters == null || whereParameters.Count == 0)
                     throw new ArgumentException("El parámetro whereParameters no puede estar vacío o ser nulo.");
 
-                string where = BuildWhereClause(whereParameters, "althmc");
+                var queryBuilder = new StringBuilder();
+                queryBuilder.AppendLine("SELECT ");
+                queryBuilder.AppendLine("    althmc.norpd,");
+                queryBuilder.AppendLine("    althmc.nhjmr,");
+                queryBuilder.AppendLine("    althmc.cclnt,");
+                queryBuilder.AppendLine("    althmc.npocl,");
+                queryBuilder.AppendLine("    CONVERT(VARCHAR, althmc.fentr, 105) AS fentr,");
+                queryBuilder.AppendLine("    althmc.cctgr,");
+                queryBuilder.AppendLine("    althmc.tfrmem,");
+                queryBuilder.AppendLine("    althmc.ptlrnc,");
+                queryBuilder.AppendLine("    althmc.clgren,");
+                queryBuilder.AppendLine("    althmc.tvia,");
+                queryBuilder.AppendLine("    althmc.totros,");
+                queryBuilder.AppendLine("    althmc.cestcl,");
+                queryBuilder.AppendLine("    althmc.testcl,");
+                queryBuilder.AppendLine("    althmc.sesthm,");
+                queryBuilder.AppendLine("    althmc.cusula,");
+                queryBuilder.AppendLine("    althmc.fultac,");
+                queryBuilder.AppendLine("    althmc.ctptr,");
+                queryBuilder.AppendLine("    althmc.mainmarks,");
+                queryBuilder.AppendLine("    althmc.sidemarks,");
+                queryBuilder.AppendLine("    althmc.sestps,");
+                queryBuilder.AppendLine("    althmc.cod_tgen,");
+                queryBuilder.AppendLine("    althmc.nro_kit,");
+                queryBuilder.AppendLine("    althmc.nro_referencia,");
+                queryBuilder.AppendLine("    ptmtrc.ttrcr,");
+                queryBuilder.AppendLine("    almlge_a.tdrcc,");
+                queryBuilder.AppendLine("    almlge_a.tlgen,");
+                queryBuilder.AppendLine("    altopc.cmodelo,");
+                queryBuilder.AppendLine("    almcad.tdscr,");
+                queryBuilder.AppendLine("    altopc.cgrtalla,");
+                queryBuilder.AppendLine("    althmc.npocl AS npocl_act,");
+                queryBuilder.AppendLine("    altopc.sreserva,");
+                queryBuilder.AppendLine("    altopc.temporada,");
+                queryBuilder.AppendLine("    altopc.cproto,");
+                queryBuilder.AppendLine("    altopc.nro_certificado,");
+                queryBuilder.AppendLine("    altopc.flgdespacho,");
+                queryBuilder.AppendLine("    althmc.cod_lugrent_cobro,");
+                queryBuilder.AppendLine("    almlge_b.tlgen,");
+                queryBuilder.AppendLine("    almlge_b.tdrcc,");
+                queryBuilder.AppendLine("    CASE WHEN altopc.flgdespacho = '0' THEN 'SIN DESPACHAR' WHEN altopc.flgdespacho = '1' THEN 'DESPACHADO' ELSE '' END AS flgdes");
+                queryBuilder.AppendLine("FROM althmc");
+                queryBuilder.AppendLine("INNER JOIN altopc ON ( althmc.norpd = altopc.nnope )");
+                queryBuilder.AppendLine("INNER JOIN ptmtrc ON ( althmc.cclnt = ptmtrc.ctrcr )");
+                queryBuilder.AppendLine("LEFT OUTER JOIN almlge almlge_a ON ( althmc.ctptr = almlge_a.ctptr AND althmc.cclnt = almlge_a.ctrcr AND althmc.clgren = almlge_a.clgen )");
+                queryBuilder.AppendLine("LEFT OUTER JOIN almlge almlge_b ON ( althmc.ctptr = almlge_b.ctptr AND althmc.cclnt = almlge_b.ctrcr AND althmc.cod_lugrent_cobro = almlge_b.clgen )");
+                queryBuilder.AppendLine("LEFT OUTER JOIN almcad ON altopc.cmodelo = almcad.ccrct");
+                queryBuilder.AppendLine("WHERE almcad.ctpar = '10' AND almcad.norden = '1'");
 
-                string query = $@"
-            SELECT 
-                althmc.norpd,
-                althmc.nhjmr,
-                althmc.cclnt,
-                althmc.npocl,
-                CONVERT(VARCHAR, althmc.fentr, 105) AS fentr
-            FROM althmc
-            INNER JOIN altopc ON althmc.norpd = altopc.nnope
-            WHERE {where}
-            ORDER BY althmc.norpd, althmc.nhjmr
-        ";
+                string l_where = BuildWhereClause(whereParameters)
+                    .Replace("norpd =", "althmc.norpd =")
+                    .Replace("nhjmr =", "althmc.nhjmr =");
+
+                queryBuilder.Append(" AND ").Append(l_where);
+                string query = queryBuilder.ToString();
 
                 using (var conn = _sybase.Connect())
+                using (var cmd = new AseCommand(query, conn))
                 {
-                    if (conn == null || conn.State != ConnectionState.Open)
-                        throw new Exception("Error en conexión con la base de datos.");
+                    foreach (var p in whereParameters)
+                        cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
 
-                    using (var cmd = new AseCommand(query, conn))
-                    {
-                        foreach (var p in whereParameters)
-                            cmd.Parameters.AddWithValue("@" + p.Key, p.Value);
-
-                        using (var reader = cmd.ExecuteReader())
-                            datos.Load(reader);
-                    }
+                    using (var reader = cmd.ExecuteReader())
+                        datos.Load(reader);
                 }
             }
             catch (Exception ex)
@@ -796,6 +832,7 @@ namespace DS9908R_App
 
             return datos;
         }
+
 
 
     }

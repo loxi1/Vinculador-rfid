@@ -17,7 +17,7 @@ namespace DS9908R_App
 
         public string LastError { get; private set; }
 
-        public AseConnection Connect()
+        /*public AseConnection Connect()
         {
             try
             {
@@ -55,7 +55,30 @@ namespace DS9908R_App
                 LogError("Error al conectar a Sybase", ex);
                 throw;
             }
+        }*/
+
+        public AseConnection Connect()
+        {
+            try
+            {
+                LoadConfig();
+
+                string connectionString =
+                    $"Data Source={_serverName};Port={_port};Database={_database};Uid={_user};Pwd={_password};";
+
+                // Crear SIEMPRE una nueva conexión
+                var conn = new AseConnection(connectionString);
+                conn.Open();
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                LogError("Error al conectar a Sybase", ex);
+                throw;
+            }
         }
+
 
         public void Disconnect()
         {
