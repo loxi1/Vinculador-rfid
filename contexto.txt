@@ -472,3 +472,255 @@ El patrón que te recomiendo dejar fijo es:
 **una operación de BD = una conexión nueva = un `using`**
 
 Si quieres, ahora te preparo una revisión del patrón de `BDPrenda.cs` para decirte cuáles métodos todavía deberían quitar `finally { _sybase.Disconnect(); }`.
+
+
+Perfecto. Te dejo una versión **limpia y consistente** de la clase de conexión para que trabajes con el patrón correcto: **una conexión nueva por operación**.
+
+## Cómo debería quedar
+
+```csharp
+using System;
+using System.Data;
+using System.IO;
+using Sybase.Data.AseClient;
+
+namespace SampleApp_CSharp
+{
+    public class SybaseHelper
+    {
+        private string _serverName;
+        private string _port;
+        private string _database;
+        private string _user;
+        private string _password;
+
+        public string LastError { get; private set; } = string.Empty;
+
+        public AseConnection Connect()
+        {
+            try
+            {
+                LoadConfig();
+
+                string connectionString =
+                    $"Data Source={_serverName};Port={_port};Database={_database};Uid={_user};Pwd={_password};";
+
+                var conn = new AseConnection(connectionString);
+                conn.Open();
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                LogError("Error al conectar a Sybase", ex);
+                throw;
+            }
+        }
+
+        private void LoadConfig()
+        {
+            try
+            {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string configPath = Path.Combine(basePath, "sybase.config");
+
+                if (!File.Exists(configPath))
+                    throw new FileNotFoundException("No se encontró el archivo sybase.config", configPath);
+
+                foreach (var rawLine in File.ReadAllLines(configPath))
+                {
+                    string line = rawLine?.Trim();
+
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    if (line.StartsWith("#") || line.StartsWith(";"))
+                        continue;
+
+                    int idx = line.IndexOf('=');
+                    if (idx <= 0)
+                        continue;
+
+                    string key = line.Substring(0, idx).Trim().ToLowerInvariant();
+                    string value = line.Substring(idx + 1).Trim();
+
+                    switch (key)
+                    {
+                        case "server":
+                        case "servername":
+                        case "data source":
+                            _serverName = value;
+                            break;
+
+                        case "port":
+                            _port = value;
+                            break;
+
+                        case "database":
+                        case "initial catalog":
+                            _database = value;
+                            break;
+
+                        case "user":
+                        case "uid":
+                        case "username":
+                            _user = value;
+                            break;
+
+                        case "password":
+                        case "pwd":
+                            _password = value;
+                            break;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(_serverName))
+                    throw new Exception("Falta configurar 'server' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_port))
+                    throw new Exception("Falta configurar 'port' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_database))
+                    throw new Exception("Falta configurar 'database' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_user))
+                    throw new Exception("Falta configurar 'user' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_password))
+                    throw new Exception("Falta configurar 'password' en sybase.config.");
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                LogError("Error al cargar configuración Sybase", ex);
+                throw;
+            }
+        }
+
+        private void LogError(string mensaje, Exception ex)
+        {
+            try
+            {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string logPath = Path.Combine(basePath, "sybase_error.log");
+
+                File.AppendAllText(
+                    logPath,
+                    $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {mensaje}: {ex.Message}{Environment.NewLine}");
+            }
+            catch
+            {
+            }
+        }
+    }
+}
+```
+
+## Qué debes eliminar de tu versión anterior
+
+Quita estas cosas si todavía existen:
+
+```csharp
+private AseConnection _connection;
+```
+
+Y también cualquier método tipo:
+
+```csharp
+public void Disconnect()
+private void SafeClose()
+```
+
+si estaban pensados para cerrar una conexión global compartida.
+
+## Cómo usarla en `BDPrenda.cs`
+
+Siempre así:
+
+```csharp
+using (AseConnection conn = _sybase.Connect())
+using (AseCommand cmd = conn.CreateCommand())
+{
+    cmd.CommandText = "SELECT ...";
+    // parámetros
+    using (AseDataAdapter da = new AseDataAdapter(cmd))
+    {
+        da.Fill(dt);
+    }
+}
+```
+
+## Qué ya no debes hacer
+
+Evita esto:
+
+```csharp
+AseConnection conn = _sybase.Connect();
+// ...
+_sybase.Disconnect();
+```
+
+Y evita mezclarlo con `using`.
+
+## Regla práctica
+
+En todo tu proyecto:
+
+* `Connect()` abre y devuelve una conexión nueva
+* cada método de BD usa `using`
+* no compartas la conexión en un campo de clase
+* no cierres manualmente una conexión que ya está dentro de `using`
+
+## Ejemplo correcto para tu caso HM
+
+```csharp
+public DataTable BuscarHMCabecera(Dictionary<string, object> whereParameters)
+{
+    DataTable dt = new DataTable();
+
+    try
+    {
+        using (AseConnection conn = _sybase.Connect())
+        using (AseCommand cmd = conn.CreateCommand())
+        {
+            string where = BuildWhereClause(whereParameters, cmd);
+
+            cmd.CommandText = $@"
+                SELECT
+                    althmc.norpd,
+                    althmc.nhjmr,
+                    althmc.cclnt,
+                    althmc.npocl,
+                    CONVERT(VARCHAR, althmc.fentr, 105) AS fentr
+                FROM althmc
+                INNER JOIN altopc ON althmc.norpd = altopc.nnope
+                WHERE {where}
+                ORDER BY althmc.norpd, althmc.nhjmr";
+
+            using (AseDataAdapter da = new AseDataAdapter(cmd))
+            {
+                da.Fill(dt);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        ss_error = ex.Message;
+        LogError("Error en BuscarHMCabecera", ex);
+    }
+
+    return dt;
+}
+```
+
+## Mi conclusión
+
+Lo que te pasó con `BtnBuscarHM_Click` fue una señal de que el diseño anterior de conexión compartida ya no era seguro para tu app.
+Tu cambio fue correcto.
+
+El patrón que te recomiendo dejar fijo es:
+
+**una operación de BD = una conexión nueva = un `using`**
+
+Si quieres, ahora te preparo una revisión del patrón de `BDPrenda.cs` para decirte cuáles métodos todavía deberían quitar `finally { _sybase.Disconnect(); }`.
+
