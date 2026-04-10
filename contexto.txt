@@ -1,107 +1,474 @@
-Sí hay avance real para la última pestaña, pero en el repo quedó parcialmente integrado.
-Lo que ya está implementado es esto: en VinculadorService.cs existe el evento OnHMGenerado, el método GenerarHM(string op, string hm) y las validaciones ValidarHM y ValidarOP; GenerarHM arma el filtro con norpd y nhjmr, llama a _bdPrenda.BuscarHMCabecera(where) y _bdPrenda.BuscarHMDetalle(where), y luego dispara OnHMGenerado con cabecera, total y detalle. En BDPrenda.cs también existen BuscarHMDetalle(...), BuscarHMCabecera(...) y el helper BuildWhereClause(...), así que la capa de datos y servicio ya está hecha. En frmLector.cs, durante el Load, ya te suscribes a _vinculador.OnHMGenerado y allí llamas a CargarValoresEnLabels(cabecera) y MostrarEnDataGridView3(total, detalle), por lo que la parte de “recibir y pintar” también está conectada. �
-GitHub +4
-Lo que no veo todavía en frmLector.cs es el disparador del flujo HM: no aparece BtnBuscarHM_Click, tampoco aparecen handlers tipo TextBoxOP_KeyDown o TextBoxHM_KeyDown, ni una llamada directa a _vinculador.GenerarHM(...) desde el formulario. Sí aparecen TextBoxOP.Text y TextBoxHM.Text, pero solo cuando se llena la UI después de un registro exitoso de prenda, no como búsqueda manual de HM. �
-GitHub +5
-Entonces, siguiendo el mismo patrón que ya usaste en consolidado e historial, te falta cerrar la parte de frmLector.cs con un método central de ejecución y los handlers del botón/teclas. La buena noticia es que no necesitas tocar mucho VinculadorService.cs ni BDPrenda.cs, porque esa lógica ya existe. �
-GitHub +1
-Qué debes dejar en frmLector.cs
-Agrega este método central:
-C#
+Lo que hiciste va en la dirección correcta.
 
-Y agrega este helper para limpiar el resultado antes de recargar:
-C#
-private void LimpiarHMResultado()
-{
-    
-}
-Ese método encaja con lo que ya tienes: el servicio valida OP y HM, y cuando responde, el formulario ya sabe cargar cabecera y detalle con CargarValoresEnLabels(...) y MostrarEnDataGridView3(...). �
-GitHub +2
-Botón equivalente a BtnBuscarHM_Click
-En VB dijiste que el botón hace:
-VB
-BuscarCabeceraHM()
-BuscarHMDetalle()
-En C# ya no necesitas dos llamadas separadas porque GenerarHM(op, hm) hace ambas por dentro. En el form deja esto:
-C#
-private void BtnBuscarHM_Click(object sender, EventArgs e)
-{
-    EjecutarBusquedaHM();
-}
-Eso respeta el patrón anterior: el formulario dispara una sola acción y el servicio concentra la operación. GenerarHM(...) ya llama tanto a BuscarHMCabecera(...) como a BuscarHMDetalle(...). �
-GitHub +1
-Enter en TextBoxOP y TextBoxHM
-Agrega ambos handlers:
-C#
-private void TextBoxOP_KeyDown(object sender, KeyEventArgs e)
-{
-    
-}
+## Qué pasó realmente
 
-private void TextBoxHM_KeyDown(object sender, KeyEventArgs e)
-{
-    
-}
-Así dejas una UX coherente: Enter en OP pasa a HM, y Enter en HM ejecuta la consulta. Ahora mismo esos handlers no aparecen en el repo. �
-GitHub +1
-En frmLector_Load(...), enlaza eventos
-Además de tu suscripción actual a OnHMGenerado, enlaza los controles:
-C#
-TextBoxOP.KeyDown += TextBoxOP_KeyDown;
-TextBoxHM.KeyDown += TextBoxHM_KeyDown;
-BtnBuscarHM.Click += BtnBuscarHM_Click;
-La suscripción al evento del servicio ya la tienes; esto solo completa el disparo desde la UI. �
-GitHub
-VinculadorService.cs
-Aquí el avance está básicamente correcto. Yo solo le haría una mejora pequeña para validar antes de lanzar la tarea:
-C#
+Tu problema no era “buscar dos veces”, sino esto:
 
-Tu versión actual ya hace casi todo esto; la mejora es solo robustez cuando no venga cabecera. �
-GitHub
-BDPrenda.cs
-También está casi listo. La parte más importante ya existe:
-BuscarHMDetalle(where) consulta althmd, une almart y alwart, y devuelve una estructura de totales y detalle agrupada por color/talla. �
-GitHub +1
-BuscarHMCabecera(where) consulta althmc, trae norpd, nhjmr, cclnt, npocl y fentr. �
-GitHub +1
-Solo te sugiero agregar ORDER BY en cabecera y detalle para hacer más estable la salida visual, por ejemplo:
-C#
-string query = $@"
-SELECT
-    alt.cclrcl,
-    alt.tclrcl,
-    alt.qartsl,
-    alw.tcrct6
-FROM althmd alt
-LEFT JOIN almart alm ON alm.ctpar = alt.ctpar AND alm.cartc = alt.cartc
-LEFT JOIN alwart alw ON alm.ctpar = alw.ctpar AND alm.cartc = alw.cartc
-WHERE {where}
-ORDER BY alt.cclrcl, alw.tcrct6
-";
-y en cabecera:
-C#
-string query = $@"
-SELECT
-    althmc.norpd,
-    althmc.nhjmr,
-    althmc.cclnt,
-    althmc.npocl,
-    CONVERT(VARCHAR, althmc.fentr, 105) AS fentr
-FROM althmc
-INNER JOIN altopc ON althmc.norpd = altopc.nnope
-WHERE {where}
-ORDER BY althmc.norpd, althmc.nhjmr
-";
-No es obligatorio para que funcione, pero ayuda a que el resultado sea consistente. �
-GitHub +1
-Validación final
-Tu estado actual es este:
-BDPrenda.cs: sí está completo para HM. �
-GitHub
-VinculadorService.cs: sí está funcional, con una mejora opcional de validación. �
-GitHub
-frmLector.cs: está a medio cerrar; recibe bien el resultado (OnHMGenerado) pero todavía te falta el patrón de entrada: botón, Enter en cajas y método central EjecutarBusquedaHM(). �
-GitHub +4
-El cambio importante en C# es este: en VB eran dos métodos separados (BuscarCabeceraHM() y BuscarHMDetalle()), pero en tu port actual el equivalente correcto es una sola llamada desde el form a _vinculador.GenerarHM(op, hm), porque el servicio ya ejecuta ambas consultas internamente. �
-GitHub +1
-Si quieres, en el siguiente mensaje te dejo el bloque final exacto para pegar en frmLector.cs con EjecutarBusquedaHM, BtnBuscarHM_Click, TextBoxOP_KeyDown y TextBoxHM_KeyDown.
+* `BtnBuscarHM_Click` llama a `EjecutarBusquedaHM()`
+* eso termina llamando a dos consultas seguidas:
+
+  * `BuscarHMCabecera(...)`
+  * `BuscarHMDetalle(...)`
+
+Con tu versión anterior de `Connect()`, estabas reutilizando **la misma instancia** de `_connection`.
+
+Entonces pasaba algo así:
+
+1. Primera consulta obtiene `_connection`
+2. la usa dentro de un `using (...)` o luego un `Disconnect()`
+3. esa misma conexión compartida queda cerrada o disposed
+4. la segunda consulta intenta reutilizar esa misma instancia
+5. falla o entra en estados raros
+
+## Conclusión
+
+Para este tipo de app, **no te conviene compartir una sola conexión viva como campo global**:
+
+```csharp
+private AseConnection _connection;
+```
+
+Eso es frágil, especialmente si:
+
+* haces varias consultas consecutivas
+* usas `Task.Run(...)`
+* disparas eventos
+* varias funciones de `BDPrenda` llaman a `Connect()` internamente
+
+`AseConnection` no deberías manejarla como recurso compartido de larga vida dentro de toda la clase.
+Lo más sano es:
+
+* **abrir conexión**
+* **usar**
+* **cerrar/liberar**
+* **fin**
+
+por cada operación.
+
+---
+
+# Mi recomendación
+
+## Sí: prefiero tu segunda versión
+
+```csharp
+public AseConnection Connect()
+{
+    try
+    {
+        LoadConfig();
+
+        string connectionString =
+            $"Data Source={_serverName};Port={_port};Database={_database};Uid={_user};Pwd={_password};";
+
+        var conn = new AseConnection(connectionString);
+        conn.Open();
+        return conn;
+    }
+    catch (Exception ex)
+    {
+        LastError = ex.Message;
+        LogError("Error al conectar a Sybase", ex);
+        throw;
+    }
+}
+```
+
+Porque esa versión:
+
+* evita reutilizar una conexión ya cerrada
+* evita conflictos entre consultas consecutivas
+* evita problemas de concurrencia
+* hace cada operación independiente
+
+---
+
+# Lo más importante ahora
+
+Si usas esta nueva estrategia, entonces debes ajustar tu patrón general:
+
+## 1. Ya no dependas de `_connection` compartida
+
+Si todavía existe un campo así:
+
+```csharp
+private AseConnection _connection;
+```
+
+yo lo quitaría.
+
+---
+
+## 2. `Disconnect()` ya no debería cerrar una conexión global
+
+Si ahora `Connect()` crea una nueva conexión cada vez, entonces este patrón:
+
+```csharp
+finally
+{
+    _sybase.Disconnect();
+}
+```
+
+ya no tiene mucho sentido si además haces:
+
+```csharp
+using (AseConnection conn = _sybase.Connect())
+{
+    ...
+}
+```
+
+Porque el `using` ya cierra y libera la conexión.
+
+O sea:
+
+* **usa `using`**
+* **no dependas de `Disconnect()`**
+
+---
+
+## 3. Qué patrón te recomiendo en `BDPrenda.cs`
+
+Siempre así:
+
+```csharp
+using (AseConnection conn = _sybase.Connect())
+{
+    using (AseCommand cmd = new AseCommand(sql, conn))
+    {
+        ...
+    }
+}
+```
+
+Y evita esto:
+
+```csharp
+finally
+{
+    _sybase.Disconnect();
+}
+```
+
+si ya estás usando `using`.
+
+---
+
+# Qué opino de fondo
+
+Tu bug revela que el diseño anterior tenía este problema:
+
+## Diseño anterior
+
+* conexión compartida
+* varias funciones la usan
+* una función la cierra
+* otra la vuelve a usar
+* choque
+
+## Diseño nuevo
+
+* cada método obtiene su propia conexión
+* cada método la libera
+* no hay interferencia
+
+Eso es mucho más robusto.
+
+---
+
+# Entonces, ¿está mal crear una nueva conexión siempre?
+
+No.
+Para este caso, **está mejor**.
+
+Además, normalmente los providers ADO.NET manejan internamente el pool de conexiones, así que abrir/cerrar por operación suele ser el patrón correcto desde la aplicación.
+
+---
+
+# Mi recomendación final
+
+Quédate con la segunda versión de `Connect()` y haz esto en todo el proyecto:
+
+### Mantén
+
+```csharp
+public AseConnection Connect()
+{
+    ...
+    var conn = new AseConnection(connectionString);
+    conn.Open();
+    return conn;
+}
+```
+
+### Evita
+
+* guardar una conexión global en campo
+* reutilizar la misma instancia entre métodos
+* cerrar manualmente una conexión compartida
+
+### Usa siempre
+
+```csharp
+using (AseConnection conn = _sybase.Connect())
+```
+
+---
+
+# En una frase
+
+Tu cambio no fue un parche raro:
+**fue una corrección de diseño del ciclo de vida de la conexión**.
+
+Si quieres, te puedo revisar el patrón de `SybaseHelper` o la clase donde está `Connect()` y decirte exactamente cómo debería quedar `Connect`, `Disconnect` y `SafeClose` para que todo el proyecto quede consistente.
+
+Perfecto. Te dejo una versión **limpia y consistente** de la clase de conexión para que trabajes con el patrón correcto: **una conexión nueva por operación**.
+
+## Cómo debería quedar
+
+```csharp
+using System;
+using System.Data;
+using System.IO;
+using Sybase.Data.AseClient;
+
+namespace SampleApp_CSharp
+{
+    public class SybaseHelper
+    {
+        private string _serverName;
+        private string _port;
+        private string _database;
+        private string _user;
+        private string _password;
+
+        public string LastError { get; private set; } = string.Empty;
+
+        public AseConnection Connect()
+        {
+            try
+            {
+                LoadConfig();
+
+                string connectionString =
+                    $"Data Source={_serverName};Port={_port};Database={_database};Uid={_user};Pwd={_password};";
+
+                var conn = new AseConnection(connectionString);
+                conn.Open();
+                return conn;
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                LogError("Error al conectar a Sybase", ex);
+                throw;
+            }
+        }
+
+        private void LoadConfig()
+        {
+            try
+            {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string configPath = Path.Combine(basePath, "sybase.config");
+
+                if (!File.Exists(configPath))
+                    throw new FileNotFoundException("No se encontró el archivo sybase.config", configPath);
+
+                foreach (var rawLine in File.ReadAllLines(configPath))
+                {
+                    string line = rawLine?.Trim();
+
+                    if (string.IsNullOrWhiteSpace(line))
+                        continue;
+
+                    if (line.StartsWith("#") || line.StartsWith(";"))
+                        continue;
+
+                    int idx = line.IndexOf('=');
+                    if (idx <= 0)
+                        continue;
+
+                    string key = line.Substring(0, idx).Trim().ToLowerInvariant();
+                    string value = line.Substring(idx + 1).Trim();
+
+                    switch (key)
+                    {
+                        case "server":
+                        case "servername":
+                        case "data source":
+                            _serverName = value;
+                            break;
+
+                        case "port":
+                            _port = value;
+                            break;
+
+                        case "database":
+                        case "initial catalog":
+                            _database = value;
+                            break;
+
+                        case "user":
+                        case "uid":
+                        case "username":
+                            _user = value;
+                            break;
+
+                        case "password":
+                        case "pwd":
+                            _password = value;
+                            break;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(_serverName))
+                    throw new Exception("Falta configurar 'server' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_port))
+                    throw new Exception("Falta configurar 'port' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_database))
+                    throw new Exception("Falta configurar 'database' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_user))
+                    throw new Exception("Falta configurar 'user' en sybase.config.");
+
+                if (string.IsNullOrWhiteSpace(_password))
+                    throw new Exception("Falta configurar 'password' en sybase.config.");
+            }
+            catch (Exception ex)
+            {
+                LastError = ex.Message;
+                LogError("Error al cargar configuración Sybase", ex);
+                throw;
+            }
+        }
+
+        private void LogError(string mensaje, Exception ex)
+        {
+            try
+            {
+                string basePath = AppDomain.CurrentDomain.BaseDirectory;
+                string logPath = Path.Combine(basePath, "sybase_error.log");
+
+                File.AppendAllText(
+                    logPath,
+                    $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {mensaje}: {ex.Message}{Environment.NewLine}");
+            }
+            catch
+            {
+            }
+        }
+    }
+}
+```
+
+## Qué debes eliminar de tu versión anterior
+
+Quita estas cosas si todavía existen:
+
+```csharp
+private AseConnection _connection;
+```
+
+Y también cualquier método tipo:
+
+```csharp
+public void Disconnect()
+private void SafeClose()
+```
+
+si estaban pensados para cerrar una conexión global compartida.
+
+## Cómo usarla en `BDPrenda.cs`
+
+Siempre así:
+
+```csharp
+using (AseConnection conn = _sybase.Connect())
+using (AseCommand cmd = conn.CreateCommand())
+{
+    cmd.CommandText = "SELECT ...";
+    // parámetros
+    using (AseDataAdapter da = new AseDataAdapter(cmd))
+    {
+        da.Fill(dt);
+    }
+}
+```
+
+## Qué ya no debes hacer
+
+Evita esto:
+
+```csharp
+AseConnection conn = _sybase.Connect();
+// ...
+_sybase.Disconnect();
+```
+
+Y evita mezclarlo con `using`.
+
+## Regla práctica
+
+En todo tu proyecto:
+
+* `Connect()` abre y devuelve una conexión nueva
+* cada método de BD usa `using`
+* no compartas la conexión en un campo de clase
+* no cierres manualmente una conexión que ya está dentro de `using`
+
+## Ejemplo correcto para tu caso HM
+
+```csharp
+public DataTable BuscarHMCabecera(Dictionary<string, object> whereParameters)
+{
+    DataTable dt = new DataTable();
+
+    try
+    {
+        using (AseConnection conn = _sybase.Connect())
+        using (AseCommand cmd = conn.CreateCommand())
+        {
+            string where = BuildWhereClause(whereParameters, cmd);
+
+            cmd.CommandText = $@"
+                SELECT
+                    althmc.norpd,
+                    althmc.nhjmr,
+                    althmc.cclnt,
+                    althmc.npocl,
+                    CONVERT(VARCHAR, althmc.fentr, 105) AS fentr
+                FROM althmc
+                INNER JOIN altopc ON althmc.norpd = altopc.nnope
+                WHERE {where}
+                ORDER BY althmc.norpd, althmc.nhjmr";
+
+            using (AseDataAdapter da = new AseDataAdapter(cmd))
+            {
+                da.Fill(dt);
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+        ss_error = ex.Message;
+        LogError("Error en BuscarHMCabecera", ex);
+    }
+
+    return dt;
+}
+```
+
+## Mi conclusión
+
+Lo que te pasó con `BtnBuscarHM_Click` fue una señal de que el diseño anterior de conexión compartida ya no era seguro para tu app.
+Tu cambio fue correcto.
+
+El patrón que te recomiendo dejar fijo es:
+
+**una operación de BD = una conexión nueva = un `using`**
+
+Si quieres, ahora te preparo una revisión del patrón de `BDPrenda.cs` para decirte cuáles métodos todavía deberían quitar `finally { _sybase.Disconnect(); }`.
